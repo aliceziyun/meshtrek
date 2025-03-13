@@ -76,4 +76,4 @@ Finally, check the cluster status:
 kubectl get pod
 ```
 
-You should see all the pods have **two containers** (One is the side car), and they all in **RUNNING** status.:sunny:
+You should see all the pods have **two containers** (One is the side car), and they all in **RUNNING** status. :sunny:

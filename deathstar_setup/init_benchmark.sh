@@ -3,6 +3,13 @@
 # clone benchmark
 git clone https://github.com/delimitrou/DeathStarBench.git
 
+# make workload generator
+cd ~/DeathStarBench/wrk2
+git submodule update --init --recursive
+make all
+
+cd ~
+
 # modification on files to make benchmark run correctly
 sed -i 's|\$EXEC build -t "$USER"/"$IMAGE":"$TAG" -f Dockerfile . --platform linux/arm64,linux/amd64 --push|\$EXEC build -t "$USER"/"$IMAGE":"$TAG" -f Dockerfile . --load|' ~/DeathStarBench/hotelReservation/kubernetes/scripts/build-docker-images.sh
 sed -i 's|- ./frontend|- /go/bin/frontend|' ~/DeathStarBench/hotelReservation/kubernetes/frontend/frontend-deployment.yaml
@@ -20,7 +27,7 @@ sudo luarocks install luasocket
 
 # download istio, note this must be done with kubenetes cluster exists
 curl -L https://istio.io/downloadIstio | sh -
-cd istio-1.25.0
+cd istio-1.25.1
 export PATH=$PWD/bin:$PATH
 istioctl install -f samples/bookinfo/demo-profile-no-gateways.yaml -y
 kubectl label namespace default istio-injection=enabled

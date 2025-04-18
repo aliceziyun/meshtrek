@@ -10,21 +10,19 @@ sudo modprobe iscsi_tcp
 echo "dm-snapshot" | sudo tee -a /etc/modules-load.d/dm-snapshot.conf
 
 # use /dev/sda4 as data storage
-sudo mkdir -p /mnt/data     # mount container data
-sudo zfs create zfspv-pool/data
-sudo zfs set mountpoint=/mnt/data zfspv-pool/data
+sudo mkdir -p /mnt/openebs
+sudo mount -t ext4 /dev/sda4 /mnt/data
+sudo mkdir -p /mnt/data/containerd
+sudo mkdir -p /mnt/data/openebs
+sudo mount --bind /mnt/data/containerd /var/lib/containerd
+sudo mount --bind /mnt/data/openebs /mnt/openebs
 
-sudo mkdir -p /var/openebs/local
-sudo zfs create zfspv-pool/openebs
-sudo zfs set mountpoint=/var/openebs/local zfspv-pool/openebs
-
-sudo cp -rp /var/lib/containerd /mnt/data/
-
-sudo apt install -y zfsutils-linux
-
-# use `sudo fdisk -l` to see all available disk section
-# sudo zpool create -f zfspv-pool /dev/sdb
-sudo zpool create -f zfspv-pool /dev/sda4
+sudo systemctl stop containerd
+sudo cp -a /var/lib/containerd/ /var/lib/containerd.backup
+sudo rsync -avx /var/lib/containerd/ /mnt/data/containerd/
+sudo sed -i 's|root = "/var/lib/containerd/"|root = "/mnt/data/containerd"|g' /etc/containerd/config.toml
+sudo systemctl daemon-reload
+sudo systemctl start container
 
 truncate -s 1024G /tmp/disk.img
 sudo losetup -f /tmp/disk.img --show

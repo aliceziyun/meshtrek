@@ -2,6 +2,9 @@
 
 Use this folder to deploy the [DeathStar](https://github.com/delimitrou/DeathStarBench) benchmark on a Kubernetes cluster.
 
+Current Problem:
+- If you copy scripts to your Windows machine, you need `dos2unix`.
+
 ### 1. Prepare Node(s)
 
 You can use one or more machines as Kubernetes nodes.

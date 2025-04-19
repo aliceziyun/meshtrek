@@ -54,3 +54,7 @@ sudo apt update
 sudo apt install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 sudo swapoff -a
+
+# auto completion
+echo 'source <(kubectl completion bash)' >> ~/.bashrc
+source ~/.bashrc

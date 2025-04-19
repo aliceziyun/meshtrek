@@ -10,19 +10,20 @@ sudo modprobe iscsi_tcp
 echo "dm-snapshot" | sudo tee -a /etc/modules-load.d/dm-snapshot.conf
 
 # use /dev/sda4 as data storage
+sudo mkdir -p /mnt/data
 sudo mkdir -p /mnt/openebs
 sudo mount -t ext4 /dev/sda4 /mnt/data
 sudo mkdir -p /mnt/data/containerd
 sudo mkdir -p /mnt/data/openebs
-sudo mount --bind /mnt/data/containerd /var/lib/containerd
 sudo mount --bind /mnt/data/openebs /mnt/openebs
 
 sudo systemctl stop containerd
 sudo cp -a /var/lib/containerd/ /var/lib/containerd.backup
 sudo rsync -avx /var/lib/containerd/ /mnt/data/containerd/
 sudo sed -i 's|root = "/var/lib/containerd/"|root = "/mnt/data/containerd"|g' /etc/containerd/config.toml
+sudo chattr +i /etc/containerd/config.toml
 sudo systemctl daemon-reload
-sudo systemctl start container
+sudo systemctl start containerd
 
 truncate -s 1024G /tmp/disk.img
 sudo losetup -f /tmp/disk.img --show

@@ -25,16 +25,19 @@ sudo chattr +i /etc/containerd/config.toml
 sudo systemctl daemon-reload
 sudo systemctl start containerd
 
-truncate -s 1024G /tmp/disk.img
-sudo losetup -f /tmp/disk.img --show
-
-sudo pvcreate /dev/loop0
-sudo vgcreate lvmvg /dev/loop0
-
 # install openebs (main node)
 helm repo add openebs https://openebs.github.io/openebs
 helm update
-helm install openebs --namespace openebs openebs/openebs --create-namespace
+helm install openebs openebs/openebs \
+  --namespace openebs \
+  --create-namespace \
+  --set localprovisioner.basePath="/mnt/openebs" \
+  --set ndm.enabled=false \
+  --set ndmOperator.enabled=false
+
+# deploy train ticket
+git clone --depth=1 https://github.com/FudanSELab/train-ticket.git 
+cd train-ticket/
 
 # after start deploying the mysql node of train ticket
 # create default StorageClass

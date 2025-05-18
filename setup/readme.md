@@ -1,25 +1,19 @@
-## Setting
+## Deploy Kubernetes Cluster
 
-Use this folder to deploy the [DeathStar](https://github.com/delimitrou/DeathStarBench) benchmark on a Kubernetes cluster.
+This is an instruction about how to deploy a kubernetes cluster.
 
-Current Problem:
-- If you copy scripts to your Windows machine, you need `dos2unix`.
+You can use one or more CloudLab node or local machines. But ensure these nodes can ping each other.
 
-### 1. Prepare Node(s)
+Fill `config.json` with required information (note that you need to make sure the first node in `node` field is main node. Then run `python3 setup.py -f ./init_kube_env.sh -m 0` to copy the script to node, and run the script to set up the environment.
 
-You can use one or more machines as Kubernetes nodes.
-
-If you are using **Cloudlab**, the `3nodes-profile.xml` configuration is more similar to **MeshInsight**. Alternatively, you may use `2nodes-profile.xml` for a quicker startup, as m550 nodes are generally available.
-
-### 2. Create Kubernetes Cluster
-
-Ensure that both `init_kube_env.sh` and `init_benchmark.sh` scripts are present on your machine.
-
-First, execute `init_kube_env.sh` to download all necessary components for Kubernetes. This script installs the container runtime, Kubernetes packages, and configures the iptables rules.
+**how to use `setup.py`**：
 
 ```shell
-sudo chmod +x init_kube_env.sh
-./init_kube_env.sh
+# mode: 
+# 0 - execute on all nodes
+# 1 - execute on worker nodes
+# 2 - execute on main nodes
+python3 setup.py -f [filepath] -m [mode=0|1|2]
 ```
 
 After setting up the environment, run the following commands manually on your main node:
@@ -47,13 +41,9 @@ Additionally, you must apply a network plugin on the main node to ensure the CNI
 # run this only on main node
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
-sudo vim /run/flannel/subnet.env
-
-# copy the following contents to this file and save
-FLANNEL_NETWORK=10.240.0.0/16
-FLANNEL_SUBNET=10.240.0.1/24
-FLANNEL_MTU=1450
-FLANNEL_IPMASQ=true
+# enable auto completion
+echo 'source <(kubectl completion bash)' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 After completing these steps, run the following command to verify everything is working correctly:
@@ -64,19 +54,30 @@ kubectl get pods --all-namespaces
 
 If you see all the pods in **RUNNING** status, it means your cluster is working correctly! :sunny:
 
-### 3. Setup Benchmark
+## Deploy Bookinfo with Jaeger
 
-Run `init_benchmark.sh` to setup DeathStar benchmark.
+https://istio.io/latest/docs/examples/bookinfo/
 
-```shell
-sudo chmod +x init_benchmark.sh
-./init_benchmark.sh
-```
-
-Finally, check the cluster status:
+https://istio.io/latest/docs/tasks/observability/distributed-tracing/jaeger/
 
 ```shell
-kubectl get pod
+python3 setup.py -f istio -m 2
 ```
 
-You should see all the pods have **two containers** (One is the side car), and they all in **RUNNING** status. :sunny:
+After the istio and jaeger is downloaded on main node, run:
+
+```shell
+kubectl create namespace bookinfo
+kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml -n bookinfo
+PRODUCTPAGE_IP=$(kubectl get service productpage -n bookinfo -o jsonpath='{.spec.clusterIP}')
+PRODUCTPAGE_PORT=$(kubectl get service productpage -n bookinfo -o jsonpath='{.spec.ports[0].port}')
+REQUEST_URL="${PRODUCTPAGE_IP}:${PRODUCTPAGE_PORT}"
+```
+
+You should see bookinfo pods are all in **RUNNING** status.
+
+Send request on main node to activate Jaeger:
+
+```shell
+for i in $(seq 1 100); do curl -s -o /dev/null "http://$REQUEST_URL/productpage"; done
+```

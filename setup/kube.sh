@@ -9,20 +9,6 @@ sudo apt install docker-ce docker-ce-cli containerd.io -y
 sudo systemctl start docker
 sudo systemctl enable docker
 
-# download cri-docker
-# wget https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.2/cri-dockerd-0.3.2.amd64.tgz
-# tar xf cri-dockerd-0.3.2.amd64.tgz
-# sudo mv cri-dockerd/cri-dockerd /usr/local/bin/
-
-# wget https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.service
-# wget https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.socket
-# sudo mv cri-docker.socket cri-docker.service /etc/systemd/system/
-# sudo sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
-
-# sudo systemctl daemon-reload
-# sudo systemctl enable cri-docker.service
-# sudo systemctl enable --now cri-docker.socket
-
 # containerd
 sudo rm /etc/containerd/config.toml
 sudo systemctl restart containerd
@@ -54,7 +40,3 @@ sudo apt update
 sudo apt install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 sudo swapoff -a
-
-# auto completion
-echo 'source <(kubectl completion bash)' >> ~/.bashrc
-source ~/.bashrc

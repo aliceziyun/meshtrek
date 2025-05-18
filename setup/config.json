@@ -1,0 +1,11 @@
+{
+    "nodes_user": "aliceso",
+    "nodes_number": 4,
+    "nodes": [
+        "clnode072.clemson.cloudlab.us",
+        "clnode137.clemson.cloudlab.us",
+        "clnode095.clemson.cloudlab.us",
+        "clnode133.clemson.cloudlab.us"
+    ],
+    "nodes_home": "/users/aliceso"
+}

@@ -20,7 +20,7 @@ After setting up the environment, run the following commands manually on your ma
 
 ```shell
 # main node
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --upload-certs
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -76,8 +76,19 @@ REQUEST_URL="${PRODUCTPAGE_IP}:${PRODUCTPAGE_PORT}"
 
 You should see bookinfo pods are all in **RUNNING** status.
 
-Send request on main node to activate Jaeger:
+### Tracing the application with Jaeger
+
+Send requests on main node to activate Jaeger (recommend to execute this request twice in order to get enough data):
 
 ```shell
 for i in $(seq 1 100); do curl -s -o /dev/null "http://$REQUEST_URL/productpage"; done
 ```
+
+Visit the Jaeger dashboard by running: `kubectl get service --all-namespaces`, find service tracing and its PORT, The external port is the one that maps to port 80.
+
+### Measure application performance
+
+```shell
+./wrk2/wrk -t 16 -c 20 -d 60 -L http://$REQUEST_URL/productpage -R 100
+```
+

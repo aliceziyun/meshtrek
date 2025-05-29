@@ -67,7 +67,6 @@ python3 setup.py -f istio -m 2
 After the istio and jaeger is downloaded on main node, run:
 
 ```shell
-kubectl create namespace bookinfo
 kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml -n bookinfo
 PRODUCTPAGE_IP=$(kubectl get service productpage -n bookinfo -o jsonpath='{.spec.clusterIP}')
 PRODUCTPAGE_PORT=$(kubectl get service productpage -n bookinfo -o jsonpath='{.spec.ports[0].port}')

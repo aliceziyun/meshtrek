@@ -1,13 +1,17 @@
 # this script is to set up the environment of kubernetes on Ubuntu 22.04
+#!/bin/bash
+set -euo pipefail
 
-sudo apt update
-sudo apt install docker.io -y
+export DEBIAN_FRONTEND=noninteractive
+
+sudo apt update -yq
+sudo apt install docker.io -yq
 sudo systemctl enable docker
 
 curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-sudo apt update
-sudo apt install kubeadm kubelet kubectl -y
+sudo apt update -yq
+sudo apt install kubeadm kubelet kubectl -yq
 sudo apt-mark hold kubeadm kubelet kubectl
 
 sudo swapoff -a

@@ -1,0 +1,19 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "bookinfo-l7-empty"
+  namespace: bookinfo
+spec:
+  endpointSelector: 
+    matchLabels:
+      "k8s:io.kubernetes.pod.namespace": bookinfo
+  egress:
+    - toEndpoints:
+        - matchLabels: 
+          "k8s:io.kubernetes.pod.namespace": bookinfo
+      toPorts:
+        - ports:
+            - port: "9080"
+              protocol: ANY
+          rules:
+            http: [{}]

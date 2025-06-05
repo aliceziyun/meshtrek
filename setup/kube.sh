@@ -1,5 +1,6 @@
-# this script is to set up the environment of kubernetes on Ubuntu 22.04
 #!/bin/bash
+
+# this script is to set up the environment of kubernetes on Ubuntu 22.04
 set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive

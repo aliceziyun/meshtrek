@@ -59,7 +59,7 @@ def execute_script(node_number, node_ip, node_home, node_user, file):
 
     command = [
         'ssh', f'{node_user}@{node_ip}',
-        '/bin/sh', os.path.join(node_home, file)
+        '/bin/bash', os.path.join(node_home, file)
     ]
     subprocess.run(command, check=True)
 

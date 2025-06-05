@@ -4,16 +4,21 @@ metadata:
   name: "bookinfo-l7-empty"
   namespace: bookinfo
 spec:
-  endpointSelector: 
+  endpointSelector:
     matchLabels:
       "k8s:io.kubernetes.pod.namespace": bookinfo
-  egress:
-    - toEndpoints:
-        - matchLabels: 
-          "k8s:io.kubernetes.pod.namespace": bookinfo
-      toPorts:
-        - ports:
-            - port: "9080"
-              protocol: ANY
-          rules:
-            http: [{}]
+  ingress:
+  - fromEntities:
+      - all
+    toPorts:
+    - ports:
+      - port: "9080"
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels: {}
+    toPorts:
+    - ports:
+      - port: "9080"
+        protocol: TCP
+      rules:
+        http: [{}]

@@ -1,0 +1,635 @@
+aliceso@node-0:~/istio-1.26.0$ kubectl logs -n bookinfo productpage-v1-54bb874995-kt8kt -c istio-proxy
+2025-06-06T20:06:57.618330Z     info    FLAG: --concurrency="0"
+2025-06-06T20:06:57.618365Z     info    FLAG: --domain="bookinfo.svc.cluster.local"
+2025-06-06T20:06:57.618372Z     info    FLAG: --help="false"
+2025-06-06T20:06:57.618375Z     info    FLAG: --log_as_json="false"
+2025-06-06T20:06:57.618386Z     info    FLAG: --log_caller=""
+2025-06-06T20:06:57.618389Z     info    FLAG: --log_output_level="default:info"
+2025-06-06T20:06:57.618392Z     info    FLAG: --log_stacktrace_level="default:none"
+2025-06-06T20:06:57.618401Z     info    FLAG: --log_target="[stdout]"
+2025-06-06T20:06:57.618407Z     info    FLAG: --meshConfig="./etc/istio/config/mesh"
+2025-06-06T20:06:57.618412Z     info    FLAG: --outlierLogPath=""
+2025-06-06T20:06:57.618417Z     info    FLAG: --profiling="true"
+2025-06-06T20:06:57.618421Z     info    FLAG: --proxyComponentLogLevel="misc:error"
+2025-06-06T20:06:57.618426Z     info    FLAG: --proxyLogLevel="warning"
+2025-06-06T20:06:57.618430Z     info    FLAG: --serviceCluster="istio-proxy"
+2025-06-06T20:06:57.618436Z     info    FLAG: --stsPort="0"
+2025-06-06T20:06:57.618440Z     info    FLAG: --templateFile=""
+2025-06-06T20:06:57.618445Z     info    FLAG: --tokenManagerPlugin=""
+2025-06-06T20:06:57.618452Z     info    FLAG: --vklog="0"
+2025-06-06T20:06:57.618458Z     info    Version 1.26.0-c2e9871f340c0e0b114bcd1b73208284f1d17c9e-Clean
+2025-06-06T20:06:57.618468Z     info    Set max file descriptors (ulimit -n) to: 1048576
+2025-06-06T20:06:57.618751Z     info    Proxy role      ips=[10.244.1.20] type=sidecar id=productpage-v1-54bb874995-kt8kt.bookinfo domain=bookinfo.svc.cluster.local
+2025-06-06T20:06:57.618818Z     info    Apply proxy config from env {}
+
+2025-06-06T20:06:57.623355Z     info    cpu limit detected as 2, setting concurrency
+2025-06-06T20:06:57.623702Z     info    Effective config: binaryPath: /usr/local/bin/envoy
+concurrency: 2
+configPath: ./etc/istio/proxy
+controlPlaneAuthPolicy: MUTUAL_TLS
+discoveryAddress: istiod.istio-system.svc:15012
+drainDuration: 45s
+proxyAdminPort: 15000
+serviceCluster: istio-proxy
+statNameLength: 189
+statusPort: 15020
+terminationDrainDuration: 5s
+
+2025-06-06T20:06:57.623718Z     info    JWT policy is third-party-jwt
+2025-06-06T20:06:57.623722Z     info    using credential fetcher of JWT type in cluster.local trust domain
+2025-06-06T20:06:57.825707Z     info    Prometheus scraping configuration: {true /metrics 9080}
+2025-06-06T20:06:57.825765Z     info    Starting default Istio SDS Server
+2025-06-06T20:06:57.825786Z     info    CA Endpoint istiod.istio-system.svc:15012, provider Citadel
+2025-06-06T20:06:57.825792Z     info    Opening status port 15020
+2025-06-06T20:06:57.825822Z     info    Using CA istiod.istio-system.svc:15012 cert with certs: var/run/secrets/istio/root-cert.pem
+2025-06-06T20:06:57.826718Z     info    xdsproxy        Initializing with upstream address "istiod.istio-system.svc:15012" and cluster "Kubernetes"
+2025-06-06T20:06:57.828507Z     info    Pilot SAN: [istiod.istio-system.svc]
+2025-06-06T20:06:57.829563Z     info    Starting proxy agent
+2025-06-06T20:06:57.829607Z     info    Envoy command: [-c etc/istio/proxy/envoy-rev.json --drain-time-s 45 --drain-strategy immediate --local-address-ip-version v4 --file-flush-interval-msec 1000 --disable-hot-restart --allow-unknown-static-fields -l warning --component-log-level misc:error --skip-deprecated-logs --concurrency 2]
+2025-06-06T20:06:57.845040Z     info    sds     Starting SDS grpc server
+2025-06-06T20:06:57.845123Z     info    sds     Starting SDS server for workload certificates, will listen on "var/run/secrets/workload-spiffe-uds/socket"
+2025-06-06T20:06:57.943537Z     info    cache   generated new workload certificate      resourceName=default latency=116.514446ms ttl=23h59m59.056470157s
+2025-06-06T20:06:57.943582Z     info    cache   Root cert has changed, start rotating root cert
+2025-06-06T20:06:57.943630Z     info    cache   returned workload trust anchor from cache       ttl=23h59m59.056371052s
+2025-06-06T20:06:58.006594Z     warning envoy main external/envoy/source/server/server.cc:874   Usage of the deprecated runtime key overload.global_downstream_max_connections, consider switching to `envoy.resource_monitors.global_downstream_max_connections` instead.This runtime key will be removed in future. thread=14
+2025-06-06T20:06:58.007007Z     warning envoy main external/envoy/source/server/server.cc:970   There is no configured limit to the number of allowed active downstream connections. Configure a limit in `envoy.resource_monitors.global_downstream_max_connections` resource monitor.       thread=14
+2025-06-06T20:06:58.016271Z     info    xdsproxy        connected to delta upstream XDS server: istiod.istio-system.svc:15012   id=1
+2025-06-06T20:06:58.041863Z     info    ads     ADS: new connection for node:1
+2025-06-06T20:06:58.041952Z     info    cache   returned workload certificate from cache        ttl=23h59m58.958050088s
+2025-06-06T20:06:58.044017Z     info    ads     ADS: new connection for node:2
+2025-06-06T20:06:58.044151Z     info    cache   returned workload trust anchor from cache       ttl=23h59m58.955853018s
+2025-06-06T20:06:58.499252Z     info    Readiness succeeded in 882.876972ms
+2025-06-06T20:06:58.499837Z     info    Envoy proxy is ready
+2025-06-06T20:37:21.404455Z     info    xdsproxy        connected to delta upstream XDS server: istiod.istio-system.svc:15012   id=2
+2025-06-06T20:45:56.280353Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"164","StreamId":"15131042447844717633"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false     thread=14
+2025-06-06T20:45:56.280397Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"164","StreamId":"15131042447844717633"] encode headers called: filter= status=0     thread=14
+2025-06-06T20:45:56.280451Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"164","StreamId":"15131042447844717633"] encoding headers via codec (end_stream=false):
+':status', '200'
+'content-type', 'text/plain; charset=UTF-8'
+'cache-control', 'no-cache, max-age=0'
+'x-content-type-options', 'nosniff'
+'date', 'Fri, 06 Jun 2025 20:45:56 GMT'
+'server', 'envoy'
+        thread=14
+2025-06-06T20:45:56.280490Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"164","StreamId":"15131042447844717633"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=14
+2025-06-06T20:45:56.280510Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"164","StreamId":"15131042447844717633"] encode data called: filter= status=0        thread=14
+2025-06-06T20:45:56.280528Z     trace   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1930  [Tags: "ConnectionId":"164","StreamId":"15131042447844717633"] encoding data via codec (size=1318 end_stream=true) thread=14
+2025-06-06T20:45:56.280547Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"164","StreamId":"15131042447844717633"] Codec completed encoding stream.    thread=14
+2025-06-06T20:45:56.280608Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:564      [Tags: "ConnectionId":"164","StreamId":"15131042447844717633"] decodeHeaders filter iteration aborted due to local reply: filter=  thread=14
+2025-06-06T20:45:56.280622Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"164","StreamId":"15131042447844717633"] decode headers called: filter= status=1     thread=14
+2025-06-06T20:45:56.280637Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"164"] parsed 134 bytes      thread=14
+2025-06-06T20:45:59.399784Z     trace   envoy http external/envoy/source/common/http/conn_manager_impl.cc:136   LoadShedPoint envoy.load_shed_points.http_connection_manager_decode_headers is not found. Is it configured?        thread=22
+2025-06-06T20:45:59.399826Z     trace   envoy http external/envoy/source/common/http/conn_manager_impl.cc:139   LoadShedPoint envoy.load_shed_points.hcm_ondata_creating_codec is not found. Is it configured?     thread=22
+2025-06-06T20:45:59.399947Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1091   LoadShedPoint envoy.load_shed_points.http1_server_abort_dispatch is not found. Is it configured?   thread=22
+2025-06-06T20:45:59.399976Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"165"] parsing 117 bytes     thread=22
+2025-06-06T20:45:59.399988Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"165"] message begin thread=22
+2025-06-06T20:45:59.400002Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:394   [Tags: "ConnectionId":"165"] new stream    thread=22
+2025-06-06T20:45:59.400017Z     trace   envoy http external/envoy/source/common/http/filter_manager.h:1193      LoadShedPoint envoy.load_shed_points.http_downstream_filter_check is not found. Is it configured?  thread=22
+2025-06-06T20:45:59.400058Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"165"] completed header: key=Host value=10.244.1.20:15021    thread=22
+2025-06-06T20:45:59.400078Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"165"] completed header: key=User-Agent value=kube-probe/1.32        thread=22
+2025-06-06T20:45:59.400090Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"165"] completed header: key=Accept value=*/*        thread=22
+2025-06-06T20:45:59.400102Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"165"] onHeadersCompleteImpl thread=22
+2025-06-06T20:45:59.400110Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"165"] completed header: key=Connection value=close  thread=22
+2025-06-06T20:45:59.400123Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1205   [Tags: "ConnectionId":"165"] Server: onHeadersComplete size=4      thread=22
+2025-06-06T20:45:59.400143Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"165"] message complete      thread=22
+2025-06-06T20:45:59.400170Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1196  [Tags: "ConnectionId":"165","StreamId":"11402228760510784489"] request headers complete (end_stream=true):
+':authority', '10.244.1.20:15021'
+':path', '/healthz/ready'
+':method', 'GET'
+'user-agent', 'kube-probe/1.32'
+'accept', '*/*'
+'connection', 'close'
+        thread=22
+2025-06-06T20:45:59.400191Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1179  [Tags: "ConnectionId":"165","StreamId":"11402228760510784489"] request end stream timestamp recorded       thread=22
+2025-06-06T20:45:59.400397Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"165","StreamId":"11402228760510784489"] decode headers called: filter=envoy.filters.http.upstream_codec status=0    thread=22
+2025-06-06T20:45:59.400424Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"165","StreamId":"11402228760510784489"] decode headers called: filter=envoy.filters.http.router status=1    thread=22
+2025-06-06T20:45:59.400440Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"165"] parsed 117 bytes      thread=22
+2025-06-06T20:45:59.400795Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"8"] parsing 75 bytes        thread=22
+2025-06-06T20:45:59.400815Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"8"] message begin   thread=22
+2025-06-06T20:45:59.400840Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"8"] completed header: key=Date value=Fri, 06 Jun 2025 20:45:59 GMT  thread=22
+2025-06-06T20:45:59.400855Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"8"] onHeadersCompleteImpl   thread=22
+2025-06-06T20:45:59.400863Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"8"] completed header: key=Content-Length value=0    thread=22
+2025-06-06T20:45:59.400876Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1504   [Tags: "ConnectionId":"8"] status_code 200 thread=22
+2025-06-06T20:45:59.400885Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1514   [Tags: "ConnectionId":"8"] Client: onHeadersComplete size=2        thread=22
+2025-06-06T20:45:59.400899Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"8"] message complete        thread=22
+2025-06-06T20:45:59.400908Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1586   [Tags: "ConnectionId":"8"] message complete        thread=22
+2025-06-06T20:45:59.400932Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"165","StreamId":"11402228760510784489"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=22
+2025-06-06T20:45:59.400989Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"165","StreamId":"11402228760510784489"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=22
+2025-06-06T20:45:59.401013Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1840  [Tags: "ConnectionId":"165","StreamId":"11402228760510784489"] closing connection due to connection close header   thread=22
+2025-06-06T20:45:59.401044Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"165","StreamId":"11402228760510784489"] encoding headers via codec (end_stream=true):
+':status', '200'
+'date', 'Fri, 06 Jun 2025 20:45:59 GMT'
+'content-length', '0'
+'x-envoy-upstream-service-time', '0'
+'server', 'envoy'
+'connection', 'close'
+        thread=22
+2025-06-06T20:45:59.401086Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"165","StreamId":"11402228760510784489"] Codec completed encoding stream.    thread=22
+2025-06-06T20:45:59.401168Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"8"] parsed 75 bytes thread=22
+2025-06-06T20:46:14.400488Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"166"] parsing 117 bytes     thread=23
+2025-06-06T20:46:14.400534Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"166"] message begin thread=23
+2025-06-06T20:46:14.400549Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:394   [Tags: "ConnectionId":"166"] new stream    thread=23
+2025-06-06T20:46:14.400595Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"166"] completed header: key=Host value=10.244.1.20:15021    thread=23
+2025-06-06T20:46:14.400612Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"166"] completed header: key=User-Agent value=kube-probe/1.32        thread=23
+2025-06-06T20:46:14.400624Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"166"] completed header: key=Accept value=*/*        thread=23
+2025-06-06T20:46:14.400635Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"166"] onHeadersCompleteImpl thread=23
+2025-06-06T20:46:14.400642Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"166"] completed header: key=Connection value=close  thread=23
+2025-06-06T20:46:14.400655Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1205   [Tags: "ConnectionId":"166"] Server: onHeadersComplete size=4      thread=23
+2025-06-06T20:46:14.400675Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"166"] message complete      thread=23
+2025-06-06T20:46:14.400703Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1196  [Tags: "ConnectionId":"166","StreamId":"13465875485590831453"] request headers complete (end_stream=true):
+':authority', '10.244.1.20:15021'
+':path', '/healthz/ready'
+':method', 'GET'
+'user-agent', 'kube-probe/1.32'
+'accept', '*/*'
+'connection', 'close'
+        thread=23
+2025-06-06T20:46:14.400740Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1179  [Tags: "ConnectionId":"166","StreamId":"13465875485590831453"] request end stream timestamp recorded       thread=23
+2025-06-06T20:46:14.400960Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"166","StreamId":"13465875485590831453"] decode headers called: filter=envoy.filters.http.upstream_codec status=0    thread=23
+2025-06-06T20:46:14.400988Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"166","StreamId":"13465875485590831453"] decode headers called: filter=envoy.filters.http.router status=1    thread=23
+2025-06-06T20:46:14.401003Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"166"] parsed 117 bytes      thread=23
+2025-06-06T20:46:14.401751Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"3"] parsing 75 bytes        thread=23
+2025-06-06T20:46:14.401777Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"3"] message begin   thread=23
+2025-06-06T20:46:14.401802Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"3"] completed header: key=Date value=Fri, 06 Jun 2025 20:46:14 GMT  thread=23
+2025-06-06T20:46:14.401816Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"3"] onHeadersCompleteImpl   thread=23
+2025-06-06T20:46:14.401824Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"3"] completed header: key=Content-Length value=0    thread=23
+2025-06-06T20:46:14.401837Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1504   [Tags: "ConnectionId":"3"] status_code 200 thread=23
+2025-06-06T20:46:14.401845Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1514   [Tags: "ConnectionId":"3"] Client: onHeadersComplete size=2        thread=23
+2025-06-06T20:46:14.401860Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"3"] message complete        thread=23
+2025-06-06T20:46:14.401868Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1586   [Tags: "ConnectionId":"3"] message complete        thread=23
+2025-06-06T20:46:14.401892Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"166","StreamId":"13465875485590831453"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=23
+2025-06-06T20:46:14.401949Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"166","StreamId":"13465875485590831453"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=23
+2025-06-06T20:46:14.401970Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1840  [Tags: "ConnectionId":"166","StreamId":"13465875485590831453"] closing connection due to connection close header   thread=23
+2025-06-06T20:46:14.401992Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"166","StreamId":"13465875485590831453"] encoding headers via codec (end_stream=true):
+':status', '200'
+'date', 'Fri, 06 Jun 2025 20:46:14 GMT'
+'content-length', '0'
+'x-envoy-upstream-service-time', '0'
+'server', 'envoy'
+'connection', 'close'
+        thread=23
+2025-06-06T20:46:14.402020Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"166","StreamId":"13465875485590831453"] Codec completed encoding stream.    thread=23
+2025-06-06T20:46:14.402078Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"3"] parsed 75 bytes thread=23
+2025-06-06T20:46:29.399944Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"167"] parsing 117 bytes     thread=23
+2025-06-06T20:46:29.399986Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"167"] message begin thread=23
+2025-06-06T20:46:29.400001Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:394   [Tags: "ConnectionId":"167"] new stream    thread=23
+2025-06-06T20:46:29.400047Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"167"] completed header: key=Host value=10.244.1.20:15021    thread=23
+2025-06-06T20:46:29.400063Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"167"] completed header: key=User-Agent value=kube-probe/1.32        thread=23
+2025-06-06T20:46:29.400075Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"167"] completed header: key=Accept value=*/*        thread=23
+2025-06-06T20:46:29.400085Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"167"] onHeadersCompleteImpl thread=23
+2025-06-06T20:46:29.400093Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"167"] completed header: key=Connection value=close  thread=23
+2025-06-06T20:46:29.400105Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1205   [Tags: "ConnectionId":"167"] Server: onHeadersComplete size=4      thread=23
+2025-06-06T20:46:29.400124Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"167"] message complete      thread=23
+2025-06-06T20:46:29.400149Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1196  [Tags: "ConnectionId":"167","StreamId":"10212757473453102497"] request headers complete (end_stream=true):
+':authority', '10.244.1.20:15021'
+':path', '/healthz/ready'
+':method', 'GET'
+'user-agent', 'kube-probe/1.32'
+'accept', '*/*'
+'connection', 'close'
+        thread=23
+2025-06-06T20:46:29.400177Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1179  [Tags: "ConnectionId":"167","StreamId":"10212757473453102497"] request end stream timestamp recorded       thread=23
+2025-06-06T20:46:29.400402Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"167","StreamId":"10212757473453102497"] decode headers called: filter=envoy.filters.http.upstream_codec status=0    thread=23
+2025-06-06T20:46:29.400441Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"167","StreamId":"10212757473453102497"] decode headers called: filter=envoy.filters.http.router status=1    thread=23
+2025-06-06T20:46:29.400464Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"167"] parsed 117 bytes      thread=23
+2025-06-06T20:46:29.401236Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"3"] parsing 75 bytes        thread=23
+2025-06-06T20:46:29.401257Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"3"] message begin   thread=23
+2025-06-06T20:46:29.401283Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"3"] completed header: key=Date value=Fri, 06 Jun 2025 20:46:29 GMT  thread=23
+2025-06-06T20:46:29.401298Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"3"] onHeadersCompleteImpl   thread=23
+2025-06-06T20:46:29.401306Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"3"] completed header: key=Content-Length value=0    thread=23
+2025-06-06T20:46:29.401319Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1504   [Tags: "ConnectionId":"3"] status_code 200 thread=23
+2025-06-06T20:46:29.401328Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1514   [Tags: "ConnectionId":"3"] Client: onHeadersComplete size=2        thread=23
+2025-06-06T20:46:29.401343Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"3"] message complete        thread=23
+2025-06-06T20:46:29.401351Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1586   [Tags: "ConnectionId":"3"] message complete        thread=23
+2025-06-06T20:46:29.401377Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"167","StreamId":"10212757473453102497"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=23
+2025-06-06T20:46:29.401434Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"167","StreamId":"10212757473453102497"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=23
+2025-06-06T20:46:29.401456Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1840  [Tags: "ConnectionId":"167","StreamId":"10212757473453102497"] closing connection due to connection close header   thread=23
+2025-06-06T20:46:29.401486Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"167","StreamId":"10212757473453102497"] encoding headers via codec (end_stream=true):
+':status', '200'
+'date', 'Fri, 06 Jun 2025 20:46:29 GMT'
+'content-length', '0'
+'x-envoy-upstream-service-time', '0'
+'server', 'envoy'
+'connection', 'close'
+        thread=23
+2025-06-06T20:46:29.401527Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"167","StreamId":"10212757473453102497"] Codec completed encoding stream.    thread=23
+2025-06-06T20:46:29.401609Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"3"] parsed 75 bytes thread=23
+2025-06-06T20:46:44.399985Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"168"] parsing 117 bytes     thread=22
+2025-06-06T20:46:44.400026Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"168"] message begin thread=22
+2025-06-06T20:46:44.400042Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:394   [Tags: "ConnectionId":"168"] new stream    thread=22
+2025-06-06T20:46:44.400088Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"168"] completed header: key=Host value=10.244.1.20:15021    thread=22
+2025-06-06T20:46:44.400108Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"168"] completed header: key=User-Agent value=kube-probe/1.32        thread=22
+2025-06-06T20:46:44.400126Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"168"] completed header: key=Accept value=*/*        thread=22
+2025-06-06T20:46:44.400144Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"168"] onHeadersCompleteImpl thread=22
+2025-06-06T20:46:44.400156Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"168"] completed header: key=Connection value=close  thread=22
+2025-06-06T20:46:44.400174Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1205   [Tags: "ConnectionId":"168"] Server: onHeadersComplete size=4      thread=22
+2025-06-06T20:46:44.400205Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"168"] message complete      thread=22
+2025-06-06T20:46:44.400240Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1196  [Tags: "ConnectionId":"168","StreamId":"17904336293513666345"] request headers complete (end_stream=true):
+':authority', '10.244.1.20:15021'
+':path', '/healthz/ready'
+':method', 'GET'
+'user-agent', 'kube-probe/1.32'
+'accept', '*/*'
+'connection', 'close'
+        thread=22
+2025-06-06T20:46:44.400663Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1179  [Tags: "ConnectionId":"168","StreamId":"17904336293513666345"] request end stream timestamp recorded       thread=22
+2025-06-06T20:46:44.400883Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"168","StreamId":"17904336293513666345"] decode headers called: filter=envoy.filters.http.upstream_codec status=0    thread=22
+2025-06-06T20:46:44.400910Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"168","StreamId":"17904336293513666345"] decode headers called: filter=envoy.filters.http.router status=1    thread=22
+2025-06-06T20:46:44.400930Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"168"] parsed 117 bytes      thread=22
+2025-06-06T20:46:44.401299Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"8"] parsing 75 bytes        thread=22
+2025-06-06T20:46:44.401318Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"8"] message begin   thread=22
+2025-06-06T20:46:44.401350Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"8"] completed header: key=Date value=Fri, 06 Jun 2025 20:46:44 GMT  thread=22
+2025-06-06T20:46:44.401377Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"8"] onHeadersCompleteImpl   thread=22
+2025-06-06T20:46:44.401384Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"8"] completed header: key=Content-Length value=0    thread=22
+2025-06-06T20:46:44.401397Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1504   [Tags: "ConnectionId":"8"] status_code 200 thread=22
+2025-06-06T20:46:44.401405Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1514   [Tags: "ConnectionId":"8"] Client: onHeadersComplete size=2        thread=22
+2025-06-06T20:46:44.401421Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"8"] message complete        thread=22
+2025-06-06T20:46:44.401434Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1586   [Tags: "ConnectionId":"8"] message complete        thread=22
+2025-06-06T20:46:44.401468Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"168","StreamId":"17904336293513666345"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=22
+2025-06-06T20:46:44.401523Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"168","StreamId":"17904336293513666345"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=22
+2025-06-06T20:46:44.401551Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1840  [Tags: "ConnectionId":"168","StreamId":"17904336293513666345"] closing connection due to connection close header   thread=22
+2025-06-06T20:46:44.401584Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"168","StreamId":"17904336293513666345"] encoding headers via codec (end_stream=true):
+':status', '200'
+'date', 'Fri, 06 Jun 2025 20:46:44 GMT'
+'content-length', '0'
+'x-envoy-upstream-service-time', '0'
+'server', 'envoy'
+'connection', 'close'
+        thread=22
+2025-06-06T20:46:44.401615Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"168","StreamId":"17904336293513666345"] Codec completed encoding stream.    thread=22
+2025-06-06T20:46:44.401683Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"8"] parsed 75 bytes thread=22
+2025-06-06T20:46:59.399543Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"169"] parsing 117 bytes     thread=23
+2025-06-06T20:46:59.399583Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"169"] message begin thread=23
+2025-06-06T20:46:59.399599Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:394   [Tags: "ConnectionId":"169"] new stream    thread=23
+2025-06-06T20:46:59.399647Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"169"] completed header: key=Host value=10.244.1.20:15021    thread=23
+2025-06-06T20:46:59.399664Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"169"] completed header: key=User-Agent value=kube-probe/1.32        thread=23
+2025-06-06T20:46:59.399676Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"169"] completed header: key=Accept value=*/*        thread=23
+2025-06-06T20:46:59.399687Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"169"] onHeadersCompleteImpl thread=23
+2025-06-06T20:46:59.399694Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"169"] completed header: key=Connection value=close  thread=23
+2025-06-06T20:46:59.399706Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1205   [Tags: "ConnectionId":"169"] Server: onHeadersComplete size=4      thread=23
+2025-06-06T20:46:59.399725Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"169"] message complete      thread=23
+2025-06-06T20:46:59.399750Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1196  [Tags: "ConnectionId":"169","StreamId":"3947601201718612244"] request headers complete (end_stream=true):
+':authority', '10.244.1.20:15021'
+':path', '/healthz/ready'
+':method', 'GET'
+'user-agent', 'kube-probe/1.32'
+'accept', '*/*'
+'connection', 'close'
+        thread=23
+2025-06-06T20:46:59.399769Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1179  [Tags: "ConnectionId":"169","StreamId":"3947601201718612244"] request end stream timestamp recorded        thread=23
+2025-06-06T20:46:59.400355Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"169","StreamId":"3947601201718612244"] decode headers called: filter=envoy.filters.http.upstream_codec status=0     thread=23
+2025-06-06T20:46:59.400393Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"169","StreamId":"3947601201718612244"] decode headers called: filter=envoy.filters.http.router status=1     thread=23
+2025-06-06T20:46:59.400415Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"169"] parsed 117 bytes      thread=23
+2025-06-06T20:46:59.401595Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"3"] parsing 75 bytes        thread=23
+2025-06-06T20:46:59.401626Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"3"] message begin   thread=23
+2025-06-06T20:46:59.401653Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"3"] completed header: key=Date value=Fri, 06 Jun 2025 20:46:59 GMT  thread=23
+2025-06-06T20:46:59.401668Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"3"] onHeadersCompleteImpl   thread=23
+2025-06-06T20:46:59.401675Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"3"] completed header: key=Content-Length value=0    thread=23
+2025-06-06T20:46:59.401688Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1504   [Tags: "ConnectionId":"3"] status_code 200 thread=23
+2025-06-06T20:46:59.401696Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1514   [Tags: "ConnectionId":"3"] Client: onHeadersComplete size=2        thread=23
+2025-06-06T20:46:59.401712Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"3"] message complete        thread=23
+2025-06-06T20:46:59.401720Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1586   [Tags: "ConnectionId":"3"] message complete        thread=23
+2025-06-06T20:46:59.401747Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"169","StreamId":"3947601201718612244"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false       thread=23
+2025-06-06T20:46:59.401803Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"169","StreamId":"3947601201718612244"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false       thread=23
+2025-06-06T20:46:59.401828Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1840  [Tags: "ConnectionId":"169","StreamId":"3947601201718612244"] closing connection due to connection close header    thread=23
+2025-06-06T20:46:59.401851Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"169","StreamId":"3947601201718612244"] encoding headers via codec (end_stream=true):
+':status', '200'
+'date', 'Fri, 06 Jun 2025 20:46:59 GMT'
+'content-length', '0'
+'x-envoy-upstream-service-time', '1'
+'server', 'envoy'
+'connection', 'close'
+        thread=23
+2025-06-06T20:46:59.401879Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"169","StreamId":"3947601201718612244"] Codec completed encoding stream.     thread=23
+2025-06-06T20:46:59.401940Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"3"] parsed 75 bytes thread=23
+2025-06-06T20:47:14.400808Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"170"] parsing 117 bytes     thread=22
+2025-06-06T20:47:14.400857Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"170"] message begin thread=22
+2025-06-06T20:47:14.400874Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:394   [Tags: "ConnectionId":"170"] new stream    thread=22
+2025-06-06T20:47:14.400922Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"170"] completed header: key=Host value=10.244.1.20:15021    thread=22
+2025-06-06T20:47:14.400946Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"170"] completed header: key=User-Agent value=kube-probe/1.32        thread=22
+2025-06-06T20:47:14.400965Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"170"] completed header: key=Accept value=*/*        thread=22
+2025-06-06T20:47:14.400981Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"170"] onHeadersCompleteImpl thread=22
+2025-06-06T20:47:14.400990Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"170"] completed header: key=Connection value=close  thread=22
+2025-06-06T20:47:14.401002Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1205   [Tags: "ConnectionId":"170"] Server: onHeadersComplete size=4      thread=22
+2025-06-06T20:47:14.401021Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"170"] message complete      thread=22
+2025-06-06T20:47:14.401055Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1196  [Tags: "ConnectionId":"170","StreamId":"6048733719666929761"] request headers complete (end_stream=true):
+':authority', '10.244.1.20:15021'
+':path', '/healthz/ready'
+':method', 'GET'
+'user-agent', 'kube-probe/1.32'
+'accept', '*/*'
+'connection', 'close'
+        thread=22
+2025-06-06T20:47:14.401089Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1179  [Tags: "ConnectionId":"170","StreamId":"6048733719666929761"] request end stream timestamp recorded        thread=22
+2025-06-06T20:47:14.401285Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"170","StreamId":"6048733719666929761"] decode headers called: filter=envoy.filters.http.upstream_codec status=0     thread=22
+2025-06-06T20:47:14.401312Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"170","StreamId":"6048733719666929761"] decode headers called: filter=envoy.filters.http.router status=1     thread=22
+2025-06-06T20:47:14.401328Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"170"] parsed 117 bytes      thread=22
+2025-06-06T20:47:14.401755Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"8"] parsing 75 bytes        thread=22
+2025-06-06T20:47:14.401775Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"8"] message begin   thread=22
+2025-06-06T20:47:14.401799Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"8"] completed header: key=Date value=Fri, 06 Jun 2025 20:47:14 GMT  thread=22
+2025-06-06T20:47:14.401813Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"8"] onHeadersCompleteImpl   thread=22
+2025-06-06T20:47:14.401820Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"8"] completed header: key=Content-Length value=0    thread=22
+2025-06-06T20:47:14.401833Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1504   [Tags: "ConnectionId":"8"] status_code 200 thread=22
+2025-06-06T20:47:14.401842Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1514   [Tags: "ConnectionId":"8"] Client: onHeadersComplete size=2        thread=22
+2025-06-06T20:47:14.401859Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"8"] message complete        thread=22
+2025-06-06T20:47:14.401872Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1586   [Tags: "ConnectionId":"8"] message complete        thread=22
+2025-06-06T20:47:14.401900Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"170","StreamId":"6048733719666929761"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false       thread=22
+2025-06-06T20:47:14.401961Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"170","StreamId":"6048733719666929761"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false       thread=22
+2025-06-06T20:47:14.401988Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1840  [Tags: "ConnectionId":"170","StreamId":"6048733719666929761"] closing connection due to connection close header    thread=22
+2025-06-06T20:47:14.402019Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"170","StreamId":"6048733719666929761"] encoding headers via codec (end_stream=true):
+':status', '200'
+'date', 'Fri, 06 Jun 2025 20:47:14 GMT'
+'content-length', '0'
+'x-envoy-upstream-service-time', '0'
+'server', 'envoy'
+'connection', 'close'
+        thread=22
+2025-06-06T20:47:14.402055Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"170","StreamId":"6048733719666929761"] Codec completed encoding stream.     thread=22
+2025-06-06T20:47:14.402122Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"8"] parsed 75 bytes thread=22
+2025-06-06T20:47:17.989579Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"171"] parsing 92 bytes      thread=22
+2025-06-06T20:47:17.989621Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"171"] message begin thread=22
+2025-06-06T20:47:17.989638Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:394   [Tags: "ConnectionId":"171"] new stream    thread=22
+2025-06-06T20:47:17.989689Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"171"] completed header: key=Host value=10.106.97.10:9080    thread=22
+2025-06-06T20:47:17.989707Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"171"] completed header: key=User-Agent value=curl/7.81.0    thread=22
+2025-06-06T20:47:17.989719Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"171"] onHeadersCompleteImpl thread=22
+2025-06-06T20:47:17.989727Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"171"] completed header: key=Accept value=*/*        thread=22
+2025-06-06T20:47:17.989740Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1205   [Tags: "ConnectionId":"171"] Server: onHeadersComplete size=3      thread=22
+2025-06-06T20:47:17.989758Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"171"] message complete      thread=22
+2025-06-06T20:47:17.989782Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1196  [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] request headers complete (end_stream=true):
+':authority', '10.106.97.10:9080'
+':path', '/productpage'
+':method', 'GET'
+'user-agent', 'curl/7.81.0'
+'accept', '*/*'
+        thread=22
+2025-06-06T20:47:17.989800Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1179  [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] request end stream timestamp recorded thread=22
+2025-06-06T20:47:17.989938Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] decode headers called: filter=istio.metadata_exchange status=0        thread=22
+2025-06-06T20:47:17.989957Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] decode headers called: filter=envoy.filters.http.grpc_stats status=0  thread=22
+2025-06-06T20:47:17.989972Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] decode headers called: filter=envoy.filters.http.fault status=0       thread=22
+2025-06-06T20:47:17.989984Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] decode headers called: filter=envoy.filters.http.cors status=0        thread=22
+2025-06-06T20:47:17.989993Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] decode headers called: filter=istio.stats status=0    thread=22
+2025-06-06T20:47:17.990792Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] decode headers called: filter=envoy.filters.http.upstream_codec status=4      thread=22
+2025-06-06T20:47:17.990826Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] decode headers called: filter=envoy.filters.http.router status=1      thread=22
+2025-06-06T20:47:17.990849Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"171"] parsed 92 bytes       thread=22
+2025-06-06T20:47:17.991010Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:66       [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] continuing filter chain: filter=0x70563f65c0e0        thread=22
+2025-06-06T20:47:18.012651Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"173"] parsing 193 bytes     thread=23
+2025-06-06T20:47:18.012689Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"173"] message begin thread=23
+2025-06-06T20:47:18.012704Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:394   [Tags: "ConnectionId":"173"] new stream    thread=23
+2025-06-06T20:47:18.012753Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"173"] completed header: key=Host value=details:9080 thread=23
+2025-06-06T20:47:18.012770Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"173"] completed header: key=user-agent value=curl/7.81.0    thread=23
+2025-06-06T20:47:18.012781Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"173"] completed header: key=Accept-Encoding value=gzip, deflate     thread=23
+2025-06-06T20:47:18.012792Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"173"] completed header: key=Accept value=*/*        thread=23
+2025-06-06T20:47:18.012803Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"173"] completed header: key=Connection value=keep-alive     thread=23
+2025-06-06T20:47:18.012813Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"173"] onHeadersCompleteImpl thread=23
+2025-06-06T20:47:18.012822Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"173"] completed header: key=x-request-id value=9f382223-8a41-9321-bd93-d5215f7c5bb9 thread=23
+2025-06-06T20:47:18.012836Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1205   [Tags: "ConnectionId":"173"] Server: onHeadersComplete size=6      thread=23
+2025-06-06T20:47:18.012857Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"173"] message complete      thread=23
+2025-06-06T20:47:18.012883Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1196  [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] request headers complete (end_stream=true):
+':authority', 'details:9080'
+':path', '/details/0'
+':method', 'GET'
+'user-agent', 'curl/7.81.0'
+'accept-encoding', 'gzip, deflate'
+'accept', '*/*'
+'connection', 'keep-alive'
+'x-request-id', '9f382223-8a41-9321-bd93-d5215f7c5bb9'
+        thread=23
+2025-06-06T20:47:18.012906Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1179  [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] request end stream timestamp recorded       thread=23
+2025-06-06T20:47:18.013021Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] decode headers called: filter=istio.metadata_exchange status=0      thread=23
+2025-06-06T20:47:18.013040Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] decode headers called: filter=envoy.filters.http.grpc_stats status=0        thread=23
+2025-06-06T20:47:18.013059Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] decode headers called: filter=istio.alpn status=0   thread=23
+2025-06-06T20:47:18.013074Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] decode headers called: filter=envoy.filters.http.fault status=0     thread=23
+2025-06-06T20:47:18.013086Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] decode headers called: filter=envoy.filters.http.cors status=0      thread=23
+2025-06-06T20:47:18.013096Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] decode headers called: filter=istio.stats status=0  thread=23
+2025-06-06T20:47:18.014174Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] decode headers called: filter=envoy.filters.http.upstream_codec status=4    thread=23
+2025-06-06T20:47:18.014203Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] decode headers called: filter=envoy.filters.http.router status=1    thread=23
+2025-06-06T20:47:18.014219Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"173"] parsed 193 bytes      thread=23
+2025-06-06T20:47:18.025338Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:66       [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] continuing filter chain: filter=0x70563f6af810      thread=23
+2025-06-06T20:47:18.039064Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"174"] parsing 942 bytes     thread=23
+2025-06-06T20:47:18.039082Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"174"] message begin thread=23
+2025-06-06T20:47:18.039107Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"174"] completed header: key=content-type value=application/json     thread=23
+2025-06-06T20:47:18.039121Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"174"] completed header: key=server value=istio-envoy        thread=23
+2025-06-06T20:47:18.039129Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"174"] completed header: key=date value=Fri, 06 Jun 2025 20:47:18 GMT        thread=23
+2025-06-06T20:47:18.039143Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"174"] completed header: key=content-length value=178        thread=23
+2025-06-06T20:47:18.039153Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"174"] completed header: key=x-envoy-upstream-service-time value=2   thread=23
+2025-06-06T20:47:18.039159Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"174"] completed header: key=x-envoy-peer-metadata-id value=sidecar~10.244.1.18~details-v1-766844796b-pszbz.bookinfo~bookinfo.svc.cluster.local thread=23
+2025-06-06T20:47:18.039166Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"174"] onHeadersCompleteImpl thread=23
+2025-06-06T20:47:18.039170Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"174"] completed header: key=x-envoy-peer-metadata value=ChoKCkNMVVNURVJfSUQSDBoKS3ViZXJuZXRlcwqLAQoGTEFCRUxTEoABKn4KEAoDYXBwEgkaB2RldGFpbHMKLAofc2VydmljZS5pc3Rpby5pby9jYW5vbmljYWwtbmFtZRIJGgdkZXRhaWxzCisKI3NlcnZpY2UuaXN0aW8uaW8vY2Fub25pY2FsLXJldmlzaW9uEgQaAnYxCg8KB3ZlcnNpb24SBBoCdjEKJQoETkFNRRIdGhtkZXRhaWxzLXYxLTc2Njg0NDc5NmItcHN6YnoKFwoJTkFNRVNQQUNFEgoaCGJvb2tpbmZvCk8KBU9XTkVSEkYaRGt1YmVybmV0ZXM6Ly9hcGlzL2FwcHMvdjEvbmFtZXNwYWNlcy9ib29raW5mby9kZXBsb3ltZW50cy9kZXRhaWxzLXYxCh0KDVdPUktMT0FEX05BTUUSDBoKZGV0YWlscy12MQ==thread=23
+2025-06-06T20:47:18.039178Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1504   [Tags: "ConnectionId":"174"] status_code 200       thread=23
+2025-06-06T20:47:18.039183Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1514   [Tags: "ConnectionId":"174"] Client: onHeadersComplete size=7      thread=23
+2025-06-06T20:47:18.039203Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false     thread=23
+2025-06-06T20:47:18.039253Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false     thread=23
+2025-06-06T20:47:18.039261Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode headers called: filter=istio.stats status=0  thread=23
+2025-06-06T20:47:18.039268Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode headers called: filter=envoy.filters.http.cors status=0      thread=23
+2025-06-06T20:47:18.039276Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode headers called: filter=envoy.filters.http.fault status=0     thread=23
+2025-06-06T20:47:18.039284Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode headers called: filter=envoy.filters.http.grpc_stats status=0        thread=23
+2025-06-06T20:47:18.039334Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode headers called: filter=istio.metadata_exchange status=0      thread=23
+2025-06-06T20:47:18.039358Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encoding headers via codec (end_stream=false):
+':status', '200'
+'content-type', 'application/json'
+'server', 'envoy'
+'date', 'Fri, 06 Jun 2025 20:47:18 GMT'
+'content-length', '178'
+'x-envoy-upstream-service-time', '25'
+        thread=23
+2025-06-06T20:47:18.039390Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"174"] message complete      thread=23
+2025-06-06T20:47:18.039399Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false     thread=23
+2025-06-06T20:47:18.039404Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false     thread=23
+2025-06-06T20:47:18.039409Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode data called: filter=istio.stats status=0     thread=23
+2025-06-06T20:47:18.039413Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode data called: filter=envoy.filters.http.cors status=0 thread=23
+2025-06-06T20:47:18.039417Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode data called: filter=envoy.filters.http.fault status=0        thread=23
+2025-06-06T20:47:18.039421Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode data called: filter=envoy.filters.http.grpc_stats status=0   thread=23
+2025-06-06T20:47:18.039426Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode data called: filter=istio.metadata_exchange status=0 thread=23
+2025-06-06T20:47:18.039453Z     trace   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1930  [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encoding data via codec (size=178 end_stream=false) thread=23
+2025-06-06T20:47:18.039465Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1586   [Tags: "ConnectionId":"174"] message complete      thread=23
+2025-06-06T20:47:18.039474Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=23
+2025-06-06T20:47:18.039495Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false      thread=23
+2025-06-06T20:47:18.039502Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode data called: filter=istio.stats status=0     thread=23
+2025-06-06T20:47:18.039505Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode data called: filter=envoy.filters.http.cors status=0 thread=23
+2025-06-06T20:47:18.039509Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode data called: filter=envoy.filters.http.fault status=0        thread=23
+2025-06-06T20:47:18.039513Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode data called: filter=envoy.filters.http.grpc_stats status=0   thread=23
+2025-06-06T20:47:18.039517Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encode data called: filter=istio.metadata_exchange status=0 thread=23
+2025-06-06T20:47:18.039522Z     trace   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1930  [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] encoding data via codec (size=0 end_stream=true)    thread=23
+2025-06-06T20:47:18.039531Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"173","StreamId":"17545979641141479155"] Codec completed encoding stream.    thread=23
+2025-06-06T20:47:18.045474Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"174"] parsed 942 bytes      thread=23
+[2025-06-06T20:47:18.012Z] "GET /details/0 HTTP/1.1" 200 - via_upstream - "-" 0 178 26 25 "-" "curl/7.81.0" "9f382223-8a41-9321-bd93-d5215f7c5bb9" "details:9080" "10.244.1.18:9080" outbound|9080||details.bookinfo.svc.cluster.local 10.244.1.20:46300 10.108.246.7:9080 10.244.1.20:56602 - default
+2025-06-06T20:47:18.053498Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"175"] parsing 193 bytes     thread=23
+2025-06-06T20:47:18.053514Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"175"] message begin thread=23
+2025-06-06T20:47:18.053520Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:394   [Tags: "ConnectionId":"175"] new stream    thread=23
+2025-06-06T20:47:18.053541Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"175"] completed header: key=Host value=reviews:9080 thread=23
+2025-06-06T20:47:18.053548Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"175"] completed header: key=user-agent value=curl/7.81.0    thread=23
+2025-06-06T20:47:18.053553Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"175"] completed header: key=Accept-Encoding value=gzip, deflate     thread=23
+2025-06-06T20:47:18.053559Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"175"] completed header: key=Accept value=*/*        thread=23
+2025-06-06T20:47:18.053567Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"175"] completed header: key=Connection value=keep-alive     thread=23
+2025-06-06T20:47:18.053574Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"175"] onHeadersCompleteImpl thread=23
+2025-06-06T20:47:18.053580Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"175"] completed header: key=x-request-id value=9f382223-8a41-9321-bd93-d5215f7c5bb9 thread=23
+2025-06-06T20:47:18.053589Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1205   [Tags: "ConnectionId":"175"] Server: onHeadersComplete size=6      thread=23
+2025-06-06T20:47:18.053600Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"175"] message complete      thread=23
+2025-06-06T20:47:18.053612Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1196  [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] request headers complete (end_stream=true):
+':authority', 'reviews:9080'
+':path', '/reviews/0'
+':method', 'GET'
+'user-agent', 'curl/7.81.0'
+'accept-encoding', 'gzip, deflate'
+'accept', '*/*'
+'connection', 'keep-alive'
+'x-request-id', '9f382223-8a41-9321-bd93-d5215f7c5bb9'
+        thread=23
+2025-06-06T20:47:18.053623Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1179  [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] request end stream timestamp recorded        thread=23
+2025-06-06T20:47:18.053685Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] decode headers called: filter=istio.metadata_exchange status=0       thread=23
+2025-06-06T20:47:18.053695Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] decode headers called: filter=envoy.filters.http.grpc_stats status=0 thread=23
+2025-06-06T20:47:18.053705Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] decode headers called: filter=istio.alpn status=0    thread=23
+2025-06-06T20:47:18.053716Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] decode headers called: filter=envoy.filters.http.fault status=0      thread=23
+2025-06-06T20:47:18.053725Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] decode headers called: filter=envoy.filters.http.cors status=0       thread=23
+2025-06-06T20:47:18.053730Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] decode headers called: filter=istio.stats status=0   thread=23
+2025-06-06T20:47:18.054260Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] decode headers called: filter=envoy.filters.http.upstream_codec status=4     thread=23
+2025-06-06T20:47:18.054274Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] decode headers called: filter=envoy.filters.http.router status=1     thread=23
+2025-06-06T20:47:18.054282Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"175"] parsed 193 bytes      thread=23
+2025-06-06T20:47:18.061002Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:66       [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] continuing filter chain: filter=0x70563f65ce70       thread=23
+2025-06-06T20:47:18.950813Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"176"] parsing 1256 bytes    thread=23
+2025-06-06T20:47:18.950854Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"176"] message begin thread=23
+2025-06-06T20:47:18.950900Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"176"] completed header: key=x-powered-by value=Servlet/3.1  thread=23
+2025-06-06T20:47:18.950921Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"176"] completed header: key=content-type value=application/json     thread=23
+2025-06-06T20:47:18.950934Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"176"] completed header: key=date value=Fri, 06 Jun 2025 20:47:18 GMT        thread=23
+2025-06-06T20:47:18.950946Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"176"] completed header: key=content-language value=en-US    thread=23
+2025-06-06T20:47:18.950957Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"176"] completed header: key=content-length value=438        thread=23
+2025-06-06T20:47:18.950969Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"176"] completed header: key=x-envoy-upstream-service-time value=874 thread=23
+2025-06-06T20:47:18.950984Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"176"] completed header: key=x-envoy-peer-metadata-id value=sidecar~10.244.1.17~reviews-v3-564544b4d6-c57dg.bookinfo~bookinfo.svc.cluster.local thread=23
+2025-06-06T20:47:18.951005Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"176"] completed header: key=x-envoy-peer-metadata value=ChoKCkNMVVNURVJfSUQSDBoKS3ViZXJuZXRlcwqLAQoGTEFCRUxTEoABKn4KEAoDYXBwEgkaB3Jldmlld3MKLAofc2VydmljZS5pc3Rpby5pby9jYW5vbmljYWwtbmFtZRIJGgdyZXZpZXdzCisKI3NlcnZpY2UuaXN0aW8uaW8vY2Fub25pY2FsLXJldmlzaW9uEgQaAnYzCg8KB3ZlcnNpb24SBBoCdjMKJQoETkFNRRIdGhtyZXZpZXdzLXYzLTU2NDU0NGI0ZDYtYzU3ZGcKFwoJTkFNRVNQQUNFEgoaCGJvb2tpbmZvCk8KBU9XTkVSEkYaRGt1YmVybmV0ZXM6Ly9hcGlzL2FwcHMvdjEvbmFtZXNwYWNlcy9ib29raW5mby9kZXBsb3ltZW50cy9yZXZpZXdzLXYzCh0KDVdPUktMT0FEX05BTUUSDBoKcmV2aWV3cy12Mw==thread=23
+2025-06-06T20:47:18.951025Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"176"] onHeadersCompleteImpl thread=23
+2025-06-06T20:47:18.951039Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"176"] completed header: key=server value=istio-envoy        thread=23
+2025-06-06T20:47:18.951057Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1504   [Tags: "ConnectionId":"176"] status_code 200       thread=23
+2025-06-06T20:47:18.951067Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1514   [Tags: "ConnectionId":"176"] Client: onHeadersComplete size=9      thread=23
+2025-06-06T20:47:18.951102Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false      thread=23
+2025-06-06T20:47:18.951212Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false      thread=23
+2025-06-06T20:47:18.951244Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode headers called: filter=istio.stats status=0   thread=23
+2025-06-06T20:47:18.951254Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode headers called: filter=envoy.filters.http.cors status=0       thread=23
+2025-06-06T20:47:18.951264Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode headers called: filter=envoy.filters.http.fault status=0      thread=23
+2025-06-06T20:47:18.951275Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode headers called: filter=envoy.filters.http.grpc_stats status=0 thread=23
+2025-06-06T20:47:18.951388Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode headers called: filter=istio.metadata_exchange status=0       thread=23
+2025-06-06T20:47:18.951486Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encoding headers via codec (end_stream=false):
+':status', '200'
+'x-powered-by', 'Servlet/3.1'
+'content-type', 'application/json'
+'date', 'Fri, 06 Jun 2025 20:47:18 GMT'
+'content-language', 'en-US'
+'content-length', '438'
+'x-envoy-upstream-service-time', '896'
+'server', 'envoy'
+        thread=23
+2025-06-06T20:47:18.951561Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"176"] message complete      thread=23
+2025-06-06T20:47:18.951582Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false      thread=23
+2025-06-06T20:47:18.951593Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false      thread=23
+2025-06-06T20:47:18.951603Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode data called: filter=istio.stats status=0      thread=23
+2025-06-06T20:47:18.951611Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode data called: filter=envoy.filters.http.cors status=0  thread=23
+2025-06-06T20:47:18.951620Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode data called: filter=envoy.filters.http.fault status=0 thread=23
+2025-06-06T20:47:18.951636Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode data called: filter=envoy.filters.http.grpc_stats status=0    thread=23
+2025-06-06T20:47:18.951651Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode data called: filter=istio.metadata_exchange status=0  thread=23
+2025-06-06T20:47:18.951666Z     trace   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1930  [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encoding data via codec (size=438 end_stream=false)  thread=23
+2025-06-06T20:47:18.951685Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1586   [Tags: "ConnectionId":"176"] message complete      thread=23
+2025-06-06T20:47:18.951705Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false       thread=23
+2025-06-06T20:47:18.951757Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false       thread=23
+2025-06-06T20:47:18.951769Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode data called: filter=istio.stats status=0      thread=23
+2025-06-06T20:47:18.951777Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode data called: filter=envoy.filters.http.cors status=0  thread=23
+2025-06-06T20:47:18.951786Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode data called: filter=envoy.filters.http.fault status=0 thread=23
+2025-06-06T20:47:18.951794Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode data called: filter=envoy.filters.http.grpc_stats status=0    thread=23
+2025-06-06T20:47:18.951802Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encode data called: filter=istio.metadata_exchange status=0  thread=23
+2025-06-06T20:47:18.951816Z     trace   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1930  [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] encoding data via codec (size=0 end_stream=true)     thread=23
+2025-06-06T20:47:18.951837Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"175","StreamId":"6507930979493944547"] Codec completed encoding stream.     thread=23
+2025-06-06T20:47:18.964547Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"176"] parsed 1256 bytes     thread=23
+2025-06-06T20:47:19.015225Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"172"] parsing 175 bytes     thread=22
+2025-06-06T20:47:19.015266Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"172"] message begin thread=22
+2025-06-06T20:47:19.015309Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"172"] completed header: key=Server value=gunicorn   thread=22
+2025-06-06T20:47:19.015328Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"172"] completed header: key=Date value=Fri, 06 Jun 2025 20:47:19 GMT        thread=22
+2025-06-06T20:47:19.015345Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"172"] completed header: key=Connection value=keep-alive     thread=22
+2025-06-06T20:47:19.015358Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"172"] completed header: key=Content-Type value=text/html; charset=utf-8     thread=22
+2025-06-06T20:47:19.015372Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"172"] completed header: key=Content-Length value=15068      thread=22
+2025-06-06T20:47:19.015385Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"172"] onHeadersCompleteImpl thread=22
+2025-06-06T20:47:19.015397Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"172"] completed header: key=Vary value=Cookie       thread=22
+2025-06-06T20:47:19.015414Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1504   [Tags: "ConnectionId":"172"] status_code 200       thread=22
+2025-06-06T20:47:19.015427Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1514   [Tags: "ConnectionId":"172"] Client: onHeadersComplete size=6      thread=22
+2025-06-06T20:47:19.015501Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false       thread=22
+2025-06-06T20:47:19.015628Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false       thread=22
+2025-06-06T20:47:19.015648Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode headers called: filter=istio.stats status=0    thread=22
+2025-06-06T20:47:19.015661Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode headers called: filter=envoy.filters.http.cors status=0        thread=22
+2025-06-06T20:47:19.015674Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode headers called: filter=envoy.filters.http.fault status=0       thread=22
+2025-06-06T20:47:19.015690Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode headers called: filter=envoy.filters.http.grpc_stats status=0  thread=22
+2025-06-06T20:47:19.015707Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1263     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode headers called: filter=istio.metadata_exchange status=0        thread=22
+2025-06-06T20:47:19.015754Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encoding headers via codec (end_stream=false):
+':status', '200'
+'server', 'istio-envoy'
+'date', 'Fri, 06 Jun 2025 20:47:19 GMT'
+'content-type', 'text/html; charset=utf-8'
+'content-length', '15068'
+'vary', 'Cookie'
+'x-envoy-upstream-service-time', '1024'
+'x-envoy-decorator-operation', 'productpage.bookinfo.svc.cluster.local:9080/*'
+        thread=22
+2025-06-06T20:47:19.015823Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"172"] parsed 175 bytes      thread=22
+2025-06-06T20:47:19.015892Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"172"] parsing 15068 bytes   thread=22
+2025-06-06T20:47:19.015904Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"172"] message complete      thread=22
+2025-06-06T20:47:19.015914Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false       thread=22
+2025-06-06T20:47:19.015922Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] commonEncodePrefix end_stream: false, isHalfCloseEnabled: false       thread=22
+2025-06-06T20:47:19.015930Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode data called: filter=istio.stats status=0       thread=22
+2025-06-06T20:47:19.015936Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode data called: filter=envoy.filters.http.cors status=0   thread=22
+2025-06-06T20:47:19.015942Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode data called: filter=envoy.filters.http.fault status=0  thread=22
+2025-06-06T20:47:19.015949Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode data called: filter=envoy.filters.http.grpc_stats status=0     thread=22
+2025-06-06T20:47:19.015955Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode data called: filter=istio.metadata_exchange status=0   thread=22
+2025-06-06T20:47:19.015963Z     trace   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1930  [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encoding data via codec (size=15068 end_stream=false) thread=22
+2025-06-06T20:47:19.015972Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1586   [Tags: "ConnectionId":"172"] message complete      thread=22
+2025-06-06T20:47:19.015988Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false        thread=22
+2025-06-06T20:47:19.016017Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false        thread=22
+2025-06-06T20:47:19.016026Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode data called: filter=istio.stats status=0       thread=22
+2025-06-06T20:47:19.016032Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode data called: filter=envoy.filters.http.cors status=0   thread=22
+2025-06-06T20:47:19.016038Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode data called: filter=envoy.filters.http.fault status=0  thread=22
+2025-06-06T20:47:19.016044Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode data called: filter=envoy.filters.http.grpc_stats status=0     thread=22
+2025-06-06T20:47:19.016051Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:1450     [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encode data called: filter=istio.metadata_exchange status=0   thread=22
+2025-06-06T20:47:19.016057Z     trace   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1930  [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] encoding data via codec (size=0 end_stream=true)      thread=22
+2025-06-06T20:47:19.016067Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"171","StreamId":"120489448169237029"] Codec completed encoding stream.      thread=22
+2025-06-06T20:47:19.024337Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"172"] parsed 15068 bytes    thread=22
+[2025-06-06T20:47:18.053Z] "GET /reviews/0 HTTP/1.1" 200 - via_upstream - "-" 0 438 898 896 "-" "curl/7.81.0" "9f382223-8a41-9321-bd93-d5215f7c5bb9" "reviews:9080" "10.244.1.17:9080" outbound|9080||reviews.bookinfo.svc.cluster.local 10.244.1.20:47370 10.100.244.221:9080 10.244.1.20:52464 - default
+[2025-06-06T20:47:17.989Z] "GET /productpage HTTP/1.1" 200 - via_upstream - "-" 0 15068 1026 1024 "-" "curl/7.81.0" "9f382223-8a41-9321-bd93-d5215f7c5bb9" "10.106.97.10:9080" "10.244.1.20:9080" inbound|9080|| 127.0.0.6:43591 10.244.1.20:9080 10.244.0.0:3499 - default
+2025-06-06T20:47:29.400384Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"177"] parsing 117 bytes     thread=23
+2025-06-06T20:47:29.400426Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"177"] message begin thread=23
+2025-06-06T20:47:29.400442Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:394   [Tags: "ConnectionId":"177"] new stream    thread=23
+2025-06-06T20:47:29.400491Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"177"] completed header: key=Host value=10.244.1.20:15021    thread=23
+2025-06-06T20:47:29.400508Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"177"] completed header: key=User-Agent value=kube-probe/1.32        thread=23
+2025-06-06T20:47:29.400520Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"177"] completed header: key=Accept value=*/*        thread=23
+2025-06-06T20:47:29.400531Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"177"] onHeadersCompleteImpl thread=23
+2025-06-06T20:47:29.400539Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"177"] completed header: key=Connection value=close  thread=23
+2025-06-06T20:47:29.400551Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1205   [Tags: "ConnectionId":"177"] Server: onHeadersComplete size=4      thread=23
+2025-06-06T20:47:29.400570Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"177"] message complete      thread=23
+2025-06-06T20:47:29.400596Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1196  [Tags: "ConnectionId":"177","StreamId":"3942277680835491053"] request headers complete (end_stream=true):
+':authority', '10.244.1.20:15021'
+':path', '/healthz/ready'
+':method', 'GET'
+'user-agent', 'kube-probe/1.32'
+'accept', '*/*'
+'connection', 'close'
+        thread=23
+2025-06-06T20:47:29.400618Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1179  [Tags: "ConnectionId":"177","StreamId":"3942277680835491053"] request end stream timestamp recorded        thread=23
+2025-06-06T20:47:29.400804Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"177","StreamId":"3942277680835491053"] decode headers called: filter=envoy.filters.http.upstream_codec status=0     thread=23
+2025-06-06T20:47:29.400835Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:573      [Tags: "ConnectionId":"177","StreamId":"3942277680835491053"] decode headers called: filter=envoy.filters.http.router status=1     thread=23
+2025-06-06T20:47:29.400858Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"177"] parsed 117 bytes      thread=23
+2025-06-06T20:47:29.401238Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:650    [Tags: "ConnectionId":"3"] parsing 75 bytes        thread=23
+2025-06-06T20:47:29.401260Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:592    [Tags: "ConnectionId":"3"] message begin   thread=23
+2025-06-06T20:47:29.401296Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"3"] completed header: key=Date value=Fri, 06 Jun 2025 20:47:29 GMT  thread=23
+2025-06-06T20:47:29.401315Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:843    [Tags: "ConnectionId":"3"] onHeadersCompleteImpl   thread=23
+2025-06-06T20:47:29.401323Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:549    [Tags: "ConnectionId":"3"] completed header: key=Content-Length value=0    thread=23
+2025-06-06T20:47:29.401336Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1504   [Tags: "ConnectionId":"3"] status_code 200 thread=23
+2025-06-06T20:47:29.401345Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1514   [Tags: "ConnectionId":"3"] Client: onHeadersComplete size=2        thread=23
+2025-06-06T20:47:29.401361Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:956    [Tags: "ConnectionId":"3"] message complete        thread=23
+2025-06-06T20:47:29.401369Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:1586   [Tags: "ConnectionId":"3"] message complete        thread=23
+2025-06-06T20:47:29.401393Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"177","StreamId":"3942277680835491053"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false       thread=23
+2025-06-06T20:47:29.401453Z     trace   envoy http external/envoy/source/common/http/filter_manager.cc:906      [Tags: "ConnectionId":"177","StreamId":"3942277680835491053"] commonEncodePrefix end_stream: true, isHalfCloseEnabled: false       thread=23
+2025-06-06T20:47:29.401473Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1840  [Tags: "ConnectionId":"177","StreamId":"3942277680835491053"] closing connection due to connection close header    thread=23
+2025-06-06T20:47:29.401495Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:1906  [Tags: "ConnectionId":"177","StreamId":"3942277680835491053"] encoding headers via codec (end_stream=true):
+':status', '200'
+'date', 'Fri, 06 Jun 2025 20:47:29 GMT'
+'content-length', '0'
+'x-envoy-upstream-service-time', '0'
+'server', 'envoy'
+'connection', 'close'
+        thread=23
+2025-06-06T20:47:29.401529Z     debug   envoy http external/envoy/source/common/http/conn_manager_impl.cc:2021  [Tags: "ConnectionId":"177","StreamId":"3942277680835491053"] Codec completed encoding stream.     thread=23
+2025-06-06T20:47:29.401609Z     trace   envoy http external/envoy/source/common/http/http1/codec_impl.cc:700    [Tags: "ConnectionId":"3"] parsed 75 bytes thread=23

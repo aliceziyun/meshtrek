@@ -1,3 +1,5 @@
+# This file allows all traffic to and in the bookinfo application.
+
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:

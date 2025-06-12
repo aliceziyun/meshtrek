@@ -5,4 +5,5 @@ RUN apt-get update && \
         iptables \
         bpftrace \
         bcc \
-        binutils
+        binutils \ 
+        gdb

@@ -332,6 +332,7 @@ spec:
       - name: istio-proxy
         image: docker.io/alicesong2002/myistio:v2.0
         securityContext:
+          allowPrivilegeEscalation: true
           # privileged: true
           capabilities:
             add: ["SYS_ADMIN"]

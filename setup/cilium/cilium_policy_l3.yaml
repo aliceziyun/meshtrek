@@ -1,0 +1,12 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "allow-all-to-bookinfo"
+  namespace: bookinfo
+spec:
+  endpointSelector:
+    matchLabels:
+      "k8s:io.kubernetes.pod.namespace": bookinfo
+  ingress:
+  - fromEndpoints:
+    - {}

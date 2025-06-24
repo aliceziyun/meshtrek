@@ -14,5 +14,14 @@ sed -i 's|- ./user|- /go/bin/user|' ~/DeathStarBench/hotelReservation/kubernetes
 
 # deploy DeathStar
 cd ~/DeathStarBench/
-sudo ~/DeathStarBench/hotelReservation/kubernetes/scripts/build-docker-images.sh
+# sudo ~/DeathStarBench/hotelReservation/kubernetes/scripts/build-docker-images.sh
 kubectl apply -Rf ~/DeathStarBench/hotelReservation/kubernetes/
+
+cd ~/DeathStarBench/wrk2
+sudo apt install libssl-dev
+sudo apt install zlib1g-dev
+git submodule update --init --recursive
+make
+
+apt-get install luarocks
+luarocks install luasocket

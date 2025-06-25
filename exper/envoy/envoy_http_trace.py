@@ -84,6 +84,7 @@ int record_upstream_connection_map(struct pt_regs *ctx) {
 }
 """
 
+# --------------- add hook function --------------------
 hook_dispatch_symbol = "_ZN5Envoy4Http5Http114ConnectionImpl17hookpointDispatchEi"
 hook_on_headers_complete_symbol = "_ZN5Envoy4Http5Http114ConnectionImpl26hookpointOnHeadersCompleteEi"
 hook_decode_headers_symbol = "_ZN5Envoy6Router6Filter22hookpointDecodeHeadersENSt3__117basic_string_viewIcNS2_11char_traitsIcEEEEim"
@@ -96,19 +97,20 @@ b.attach_uprobe(name=binary_path, sym=hook_on_headers_complete_symbol, fn_name="
 b.attach_uprobe(name=binary_path, sym=hook_decode_headers_symbol, fn_name="record_xid")
 b.attach_uprobe(name=binary_path, sym=hook_upstream_symbol, fn_name="record_upstream_connection_map")
 
-pending_entries = {}  # key: (connection_id, stream_id) -> {"elapsed_total": int}
-id_mapping = {}       # key: (connection_id, stream_id) -> x_request_id
-xid_info = {}         # key: x_request_id -> {"connection_id": int, "upstream_id": int, "elapsed": int}
+# -------------- extra data structure --------------
+pending_http_entries = {}  # key: (connection_id) -> elapsed_time
+id_map = {}       # key: (connection_id) -> x_request_id
+http_request_map = {}         # key: x_request_id -> {"connection_id": int, "stream_id": int, "elapsed": int}
 
 output_file = "trace_output.log"
 
-# register callbacks
+# ----------- register callbacks ------------------
 def parse_end_callback(cpu, data, size):
     class ConnIdTime(ctypes.Structure):
         _fields_ = [("connection_id", ctypes.c_uint),
                     ("elapsed_time", ctypes.c_ulonglong)]
     event = ctypes.cast(data, ctypes.POINTER(ConnIdTime)).contents
-    print(f"[parse_end] Connection ID: {event.connection_id}, Elapsed Time: {event.elapsed_time} ns")
+    pending_http_entries[event.connection_id] = event.elapsed_time
 
 def stream_decode_callback(cpu, data, size):
     class StreamInfo(ctypes.Structure):
@@ -120,8 +122,11 @@ def stream_decode_callback(cpu, data, size):
     event = ctypes.cast(data, ctypes.POINTER(StreamInfo)).contents
     # decode stream
     x_request_id_str = event.x_request_id.split(b'\x00', 1)[0].decode(errors="replace")
-    print(f"[decode] X-Request-ID: {x_request_id_str}, Connection ID: {event.connection_id}, Stream ID: {event.stream_id}")
-    # print(f"[decode] Connection ID: {event.connection_id}, Stream ID: {event.stream_id}")
+    http_request_map[x_request_id_str] = {
+        "connection_id": event.connection_id,
+        "stream_id": event.stream_id,
+    }
+    id_map[event.connection_id] = x_request_id_str
 
 def upstream_callback(cpu, data, size): 
     class ResStreamInfo(ctypes.Structure):
@@ -130,7 +135,36 @@ def upstream_callback(cpu, data, size):
             ("downstream_id", ctypes.c_uint)
         ]
     event = ctypes.cast(data, ctypes.POINTER(ResStreamInfo)).contents
-    print(f"[upstream] Upstream ID: {event.upstream_id}, DownStream ID: {event.downstream_id}")
+    # calculate elapsed time
+    elapsed_time = 0
+    if event.downstream_id in pending_http_entries:
+        elapsed_time = pending_http_entries[event.downstream_id]
+        del pending_http_entries[event.downstream_id]
+        if event.upstream_id in pending_http_entries:
+            elapsed_time += pending_http_entries[event.upstream_id]
+            elapsed_time /= 1_000_000  # convert to milliseconds
+            del pending_http_entries[event.upstream_id]
+        else:
+            print(f"Warning: Upstream ID {event.upstream_id} not found in pending entries.")
+            return
+    else:
+        print(f"Warning: Downstream ID {event.downstream_id} not found in pending entries.")
+        return
+    
+    # integrate with x_request_id
+    if event.downstream_id in id_map:
+        x_request_id = id_map[event.downstream_id]
+        if x_request_id in http_request_map:
+            http_request_map[x_request_id]["elapsed"] = elapsed_time
+            with open(output_file, "a") as f:
+                f.write(f"request id: {x_request_id} time: {elapsed_time} stream id: {http_request_map[x_request_id]['stream_id']}\n")
+            # delete the entry from id_map and http_request_map
+            del id_map[event.downstream_id]
+            del http_request_map[x_request_id]
+        else:
+            print(f"Warning: X-Request ID {x_request_id} not found in HTTP request map.")
+    else:
+        print(f"Warning: Connection ID {event.downstream_id} not found in ID map.")   
 
 b["parse_events"].open_perf_buffer(parse_end_callback)
 b["decode_events"].open_perf_buffer(stream_decode_callback)

@@ -7,3 +7,17 @@ RUN apt-get update && \
         bcc \
         binutils \ 
         gdb
+
+RUN apt-get install -y python3 python3-pip && \
+    apt-get install -y apt-transport-https ca-certificates curl clang llvm jq && \
+    apt-get install -y libelf-dev libpcap-dev libbfd-dev binutils-dev build-essential make && \
+    apt-get install -y linux-tools-common && \
+    apt-get install -y bpfcc-tools kmod && \
+    apt-get install -y pahole && \
+    apt-get install -y vim
+
+COPY ./envoy_more_hook /usr/local/bin/envoy
+RUN chmod +x /usr/local/bin/envoy
+
+COPY ./uprobe/envoy_http_trace.py /home/envoy_http_trace.py
+RUN chmod +x /home/envoy_http_trace.py

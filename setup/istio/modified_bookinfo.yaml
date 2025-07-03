@@ -77,7 +77,7 @@ spec:
         ports:
         - containerPort: 9080
       - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v5.0
+        image: docker.io/alicesong2002/modified_istio_proxy:v5.2
         securityContext:
           allowPrivilegeEscalation: true
           privileged: true
@@ -153,7 +153,7 @@ spec:
         ports:
         - containerPort: 9080
       - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v5.0
+        image: docker.io/alicesong2002/modified_istio_proxy:v5.2
         securityContext:
           allowPrivilegeEscalation: true
           privileged: true
@@ -237,7 +237,7 @@ spec:
         - name: wlp-output
           mountPath: /opt/ibm/wlp/output
       - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v5.0
+        image: docker.io/alicesong2002/modified_istio_proxy:v5.2
         securityContext:
           allowPrivilegeEscalation: true
           privileged: true
@@ -299,7 +299,7 @@ spec:
         - name: wlp-output
           mountPath: /opt/ibm/wlp/output
       - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v5.0
+        image: docker.io/alicesong2002/modified_istio_proxy:v5.2
         securityContext:
           allowPrivilegeEscalation: true
           privileged: true
@@ -361,7 +361,7 @@ spec:
         - name: wlp-output
           mountPath: /opt/ibm/wlp/output
       - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v5.0
+        image: docker.io/alicesong2002/modified_istio_proxy:v5.2
         securityContext:
           allowPrivilegeEscalation: true
           privileged: true
@@ -446,7 +446,7 @@ spec:
         - name: tmp
           mountPath: /tmp
       - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v5.0
+        image: docker.io/alicesong2002/modified_istio_proxy:v5.2
         securityContext:
           allowPrivilegeEscalation: true
           privileged: true

@@ -59,7 +59,7 @@ int record_xid(struct pt_regs *ctx) {
 
     u64 size = 36; // we know its 36 bytes
 
-    bpf_probe_read_str(&stream_info.x_request_id, size, str);
+    bpf_probe_read_str(&stream_info.x_request_id, size + 1, str);
     stream_info.x_request_id[size + 1] = '\0';
 
     stream_info.connection_id = PT_REGS_PARM4(ctx);
@@ -85,12 +85,11 @@ int record_upstream_connection_map(struct pt_regs *ctx) {
     return 0;
 }
 """
-
 # --------------- add hook function --------------------
 hook_dispatch_symbol = "_ZN5Envoy4Http5Http114ConnectionImpl17hookpointDispatchEi"
 hook_on_headers_complete_symbol = "_ZN5Envoy4Http5Http114ConnectionImpl26hookpointOnHeadersCompleteEi"
 hook_decode_headers_symbol = "_ZN5Envoy6Router6Filter22hookpointDecodeHeadersENSt3__117basic_string_viewIcNS2_11char_traitsIcEEEEim"
-hook_upstream_symbol = "_ZN5Envoy6Router15UpstreamRequest17hookpointUpstreamEii"
+hook_upstream_symbol = "_ZN5Envoy6Router15UpstreamRequest17hookpointUpstreamEiim"
 
 b = BPF(text=program)
 binary_path = "/usr/local/bin/envoy"
@@ -101,6 +100,21 @@ b.attach_uprobe(name=binary_path, sym=hook_upstream_symbol, fn_name="record_upst
 
 # -------------- extra data structure --------------
 output_file = "/tmp/trace_output.log"
+import queue, threading, time
+
+log_queue = queue.Queue()
+def log_worker():
+    with open(output_file, "a") as f:
+        while True:
+            try:
+                line = log_queue.get(timeout=1)
+                f.write(line)
+                f.flush()
+            except queue.Empty:
+                continue
+
+# Start the log worker thread
+threading.Thread(target=log_worker, daemon=True).start()
 
 # ----------- register callbacks ------------------
 def parse_end_callback(cpu, data, size):
@@ -108,8 +122,7 @@ def parse_end_callback(cpu, data, size):
         _fields_ = [("connection_id", ctypes.c_uint),
                     ("elapsed_time", ctypes.c_ulonglong)]
     event = ctypes.cast(data, ctypes.POINTER(ConnIdTime)).contents
-    with open(output_file, "a") as f:
-        f.write(f"Connection ID: {event.connection_id}, Elapsed Time: {event.elapsed_time} ns\n")
+    log_queue.put(f"[parse-end] connection_id: {event.connection_id}, elapsed_time: {event.elapsed_time} \n")
 
 def stream_decode_callback(cpu, data, size):
     class StreamInfo(ctypes.Structure):
@@ -121,22 +134,21 @@ def stream_decode_callback(cpu, data, size):
     event = ctypes.cast(data, ctypes.POINTER(StreamInfo)).contents
     # decode stream
     x_request_id_str = event.x_request_id.split(b'\x00', 1)[0].decode(errors="replace")
-    with open(output_file, "a") as f:
-        f.write(f"X-Request ID: {x_request_id_str}, Connection ID: {event.connection_id}, Stream ID: {event.stream_id}\n")
+    log_queue.put(f"[decode] x_id: {x_request_id_str}, connection_id: {event.connection_id}, stream_id: {event.stream_id}\n")
 
 def upstream_callback(cpu, data, size): 
     class ResStreamInfo(ctypes.Structure):
         _fields_ = [
             ("upstream_id", ctypes.c_uint),
-            ("downstream_id", ctypes.c_uint)
+            ("downstream_id", ctypes.c_uint),
+            ("stream_id", ctypes.c_ulonglong)
         ]
     event = ctypes.cast(data, ctypes.POINTER(ResStreamInfo)).contents
-    with open(output_file, "a") as f:
-        f.write(f"Upstream ID: {event.upstream_id}, Downstream ID: {event.downstream_id}\n")
+    log_queue.put(f"[upstream] upstreamId: {event.upstream_id}, downstreamId: {event.downstream_id}, streamId: {event.stream_id}\n")
 
-b["parse_events"].open_perf_buffer(parse_end_callback)
-b["decode_events"].open_perf_buffer(stream_decode_callback)
-b["upstream_events"].open_perf_buffer(upstream_callback)
+b["parse_events"].open_perf_buffer(parse_end_callback, page_cnt=256)
+b["decode_events"].open_perf_buffer(stream_decode_callback, page_cnt=256)
+b["upstream_events"].open_perf_buffer(upstream_callback, page_cnt=256)
 
 print("Tracing... Ctrl+C to stop.")
 try:

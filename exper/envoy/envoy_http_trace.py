@@ -88,8 +88,8 @@ int record_upstream_connection_map(struct pt_regs *ctx) {
 # --------------- add hook function --------------------
 hook_dispatch_symbol = "_ZN5Envoy4Http5Http114ConnectionImpl17hookpointDispatchEi"
 hook_on_headers_complete_symbol = "_ZN5Envoy4Http5Http114ConnectionImpl26hookpointOnHeadersCompleteEi"
-hook_decode_headers_symbol = "_ZN5Envoy6Router6Filter22hookpointDecodeHeadersENSt3__117basic_string_viewIcNS2_11char_traitsIcEEEEim"
-hook_upstream_symbol = "_ZN5Envoy6Router15UpstreamRequest17hookpointUpstreamEiim"
+# hook_decode_headers_symbol = "_ZN5Envoy6Router6Filter22hookpointDecodeHeadersENSt3__117basic_string_viewIcNS2_11char_traitsIcEEEEim"
+# hook_upstream_symbol = "_ZN5Envoy6Router15UpstreamRequest17hookpointUpstreamEiim"
 
 b = BPF(text=program)
 binary_path = "/usr/local/bin/envoy"
@@ -153,6 +153,6 @@ b["upstream_events"].open_perf_buffer(upstream_callback, page_cnt=256)
 print("Tracing... Ctrl+C to stop.")
 try:
     while True:
-        b.perf_buffer_poll(timeout=100)
+        b.perf_buffer_poll(timeout=10)
 except KeyboardInterrupt:
     pass

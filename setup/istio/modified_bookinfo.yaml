@@ -90,6 +90,11 @@ spec:
           name: linux-headers
         - name: tmp
           mountPath: /tmp
+        resources:
+          limits:
+            memory: "3000Mi"
+          requests:
+            memory: "3000Mi"
       volumes:
       - name: tmp
         emptyDir: {}
@@ -166,6 +171,11 @@ spec:
           name: linux-headers
         - name: tmp
           mountPath: /tmp
+        resources:
+          limits:
+            memory: "3000Mi"
+          requests:
+            memory: "3000Mi"
       volumes:
       - name: tmp
         emptyDir: {}
@@ -250,6 +260,11 @@ spec:
           name: linux-headers
         - name: tmp
           mountPath: /tmp
+        resources:
+          limits:
+            memory: "3000Mi"
+          requests:
+            memory: "3000Mi"
       volumes:
       - name: wlp-output
         emptyDir: {}
@@ -312,6 +327,11 @@ spec:
           name: linux-headers
         - name: tmp
           mountPath: /tmp
+        resources:
+          limits:
+            memory: "3000Mi"
+          requests:
+            memory: "3000Mi"
       volumes:
       - name: wlp-output
         emptyDir: {}
@@ -374,6 +394,11 @@ spec:
           name: linux-headers
         - name: tmp
           mountPath: /tmp
+        resources:
+          limits:
+            memory: "3000Mi"
+          requests:
+            memory: "3000Mi"
       volumes:
       - name: wlp-output
         emptyDir: {}
@@ -459,6 +484,11 @@ spec:
           name: linux-headers
         - name: tmp
           mountPath: /tmp
+        resources:
+          limits:
+            memory: "3000Mi"
+          requests:
+            memory: "3000Mi"
       volumes:
       - name: tmp
         emptyDir: {}

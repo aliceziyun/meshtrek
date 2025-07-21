@@ -22,9 +22,10 @@ def analyze_raw_http_parse(file_path):
         raise FileNotFoundError(f'File not found: {file_path}')
     with open(file_path, 'r') as f:
         for line in f:
-            match = re.search(r'elapsed_time:\s*(\d+)', line)
+            match = re.search(r'Elapsed Time:\s*(\d+)', line)
             if match:
-                elapsed_times.append(int(match.group(1)))
+                if int(match.group(1)) < 6300000:
+                    elapsed_times.append(int(match.group(1)))
         
         values = np.array(elapsed_times)
     

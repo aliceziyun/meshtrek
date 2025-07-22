@@ -49,8 +49,6 @@ int parse_end(struct pt_regs *ctx) {
 }
 
 int record_xid(struct pt_regs *ctx) {
-    bpf_trace_printk("hook hit! pid=%d\n", bpf_get_current_pid_tgid() >> 32);
-
     u32 connection_id = PT_REGS_PARM4(ctx);
     struct connection_info_t *info = connection_id_map.lookup(&connection_id);
     if (info) {
@@ -61,8 +59,9 @@ int record_xid(struct pt_regs *ctx) {
         info->x_request_id[size] = '\0';
 
         info->stream_id = (u64)(ctx->r8);
+        connection_id_map.update(&connection_id, info);
 
-        bpf_trace_printk("X-Request-ID: %s, connection_id: %d, stream_id: %llu\\n",
+        // bpf_trace_printk("X-Request-ID: %s, connection_id: %d, stream_id: %llu\\n",
                          info->x_request_id, connection_id, info->stream_id);
         return 0;
     } else {

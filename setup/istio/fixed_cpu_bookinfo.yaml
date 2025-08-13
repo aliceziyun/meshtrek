@@ -76,36 +76,13 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
-      - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v10.1
-        securityContext:
-          allowPrivilegeEscalation: true
-          privileged: true
-          capabilities:
-            add: ["SYS_ADMIN"]
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: lib-modules
-        - mountPath: /usr/src
-          name: linux-headers
-        - name: tmp
-          mountPath: /tmp
         resources:
-          limits:
-            memory: "3000Mi"
           requests:
-            memory: "3000Mi"
-      volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: lib-modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: linux-headers
-        hostPath:
-          path: /usr/src
-          type: Directory
+            cpu: "4000m"
+            memory: "400Mi"
+          limits:
+            cpu: "4000m"
+            memory: "1Gi"
 ---
 ##################################################################################################
 # Ratings service
@@ -157,36 +134,14 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
-      - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v10.1
-        securityContext:
-          allowPrivilegeEscalation: true
-          privileged: true
-          capabilities:
-            add: ["SYS_ADMIN"]
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: lib-modules
-        - mountPath: /usr/src
-          name: linux-headers
-        - name: tmp
-          mountPath: /tmp
         resources:
-          limits:
-            memory: "3000Mi"
           requests:
-            memory: "3000Mi"
-      volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: lib-modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: linux-headers
-        hostPath:
-          path: /usr/src
-          type: Directory
+            cpu: "4000m"
+            memory: "400Mi"
+          limits:
+            cpu: "4000m"
+            memory: "1Gi"
+      
 ---
 ##################################################################################################
 # Reviews service
@@ -241,43 +196,23 @@ spec:
           value: "/tmp/logs"
         ports:
         - containerPort: 9080
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "400Mi"
+          limits:
+            cpu: "4000m"
+            memory: "1Gi"
         volumeMounts:
         - name: tmp
           mountPath: /tmp
         - name: wlp-output
           mountPath: /opt/ibm/wlp/output
-      - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v10.1
-        securityContext:
-          allowPrivilegeEscalation: true
-          privileged: true
-          capabilities:
-            add: ["SYS_ADMIN"]
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: lib-modules
-        - mountPath: /usr/src
-          name: linux-headers
-        - name: tmp
-          mountPath: /tmp
-        resources:
-          limits:
-            memory: "3000Mi"
-          requests:
-            memory: "3000Mi"
       volumes:
       - name: wlp-output
         emptyDir: {}
       - name: tmp
         emptyDir: {}
-      - name: lib-modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: linux-headers
-        hostPath:
-          path: /usr/src
-          type: Directory
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -308,43 +243,23 @@ spec:
           value: "/tmp/logs"
         ports:
         - containerPort: 9080
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "400Mi"
+          limits:
+            cpu: "4000m"
+            memory: "1Gi"
         volumeMounts:
         - name: tmp
           mountPath: /tmp
         - name: wlp-output
           mountPath: /opt/ibm/wlp/output
-      - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v10.1
-        securityContext:
-          allowPrivilegeEscalation: true
-          privileged: true
-          capabilities:
-            add: ["SYS_ADMIN"]
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: lib-modules
-        - mountPath: /usr/src
-          name: linux-headers
-        - name: tmp
-          mountPath: /tmp
-        resources:
-          limits:
-            memory: "3000Mi"
-          requests:
-            memory: "3000Mi"
       volumes:
       - name: wlp-output
         emptyDir: {}
       - name: tmp
         emptyDir: {}
-      - name: lib-modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: linux-headers
-        hostPath:
-          path: /usr/src
-          type: Directory
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -375,43 +290,23 @@ spec:
           value: "/tmp/logs"
         ports:
         - containerPort: 9080
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "400Mi"
+          limits:
+            cpu: "4000m"
+            memory: "1Gi"
         volumeMounts:
         - name: tmp
           mountPath: /tmp
         - name: wlp-output
           mountPath: /opt/ibm/wlp/output
-      - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v10.1
-        securityContext:
-          allowPrivilegeEscalation: true
-          privileged: true
-          capabilities:
-            add: ["SYS_ADMIN"]
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: lib-modules
-        - mountPath: /usr/src
-          name: linux-headers
-        - name: tmp
-          mountPath: /tmp
-        resources:
-          limits:
-            memory: "3000Mi"
-          requests:
-            memory: "3000Mi"
       volumes:
       - name: wlp-output
         emptyDir: {}
       - name: tmp
         emptyDir: {}
-      - name: lib-modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: linux-headers
-        hostPath:
-          path: /usr/src
-          type: Directory
 ---
 ##################################################################################################
 # Productpage services
@@ -467,37 +362,17 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9080
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-      - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v10.1
-        securityContext:
-          allowPrivilegeEscalation: true
-          privileged: true
-          capabilities:
-            add: ["SYS_ADMIN"]
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: lib-modules
-        - mountPath: /usr/src
-          name: linux-headers
-        - name: tmp
-          mountPath: /tmp
         resources:
-          limits:
-            memory: "3000Mi"
           requests:
-            memory: "3000Mi"
+            cpu: "4000m"
+            memory: "400Mi"
+          limits:
+            cpu: "4000m"
+            memory: "1Gi"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
       volumes:
       - name: tmp
         emptyDir: {}
-      - name: lib-modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: linux-headers
-        hostPath:
-          path: /usr/src
-          type: Directory
 ---

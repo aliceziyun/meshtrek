@@ -25,8 +25,8 @@ def get_line_by_keyword(file, keyword):
 def generate_result(datas):
     res = []
     # group the data by 5, calculate the average
-    for i in range(0, len(datas), 5):
-        group = datas[i:i+5]
+    for i in range(0, len(datas), 3):
+        group = datas[i:i+3]
         avg = sum([float(x) for x in group]) / len(group)
         res.append(avg)
     return res

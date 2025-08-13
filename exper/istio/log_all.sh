@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAMESPACE="bookinfo"
+NAMESPACE="test"
 
 cd ~/istio-1.26.0
 export PATH=$PWD/bin:$PATH
@@ -11,4 +11,5 @@ for pod in $PODS; do
     istioctl proxy-config log "$pod" -n "$NAMESPACE" --level router=trace
     istioctl proxy-config log "$pod" -n "$NAMESPACE" --level upstream=trace
     istioctl proxy-config log "$pod" -n "$NAMESPACE" --level http=trace
+    istioctl proxy-config log "$pod" -n "$NAMESPACE" --level connection=trace
 done

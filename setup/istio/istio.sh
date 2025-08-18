@@ -2,14 +2,14 @@
 
 # download istio, note this must be done with kubenetes cluster exists
 cd ~
-export ISTIO_VERSION=1.26.
+export ISTIO_VERSION=1.26.0
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION sh -
 cd istio-1.26.0
 export PATH=$PWD/bin:$PATH
 # install service mesh for bookinfo application
 istioctl install -f samples/bookinfo/demo-profile-no-gateways.yaml -y
-kubectl create namespace test
-kubectl label namespace test istio-injection=enabled
+kubectl create namespace bookinfo
+kubectl label namespace bookinfo istio-injection=enabled
 
 # download k8s gateway api
 # kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \

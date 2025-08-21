@@ -16,7 +16,8 @@ echo "Starting experiment..."
 RPS=30
 echo "Running RPS=$RPS..."
 # ./wrk2/wrk -t 10 -c 10 -d 60 -L http://$REQUEST_URL/productpage -R $RPS
-../wrk2/wrk -D exp -t 10 -c 20 -d 30 -L -s ./wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua http://$REQUEST_URL -R $RPS
+# ../wrk2/wrk -D exp -t 10 -c 20 -d 30 -L -s ./wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua http://$REQUEST_URL -R $RPS
+../wrk2/wrk -D exp -t 10 -c 20 -d 30 -L http://$REQUEST_URL/hotels?inDate=2015-04-19&outDate=2015-04-24&lat=38.187&lon=-122.175 -R $RPS
 
 wait
 

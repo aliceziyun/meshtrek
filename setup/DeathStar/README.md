@@ -127,7 +127,11 @@ After the installation completes, run: `kubectl get pod -n test`. If all pods sh
 
       Then run this script. The script will fail on jaeger and consul pod. But all other pod should be fine.
 
-   2. Run `./benchmark_trace.sh`: cd to directory `~/meshtrek/DeathStar/DeathStarBench/hotelReservation`, then run `~/meshtrek/DeathStar/exper/envoy/benchmark_trace.sh` here.
+   2. Run `./benchmark_trace.sh`: 
+
+      ~~First, search `local function get_user()` to open file `./wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua`. Change the variable `local url =` to `"http://[frontend_address]:5000"`~~(Ignore this)
+
+      Change to directory `~/meshtrek/DeathStar/DeathStarBench/hotelReservation`, then run `~/meshtrek/DeathStar/exper/envoy/benchmark_trace.sh` here.
 
    3. Analysis the result
 

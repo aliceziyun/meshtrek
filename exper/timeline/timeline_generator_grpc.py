@@ -70,14 +70,18 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
     ax = plt.subplot(gs[0])
 
+    t_start = all_events[-1]["start"] if all_events else 0
     for i, evt in enumerate(all_events):
         t = [evt["start"], evt["filters_end"], evt["upstream"], evt["end"]]
         pid = evt['pid']
 
         y = i
+
+        t_rel = [ti - t_start for ti in t]
+
         for j in range(len(t) - 1):
             color = base_colors[j]
-            ax.barh(y, (t[j+1] - t[j])/1e6, left=t[j]/1e6, color=color, height=0.3)
+            ax.barh(y, (t_rel[j+1] - t_rel[j])/1e6, left=t_rel[j]/1e6, color=color, height=0.3)
 
     ax.set_yticks(range(len(all_events)))
     ax.set_yticklabels([f"{evt['service_name']}" for evt in all_events])
@@ -126,7 +130,7 @@ if __name__ == "__main__":
 
     # target_x_request_id = args.x_request_id
     # in grpc, this must be the unique identifier for the request as the x-request-id will not be forwarded automatically
-    target_x_request_id = "0ab9c14ba5e82c14"
+    target_x_request_id = "12dd0808eefa9dd2"
     data_dir = args.data_dir
     
     all_events, time_lines = get_events_with_x_request_id(target_x_request_id, data_dir)

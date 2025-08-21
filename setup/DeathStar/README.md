@@ -118,3 +118,17 @@ After the installation completes, run: `kubectl get pod -n test`. If all pods sh
    apt install tcpdump
    tcpdump -i any ...
    ```
+
+### 4. Analysis Log
+
+For a request, its lifecycle will look like this in envoy log:
+
+| Stage                           | Description                                                  | Log                                                          |
+| ------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Connection Established          | Envoy will allocate a new connection id to the request       | "raising connection event ..."                               |
+| Http Parsing                    | Parsing raw bytes to http headers                            | "parsing xx bytes" -> "message complete"                     |
+| Stream Created                  | Envoy will create a new stream for current request           | "request headers complete"                                   |
+| Request Filters Chains          | Go series of filters chains                                  | "request headers complete" -> "router decoding headers"      |
+| Upstream Connection Established | Write and read data with new upstream connection. Reponse's parsing happens in upstream connection. |                                                              |
+| Response Filter Chains          | The response will be handled in previous [ConnectionId, StreamId], goes to another series of filter chains | "upstream response headers:" -> Codec completed encoding stream. |
+

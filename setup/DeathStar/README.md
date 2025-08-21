@@ -2,6 +2,8 @@
 
 ### 1. Setting up Cluster
 
+**The kernel version should be higher than 6.1**
+
 clone the repository:
 
 ```shell
@@ -118,6 +120,24 @@ After the installation completes, run: `kubectl get pod -n test`. If all pods sh
    apt install tcpdump
    tcpdump -i any ...
    ```
+
+4. **Run Trace**
+
+   1. Run `trace_all.sh`：open `/meshtrek/exper/envoy/trace_all.sh`, change the variable `TRACE_SCRIPT` to the path of trace script. (**in this example, it should be the path of `./meshtrek/exper/envoy/uprobe_script`**).
+
+      Then run this script. The script will fail on jaeger and consul pod. But all other pod should be fine.
+
+   2. Run `./benchmark_trace.sh`: cd to directory `~/meshtrek/DeathStar/DeathStarBench/hotelReservation`, then run `~/meshtrek/DeathStar/exper/envoy/benchmark_trace.sh` here.
+
+   3. Analysis the result
+
+      The result is in `~/trace_res/`. To generate the timeline graph, select a uber id in your log file, then open `~/meshtrek/exper/timeline/timeline_generator_grpc.py`, change the value of `target_x_request_id` to the uber id. Then run following command:
+
+      ```shell
+      python3 ~/meshtrek/exper/timeline/timeline_generator_grpc.py -d [path_of_trace_result_directory]
+      ```
+
+      It should generator the timeline of the request.
 
 ### 4. Analysis Log
 

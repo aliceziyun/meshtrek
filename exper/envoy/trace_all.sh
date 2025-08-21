@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAMESPACE="bookinfo"
+NAMESPACE="hotel"
 TRACE_SCRIPT="./envoy_http_trace.py"
 
 # get all pods in namespace

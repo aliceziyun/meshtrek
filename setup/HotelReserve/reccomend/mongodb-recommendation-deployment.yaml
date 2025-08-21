@@ -40,7 +40,7 @@ spec:
             - mountPath: /data/db
               name: recommendation
         - name: istio-proxy
-          image: docker.io/alicesong2002/modified_istio_proxy:v10.1
+          image: docker.io/alicesong2002/modified_istio_proxy:v11.6
           securityContext:
             allowPrivilegeEscalation: true
             privileged: true

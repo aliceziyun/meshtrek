@@ -40,7 +40,7 @@ spec:
             - mountPath: /data/db
               name: rate
         - name: istio-proxy
-          image: docker.io/alicesong2002/modified_istio_proxy:v11.6
+          image: docker.io/alicesong2002/modified_istio_proxy:v11.5
           securityContext:
             allowPrivilegeEscalation: true
             privileged: true

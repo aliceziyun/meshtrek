@@ -3,7 +3,7 @@
 
 cd $(dirname $0)
 
-PERF_EXECUTE_SCRIPT="perf_cilium.sh"
+PERF_EXECUTE_SCRIPT=""
 PERF_TRAVERSE_SCRIPT="perf_traverse.sh"
 NAMESPACE="test"
 
@@ -45,19 +45,27 @@ perf_cilium() {
 
 perf_istio() {
     # get all pod in test namespace
-    PODS=$(kubectl get pods -n $NAMESPACE)
+    PODS=$(kubectl get pods -n $NAMESPACE  -o jsonpath='{.items[*].metadata.name}')
 
     # copy script to each sidecar pod and execute it
-    for POD in $PODS; do
-        echo "Processing pod: $POD"
-        kubectl cp $PERF_EXECUTE_SCRIPT $POD:/tmp/perf_istio.sh -n $NAMESPACE -c istio-proxy
-        kubectl exec -n $NAMESPACE $POD -c istio-proxy -- chmod +x /tmp/perf_istio.sh
-        kubectl exec -n $NAMESPACE $POD -c istio-proxy -- /tmp/perf_istio.sh
-    done
+    # for POD in $PODS; do
+    #     echo "Processing pod: $POD"
+    #     kubectl cp $PERF_EXECUTE_SCRIPT $POD:/tmp/perf_istio.sh -n $NAMESPACE -c istio-proxy
+    #     kubectl exec -n $NAMESPACE $POD -c istio-proxy -- chmod +x /tmp/perf_istio.sh
+    #     kubectl exec -n $NAMESPACE $POD -c istio-proxy -- /tmp/perf_istio.sh
+    # done
 
     # when the script is done, copy all perf results back
     for POD in $PODS; do
         mkdir -p perf_results/$POD
+
+        # no permission in /tmp/perf_results, change the permission first
+        kubectl exec -n $NAMESPACE $POD -c istio-proxy -- sudo chmod -R 777 /tmp/perf_results
+
+        kubectl cp $PERF_TRAVERSE_SCRIPT $POD:/tmp/perf_traverse.sh -n $NAMESPACE -c istio-proxy
+        kubectl exec -n $NAMESPACE -c istio-proxy $POD -- chmod +x /tmp/perf_traverse.sh
+        kubectl exec -n $NAMESPACE -c istio-proxy $POD -- /tmp/perf_traverse.sh
+
         kubectl cp $POD:/tmp/perf_results ./perf_results/$POD -n $NAMESPACE -c istio-proxy
     done
 }
@@ -70,6 +78,8 @@ fi
 
 if [ "$MESH_TYPE" == "cilium" ]; then
     echo "Running perf for Cilium"
+    PERF_EXECUTE_SCRIPT="perf_cilium.sh"
+
     env_install
 
     # Run benchmark script
@@ -80,6 +90,7 @@ if [ "$MESH_TYPE" == "cilium" ]; then
     perf_cilium
 else if [ "$MESH_TYPE" == "istio" ]; then
     echo "Running perf for Istio"
+    PERF_EXECUTE_SCRIPT="perf_istio.sh"
     
     # Run benchmark script
     ../overhead/benchmark_simple.sh &

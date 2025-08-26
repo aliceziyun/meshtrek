@@ -92,3 +92,19 @@ So the full configuration generally will be:
 ```
 
 Use this new YAML file to launch the cluster, then run script `trace_all.sh` to start `uprobe` on each container.
+
+## Version Record
+I should have done this earlier...
+
+### Modified_Istio_Proxy
+- 10.1: version fits `envoy_trace_full` ✅
+- 11.5: Record absolute time of filters, which can be used on gRPC application ✅
+- 11.6(deprecated): Use `x-request-id` instead of uber id to trace filter. But unfortunately gRPC will not forward the `x-request-id` automatically.
+- 11.7(deprecated): Add hookpoint before router decoding headers. Because the filters chain might end after upstream is connected, which will be influenced by network
+- 11.8: The working version of 11.7
+
+- 12.0: add `linux-tools-6.8.0-71-generic` to support perf
+
+### Istio_Perf
+- 1.0: http parsing. Insert fifo write to open perf. From Dispath() -> onHeadersComplete() (not so useful in fine-grain control)
+- 1.1: based on modified istio proxy **v10.1**

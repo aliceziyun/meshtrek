@@ -49,9 +49,9 @@ kubectl label namespace bookinfo istio-injection=enabled
 # kubectl patch svc tracing -n istio-system -p '{"spec":{"type":"NodePort"}}'
 
 # download wrk2 for performance test
-# sudo apt install libssl-dev
-# sudo apt install zlib1g-dev
-# git clone https://github.com/giltene/wrk2.git
-# cd wrk2
-# make
-# cd ..
+sudo apt install libssl-dev
+sudo apt install zlib1g-dev
+git clone https://github.com/giltene/wrk2.git
+cd wrk2
+make
+cd ..

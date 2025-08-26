@@ -10,3 +10,4 @@ exper/result_full_cilium.log
 output.log
 /config
 /setup/cilium
+/res_perf

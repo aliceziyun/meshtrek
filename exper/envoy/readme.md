@@ -103,7 +103,10 @@ I should have done this earlier...
 - 11.7(deprecated): Add hookpoint before router decoding headers. Because the filters chain might end after upstream is connected, which will be influenced by network
 - 11.8: The working version of 11.7
 
-- 12.0: add `linux-tools-6.8.0-71-generic` to support perf
+- 12.0: add `linux-tools-6.8.0-71-generic` to support perf ✅
+
+### Cilium Envoy Modified
+- 2.0(deprecated): upgrade cilium to 1.8.0 and envoy to 1.34.4. However, this version will add much overhead to network.
 
 ### Istio_Perf
 - 1.0: http parsing. Insert fifo write to open perf. From Dispath() -> onHeadersComplete() (not so useful in fine-grain control)

@@ -11,3 +11,4 @@ output.log
 /config
 /setup/cilium
 /res_perf
+*.txt

@@ -1,5 +1,3 @@
-# only for grpc
-
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
@@ -10,7 +8,7 @@ import argparse
 import os
 import re
 
-base_colors = ["#4caf50", "#2196f3", "#ff9800"]
+base_colors = ["#4caf50", "#2196f3", "#ff9800", "#f44336", "#9c27b0", "#00bcd4"]
 
 def get_events_with_x_request_id(target_x_request_id, data_dir):
     process_timelines = defaultdict(list)
@@ -18,27 +16,33 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
     for root, dirs, files in os.walk(data_dir):
         for i, file in enumerate(files):
             if file.endswith(".log"):
+                data_file = os.path.join(root, file)
                 service_name_re = re.match(r"trace_output_([^-]+)-", file)
                 service_name = service_name_re.group(1) if service_name_re else "unknown"
-                data_file = os.path.join(root, file)
                 with open(data_file) as f:
                     for lines in f:
                         if target_x_request_id in lines:
                             parts = lines.strip().split(", ")
                             data = {p.split(": ")[0]: p.split(": ")[1] for p in parts}
 
-                            stream_id = int(data["Stream ID"])
+                            conn_id = int(data["Connection ID"])
                             pid = i
                             start = int(data["Time Start"])
-                            request_filter_end = int(data["Time Request Filter End"])
-                            upstream = int(data["Time Upstream Recorded"])
+                            http_parsed = int(data["Time HTTP Parsed"])
+                            filter_end = int(data["Time Filters End"])
+                            upstream_time_start = int(data["Upstream Time Start"])
+                            upstream_http_parsed = int(data["Upstream Time HTTP Parsed"])
+                            upstream = int(data["Upstream Time Recorded"])
                             end = int(data["Time End"])
 
                             process_timelines[pid].append({
                                 "service_name" : service_name, 
-                                "stream_id": stream_id,
+                                "conn_id": conn_id,
                                 "start": start,
-                                "filters_end": request_filter_end,
+                                "http_parsed": http_parsed,
+                                "filters_end": filter_end,
+                                "upstream_start": upstream_time_start,
+                                "upstream_http_parsed": upstream_http_parsed,
                                 "upstream": upstream,
                                 "end": end
                             })
@@ -53,9 +57,12 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
             all_events.append({
                 "pid": pid,
                 "service_name": evt["service_name"],
-                "stream_id": evt["stream_id"],
+                "conn_id": evt["conn_id"],
                 "start": evt["start"],
+                "http_parsed": evt["http_parsed"],
                 "filters_end": evt["filters_end"],
+                "upstream_start": evt["upstream_start"],
+                "upstream_http_parsed": evt["upstream_http_parsed"],
                 "upstream": evt["upstream"],
                 "end": evt["end"]
             })
@@ -66,13 +73,13 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
     return all_events, process_timelines
 
 def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
-    fig = plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(12, 6))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
     ax = plt.subplot(gs[0])
 
     t_start = all_events[-1]["start"] if all_events else 0
     for i, evt in enumerate(all_events):
-        t = [evt["start"], evt["filters_end"], evt["upstream"], evt["end"]]
+        t = [evt["start"], evt["http_parsed"], evt["filters_end"], evt["upstream_start"], evt["upstream_http_parsed"], evt["upstream"], evt["end"]]
         pid = evt['pid']
 
         y = i
@@ -86,12 +93,12 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     ax.set_yticks(range(len(all_events)))
     ax.set_yticklabels([f"{evt['service_name']}" for evt in all_events])
     ax.set_xlabel("Time (ms)")
-    ax.set_title(f"Timeline for Uber ID {target_x_request_id}")
+    ax.set_title(f"Timeline for X-Request-ID {target_x_request_id}")
 
     ax_table = plt.subplot(gs[1])
     ax_table.axis("off")
 
-    table_header = ["Service", "Request Filters", "Process Time", "Response Filters"]
+    table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Process Time", "Upstream Http Parsing", "Other Operations", "Response Filters", "Overhead Ratio"]
     table_data = []
 
     legend_labels = table_header[1:]
@@ -101,13 +108,19 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
 
     for pid, events in process_timelines.items():
         for evt in events:
-            t = [evt["start"], evt["filters_end"], evt["upstream"], evt["end"]]
+            t = [evt["start"], evt["http_parsed"], evt["filters_end"], evt["upstream_start"], evt["upstream_http_parsed"], evt["upstream"], evt["end"]]
             time_intervals = [(t[i+1] - t[i]) / 1e6 for i in range(len(t) - 1)]
+            other_time = time_intervals[0] + time_intervals[1] + time_intervals[3] + time_intervals[4] + time_intervals[5]
+            overhead_ratio =  other_time / time_intervals[2] if time_intervals[2] > 0 else 0
             table_data.append([
                 str(evt['service_name']),
                 f"{time_intervals[0]:.2f} ms",
                 f"{time_intervals[1]:.2f} ms",
                 f"{time_intervals[2]:.2f} ms",
+                f"{time_intervals[3]:.2f} ms",
+                f"{time_intervals[4]:.2f} ms",
+                f"{time_intervals[5]:.2f} ms",
+                f"{overhead_ratio:.2%}"
             ])
 
     the_table = ax_table.table(cellText=table_data,
@@ -129,8 +142,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # target_x_request_id = args.x_request_id
-    # in grpc, this must be the unique identifier for the request as the x-request-id will not be forwarded automatically
-    target_x_request_id = "12dd0808eefa9dd2"
+    target_x_request_id = "a5d03325-d0a0-9232-9a7f-0d8a5a69578b"
     data_dir = args.data_dir
     
     all_events, time_lines = get_events_with_x_request_id(target_x_request_id, data_dir)

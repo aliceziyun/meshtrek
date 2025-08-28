@@ -2,7 +2,7 @@ sudo apt-get -y install luarocks
 sudo luarocks install luasocket
 
 # clone benchmark
-git clone https://github.com/delimitrou/DeathStarBench.git
+git clone https://github.com/delimitrou/DeathStarBench.git ~/DeathStarBench
 
 # modification on files to make benchmark run correctly
 sed -i 's|\$EXEC build -t "$USER"/"$IMAGE":"$TAG" -f Dockerfile . --platform linux/arm64,linux/amd64 --push|\$EXEC build -t "$USER"/"$IMAGE":"$TAG" -f Dockerfile . --load|' ~/DeathStarBench/hotelReservation/kubernetes/scripts/build-docker-images.sh

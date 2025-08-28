@@ -1,10 +1,12 @@
 #!/bin/bash
+# This shows a basic example to measure the overhead of the benchmark
 
 NAMESPACE="bookinfo"
+SERVICE_ENTRY="productpage"
 
-PRODUCTPAGE_IP=$(kubectl get service productpage -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
-PRODUCTPAGE_PORT=$(kubectl get service productpage -n "$NAMESPACE" -o jsonpath='{.spec.ports[0].port}')
-REQUEST_URL="${PRODUCTPAGE_IP}:${PRODUCTPAGE_PORT}"
+IP=$(kubectl get service $SERVICE_ENTRY -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
+PORT=$(kubectl get service $SERVICE_ENTRY -n "$NAMESPACE" -o jsonpath='{.spec.ports[0].port}')
+REQUEST_URL="${IP}:${PORT}"
 
 echo "Request URL: $REQUEST_URL"
 

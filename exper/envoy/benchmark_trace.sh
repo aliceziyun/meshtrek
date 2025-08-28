@@ -1,30 +1,80 @@
 #!/bin/bash
 # do experiment
-NAMESPACE="hotel"
 
-# PRODUCTPAGE_IP=$(kubectl get service productpage -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
-# PRODUCTPAGE_PORT=$(kubectl get service productpage -n "$NAMESPACE" -o jsonpath='{.spec.ports[0].port}')
+NAMESPACE=
 
-PRODUCTPAGE_IP=$(kubectl get service frontend -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
-PRODUCTPAGE_PORT=5000
-REQUEST_URL="${PRODUCTPAGE_IP}:${PRODUCTPAGE_PORT}"
+MESH_TYPE=$1
+MICRO_SERVICE=$2
+RPS=$3
 
-echo "Request URL: $REQUEST_URL"
+trace_bookinfo() {
+    NAMESPACE="bookinfo"
+    local ip=$(kubectl get service productpage -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
+    local port=9080
+    local request_url="${ip}:${port}/productpage"
 
-# begin experiment
-echo "Starting experiment..."
-RPS=30
-echo "Running RPS=$RPS..."
-# ./wrk2/wrk -t 10 -c 10 -d 60 -L http://$REQUEST_URL/productpage -R $RPS
-# ../wrk2/wrk -D exp -t 10 -c 20 -d 30 -L -s ./wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua http://$REQUEST_URL -R $RPS
-../wrk2/wrk -D exp -t 10 -c 20 -d 30 -L "http://$REQUEST_URL/hotels?inDate=2015-04-19&outDate=2015-04-24&lat=38.187&lon=-122.175" -R $RPS
+    echo "Request URL: $request_url"
+    echo "Running RPS=$RPS..."
 
-wait
+    ~/wrk2/wrk -t 10 -c 10 -d 60 -L http://$REQUEST_URL/productpage -R $RPS
 
-# copy trace output back
-# get all pods in namespace
-PODS=$(kubectl get pods -n "$NAMESPACE" -o jsonpath='{.items[*].metadata.name}')
+    wait
 
-for pod in $PODS; do
-    kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
-done
+    if [ "$MESH_TYPE" == "cilium" ]; then
+        PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')
+        for pod in $PODS; do
+            kubectl cp "kube-system/$pod:/tmp/trace_output.log" ~/trace_res/trace_output_"$pod".log
+        done
+    else
+        PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
+        for pod in $PODS; do
+            kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
+        done
+    fi
+
+    echo "Experiment completed."
+}
+
+
+trace_hotel() {
+    NAMESPACE="hotel"
+    local ip=$(kubectl get service frontend -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
+    local port=5000
+    local request_url="${ip}:${port}"
+
+    echo "Request URL: $request_url"
+    echo "Running RPS=$RPS..."
+
+    # change the url in mixed-workload_type_1.lua
+    cp ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua.bak
+    sed -i "s|http://localhost:5000|http://${ip}:5000|g" ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua
+
+    ~/DeathStarBench/wrk2/wrk -D exp -t 10 -c 20 -d 30 -L -s ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua http://$REQUEST_URL -R $RPS
+
+    wait
+
+    if [ "$MESH_TYPE" == "cilium" ]; then
+        PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')
+        for pod in $PODS; do
+            kubectl cp "kube-system/$pod:/tmp/trace_output.log" ~/trace_res/trace_output_"$pod".log
+        done
+    else
+        PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
+        for pod in $PODS; do
+            kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
+        done
+    fi
+
+    wait
+
+    # restore the lua file
+    mv ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua.bak ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua
+
+    echo "Experiment completed."
+}
+
+if [ "$MICRO_SERVICE" == "hotel" ]; then
+    trace_hotel
+elif [ "$MICRO_SERVICE" == "bookinfo" ]; then
+    trace_bookinfo
+else

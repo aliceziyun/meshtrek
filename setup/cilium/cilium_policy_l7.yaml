@@ -1,26 +1,29 @@
-# This file allows all traffic to and in the bookinfo application.
-
+# This file allows all traffic to and in the hotel reservation
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
-  name: "bookinfo-l7-empty"
-  namespace: bookinfo
+  name: "l7-empty"
+  namespace: default
 spec:
   endpointSelector:
     matchLabels:
-      "k8s:io.kubernetes.pod.namespace": bookinfo
+      "k8s:io.kubernetes.pod.namespace": default
   ingress:
   - fromEntities:
       - cluster
     toPorts:
     - ports:
-      - port: "9080"
+      - port: "1"
+        endPort: 65535
         protocol: TCP
+      rules:
+        http: [{}]
   - fromEndpoints:
     - matchLabels: {}
     toPorts:
     - ports:
-      - port: "9080"
+      - port: "1"
+        endPort: 65535
         protocol: TCP
       rules:
         http: [{}]

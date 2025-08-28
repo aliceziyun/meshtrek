@@ -174,6 +174,9 @@ def generate_heatmap_graph():
         x, y, z = total_times[idx], overheads[idx], z[idx]
 
         plt.figure(figsize=(10, 5))
+        plt.title("Request Time vs Service Mesh Overhead Distribution")
+        plt.xlabel("Total Request Time (ms)")
+        plt.ylabel("Overhead Time (ms)")
         plt.scatter(x, y, c=z, s=20, cmap='Spectral')
         plt.colorbar(label='Density')
 

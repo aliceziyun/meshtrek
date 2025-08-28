@@ -1,6 +1,10 @@
 import os
 import argparse
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
 from collections import defaultdict
+from scipy.stats import gaussian_kde
 
 result_file = "heatmap_results.txt"
 target_entry_size = [5, 7]
@@ -147,10 +151,39 @@ def generator_dot_file(directory, entry_file):
         with open(result_file_path, 'a') as rf:
             rf.write(f"{target_x_request_id}, {total_time}, {overhead}\n")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Heatmap Generator")
-    parser.add_argument("-d", type=str, dest="dir", required=True, help="Directory containing log files")
-    parser.add_argument("-e", type=str, dest="entry_file", help="Entry log file name (default: entry.log)")
-    args = parser.parse_args()
+def generate_heatmap_graph():
+    result_file_path = os.path.join(os.getcwd(), result_file)
+    if not os.path.exists(result_file_path):
+        print(f"Result file {result_file_path} does not exist.")
+        return
+    
+    with open(result_file_path, 'r') as rf:
+        lines = rf.readlines()
+        _, total_times, overheads = zip(*(line.strip().split(", ") for line in lines))
+        total_times = list(map(int, total_times))
+        overheads = list(map(int, overheads))
 
-    generator_dot_file(args.dir, args.entry_file)
+        # divide by 1e6 to convert to milliseconds
+        total_times = np.array([t / 1e6 for t in total_times])
+        overheads = np.array([o / 1e6 for o in overheads])
+
+        xy = np.vstack([total_times, overheads])
+        z = gaussian_kde(xy)(xy)
+
+        idx = z.argsort()
+        x, y, z = total_times[idx], overheads[idx], z[idx]
+
+        plt.figure(figsize=(10, 5))
+        plt.scatter(x, y, c=z, s=20, cmap='Spectral')
+        plt.colorbar(label='Density')
+
+        plt.show()
+
+if __name__ == "__main__":
+    # parser = argparse.ArgumentParser(description="Heatmap Generator")
+    # parser.add_argument("-d", type=str, dest="dir", required=True, help="Directory containing log files")
+    # parser.add_argument("-e", type=str, dest="entry_file", help="Entry log file name (default: entry.log)")
+    # args = parser.parse_args()
+
+    # generator_dot_file(args.dir, args.entry_file)
+    generate_heatmap_graph()

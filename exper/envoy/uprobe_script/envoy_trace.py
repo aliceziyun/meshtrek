@@ -16,11 +16,11 @@ struct connection_info_t {
     char x_request_id[40];
     u32 connection_id;
     u32 upstream_id;
-    u64 time_start;     // dispatch()
-    u64 time_http_parsed;  // onHeaderComplete()
-    u64 time_filters_end; // dispatch()
-    u64 time_upstream_recorded;     // Upstream::decodeHeaders()
-    u64 time_end;   // doDeferredStreamDestroy()
+    u64 time_start;
+    u64 time_http_parsed;
+    u64 time_request_filters_end;
+    u64 time_upstream_recorded;
+    u64 time_end;
 
     u64 upstream_time_start;
     u64 upstream_time_http_parsed;
@@ -30,7 +30,6 @@ BPF_HASH(connection_id_map, u32, struct connection_info_t);
 BPF_PERF_OUTPUT(trace_events);
 
 int http_parse_start(struct pt_regs *ctx) {
-    bpf_trace_printk("http_parse_start called\\n");
     u32 connection_id = PT_REGS_PARM2(ctx);
     u64 ts = bpf_ktime_get_tai_ns();
 
@@ -43,7 +42,7 @@ int http_parse_start(struct pt_regs *ctx) {
     return 0;
 }
 
-int http_parsed(struct pt_regs *ctx) {
+int http_parse_end(struct pt_regs *ctx) {
     u32 connection_id = PT_REGS_PARM2(ctx);
     u64 ts = bpf_ktime_get_tai_ns();
     
@@ -56,29 +55,15 @@ int http_parsed(struct pt_regs *ctx) {
 }
 
 int filters_end(struct pt_regs *ctx) {
-    u32 connection_id = PT_REGS_PARM2(ctx);
-    u64 ts = bpf_ktime_get_tai_ns();
-    
-    struct connection_info_t *info = connection_id_map.lookup(&connection_id);
-    if (info) {
-        info->time_filters_end = ts;
-    }
-
-    return 0;
-}
-
-int record_xid(struct pt_regs *ctx) {
     u32 connection_id = PT_REGS_PARM4(ctx);
-    bpf_trace_printk("record_xid called with connection_id %d\\n", connection_id);
     struct connection_info_t *info = connection_id_map.lookup(&connection_id);
     if (info) {
-        const char* str = (const char *)PT_REGS_PARM3(ctx);
-
-        bpf_trace_printk("record_xid is str %s with length %d\\n", str, PT_REGS_PARM2(ctx));
+        const char* str = (const char *)PT_REGS_PARM2(ctx);
 
         u64 size = 36; // we know its 36 bytes
         bpf_probe_read_str(info->x_request_id, sizeof(info->x_request_id), str);
         info->x_request_id[size] = '\0';
+        info->time_request_filters_end = bpf_ktime_get_tai_ns();
 
         return 0;
     } else {
@@ -128,23 +113,22 @@ int request_end(struct pt_regs *ctx) {
 """
 
 hook_symbol_list = [
-    "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30hookpointOnCodecEncodeCompleteEim",
     "_ZN5Envoy4Http5Http114ConnectionImpl17hookpointDispatchEi",
-    "_ZN5Envoy4Http5Http114ConnectionImpl20hookpointDispatchEndEi",
-    "_ZN5Envoy6Router15UpstreamRequest17hookpointUpstreamEiim",
-    "_ZN5Envoy6Router6Filter22hookpointDecodeHeadersESt17basic_string_viewIcSt11char_traitsIcEEim",
     "_ZN5Envoy4Http5Http114ConnectionImpl26hookpointOnHeadersCompleteEi",
+    "_ZN5Envoy6Router15UpstreamRequest17hookpointUpstreamEiim",
+    "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream19hookpointFiltersEndENSt3__117basic_string_viewIcNS3_11char_traitsIcEEEEim",
+    "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30hookpointOnCodecEncodeCompleteEim",
 ]
 
-hook_function_list = ["request_end", "http_parse_start", "filters_end", "upstream", "record_xid", "http_parsed"]
+hook_function_list = ["http_parse_start", "http_parse_end", "upstream", "filters_end", "request_end"]
 
 b = BPF(text=program)
-# binary_path = "/usr/local/bin/envoy"
-binary_path = "/usr/bin/cilium-envoy"
+binary_path = "/usr/local/bin/envoy"
+# binary_path = "/usr/bin/cilium-envoy"
 
 def find_envoy_pid():
-    # cmd = "ps aux | grep '/usr/local/bin/envoy' | grep -v grep"
-    cmd = "ps aux | grep '/usr/bin/cilium-envoy -c /var/run/cilium/envoy/bootstrap-config.json --base-id 0' | grep -v grep"
+    cmd = "ps aux | grep '/usr/local/bin/envoy' | grep -v grep"
+    # cmd = "ps aux | grep '/usr/bin/cilium-envoy -c /var/run/cilium/envoy/bootstrap-config.json --base-id 0' | grep -v grep"
     result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, text=True)
 
     for line in result.stdout.strip().split('\n'):
@@ -186,7 +170,7 @@ def callback(cpu, data, size):
             ("upstream_id", ctypes.c_uint),
             ("time_start", ctypes.c_ulonglong),
             ("time_http_parsed", ctypes.c_ulonglong),
-            ("time_filters_end", ctypes.c_ulonglong),
+            ("time_request_filters_end", ctypes.c_ulonglong),
             ("time_upstream_recorded", ctypes.c_ulonglong),
             ("time_end", ctypes.c_ulonglong),
             ("time_upstream_start", ctypes.c_ulonglong),
@@ -194,7 +178,7 @@ def callback(cpu, data, size):
         ]
     event = ctypes.cast(data, ctypes.POINTER(ConnInfo)).contents
     x_request_id_str = event.x_request_id.split(b'\x00', 1)[0].decode(errors="replace")
-    log_queue.put(f"Connection ID: {event.connection_id}, X-Request-ID: {x_request_id_str}, Time Start: {event.time_start}, Time HTTP Parsed: {event.time_http_parsed}, Time Filters End: {event.time_filters_end}, Upstream Time Start: {event.time_upstream_start}, Upstream Time HTTP Parsed: {event.time_upstream_http_parsed}, Upstream Time Recorded: {event.time_upstream_recorded}, Time End: {event.time_end}\n")
+    log_queue.put(f"Connection ID: {event.connection_id}, X-Request-ID: {x_request_id_str}, Time Start: {event.time_start}, Time HTTP Parsed: {event.time_http_parsed}, Time Filters End: {event.time_request_filters_end}, Upstream Time Start: {event.time_upstream_start}, Upstream Time HTTP Parsed: {event.time_upstream_http_parsed}, Upstream Time Recorded: {event.time_upstream_recorded}, Time End: {event.time_end}\n")
 
 # ----------- register callbacks ------------------
 b["trace_events"].open_perf_buffer(callback, page_cnt=256)

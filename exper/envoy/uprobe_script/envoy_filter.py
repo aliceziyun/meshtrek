@@ -82,13 +82,12 @@ int upstream(struct pt_regs *ctx) {
     }
 
     return 0;
-    
 }
 """
 
 # --------------- add hook function --------------------
-hook_filter_end_symbol = "_ZN5Envoy4Http13FilterManager19hookpointEndFiltersEim"
-hook_start_symbol = "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream34hookpointActiveStreamDecodeHeadersENSt3__117basic_string_viewIcNS3_11char_traitsIcEEEEim"
+hook_filter_end_symbol = "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream19hookpointFiltersEndEim"
+hook_start_symbol = "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream21hookpointFiltersStartENSt3__117basic_string_viewIcNS3_11char_traitsIcEEEEim"
 hook_end_symbol = "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30hookpointOnCodecEncodeCompleteEim"
 hook_upstream_symbol = "_ZN5Envoy6Router15UpstreamRequest17hookpointUpstreamEiim"
 

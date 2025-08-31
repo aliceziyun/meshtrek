@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     # target_x_request_id = args.x_request_id
     # in grpc, this must be the unique identifier for the request as the x-request-id will not be forwarded automatically
-    target_x_request_id = "7a5755c1ceed89ff"
+    target_x_request_id = "457ba0b2-9b6f-9aae-a654-1108e98e93d5"
     data_dir = args.data_dir
     
     all_events, time_lines = get_events_with_x_request_id(target_x_request_id, data_dir)

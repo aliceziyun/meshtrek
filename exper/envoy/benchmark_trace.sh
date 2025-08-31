@@ -16,7 +16,7 @@ trace_bookinfo() {
     echo "Request URL: $request_url"
     echo "Running RPS=$RPS..."
 
-    ~/wrk2/wrk -t 10 -c 10 -d 60 -L http://$REQUEST_URL/productpage -R $RPS
+    ~/DeathStarBench/wrk2/wrk -t 10 -c 10 -d 30 -L "http://$request_url" -R $RPS
 
     wait
 
@@ -38,18 +38,18 @@ trace_bookinfo() {
 
 trace_hotel() {
     NAMESPACE="hotel"
-    local ip=$(kubectl get service frontend -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
-    local port=5000
+    local ip=$(kubectl get service frontend2 -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
+    local port=5001
     local request_url="${ip}:${port}"
 
     echo "Request URL: $request_url"
     echo "Running RPS=$RPS..."
 
     # change the url in mixed-workload_type_1.lua
-    cp ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua.bak
-    sed -i "s|http://localhost:5000|http://${ip}:5000|g" ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua
+    # cp ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua.bak
+    # sed -i "s|http://localhost:5000|http://${ip}:5000|g" ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua/
 
-    ~/DeathStarBench/wrk2/wrk -D exp -t 10 -c 20 -d 30 -L -s ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua http://$REQUEST_URL -R $RPS
+    ~/DeathStarBench/wrk2/wrk -D exp -t 10 -c 20 -d 30 -L -s ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua "http://$request_url" -R $RPS
 
     wait
 
@@ -77,4 +77,4 @@ if [ "$MICRO_SERVICE" == "hotel" ]; then
     trace_hotel
 elif [ "$MICRO_SERVICE" == "bookinfo" ]; then
     trace_bookinfo
-else
+fi

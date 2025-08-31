@@ -167,6 +167,12 @@ def generate_heatmap_graph():
         total_times = np.array([t / 1e6 for t in total_times])
         overheads = np.array([o / 1e6 for o in overheads])
 
+        # sample 30% of the data if too large
+        if len(total_times) > 5000:
+            sample_indices = np.random.choice(len(total_times), size=int(len(total_times) * 0.3), replace=False)
+            total_times = total_times[sample_indices]
+            overheads = overheads[sample_indices]
+
         xy = np.vstack([total_times, overheads])
         z = gaussian_kde(xy)(xy)
 
@@ -183,10 +189,10 @@ def generate_heatmap_graph():
         plt.show()
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(description="Heatmap Generator")
-    # parser.add_argument("-d", type=str, dest="dir", required=True, help="Directory containing log files")
-    # parser.add_argument("-e", type=str, dest="entry_file", help="Entry log file name (default: entry.log)")
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser(description="Heatmap Generator")
+    parser.add_argument("-d", type=str, dest="dir", required=True, help="Directory containing log files")
+    parser.add_argument("-e", type=str, dest="entry_file", help="Entry log file name (default: entry.log)")
+    args = parser.parse_args()
 
-    # generator_dot_file(args.dir, args.entry_file)
+    generator_dot_file(args.dir, args.entry_file)
     generate_heatmap_graph()

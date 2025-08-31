@@ -58,3 +58,10 @@ View Jaeger traces by accessing:
 e.g., to copy the results directory from the on-cluster client to the local machine:
   - `hrclient=$(oc get pod | grep hr-client- | cut -f 1 -d " ")`
   - `oc cp hotel-res/${hrclient}:/root/DeathStarBench/hotelReservation/openshift/results /tmp`
+
+
+# Record of Modified Image
+- 1.0 & 1.1(depracate): test image
+- 1.2: working version, delete consul for Istio to work ✅
+- 1.3 & 1.4 & 1.5 & 1.6 & 1.7(depracate): test image for adding a new handler and forward to localhost
+- 1.8: use this version for frontend2, and other can use 1.2, we can see the uber trace id at the root

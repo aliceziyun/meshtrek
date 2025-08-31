@@ -1,0 +1,3 @@
+FROM docker.io/deathstarbench/hotel-reservation:latest
+
+COPY ./bin/frontend /go/bin/frontend

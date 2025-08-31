@@ -98,12 +98,19 @@ I should have done this earlier...
 
 ### Modified_Istio_Proxy
 - 10.1: version fits `envoy_trace_full` ✅
-- 11.5: Record absolute time of filters, which can be used on gRPC application ✅
+- 11.5(deprecated): Record absolute time of filters, which can be used on gRPC application
 - 11.6(deprecated): Use `x-request-id` instead of uber id to trace filter. But unfortunately gRPC will not forward the `x-request-id` automatically.
 - 11.7(deprecated): Add hookpoint before router decoding headers. Because the filters chain might end after upstream is connected, which will be influenced by network
 - 11.8: The working version of 11.7
 
 - 12.0: add `linux-tools-6.8.0-71-generic` to support perf ✅
+
+- 13.0(deprecated): change the hook position to make it more percise
+- 13.1: use uber id instead of x-request-id ✅
+- 13.2(deprecated): use `x-request-id` on `hookpointFiltersStart`, but fail to catch the first request
+- 13.3 & 13.4(deprecated): put `x-request-id` on `hookpointFiltersEnd`, segment fault
+- 13.5: gRPC version of bookinfo, only have filters ✅
+- 13.6: working version of bookinfo, trace the full chain ✅
 
 ### Cilium Envoy Modified
 - 2.0(deprecated): upgrade cilium to 1.8.0 and envoy to 1.34.4. However, this version will add much overhead to network.

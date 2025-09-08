@@ -7,7 +7,7 @@ from collections import defaultdict
 from scipy.stats import gaussian_kde
 
 result_file = "heatmap_results.txt"
-target_entry_size = [5, 7]
+target_entry_size = [11]
 
 def get_entry(line):
     parts = line.strip().split(", ")
@@ -19,11 +19,11 @@ def get_entry(line):
         return None, None
 
     start = int(data["Time Start"])
-    http_parsed = int(data["Time HTTP Parsed"])
-    filter_end = int(data["Time Filters End"])
-    upstream_time_start = int(data["Upstream Time Start"])
-    upstream_http_parsed = int(data["Upstream Time HTTP Parsed"])
-    upstream = int(data["Upstream Time Recorded"])
+    # http_parsed = int(data["Time HTTP Parsed"])
+    filter_end = int(data["Time Request Filter End"])
+    upstream_time_start = int(data["Time Upstream Recorded"])
+    # upstream_http_parsed = int(data["Upstream Time HTTP Parsed"])
+    # upstream = int(data["Upstream Time Recorded"])
     end = int(data["Time End"])
 
     # entry = {

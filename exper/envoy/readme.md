@@ -115,7 +115,11 @@ I should have done this earlier...
 ### Cilium Envoy Modified
 - 2.0(deprecated): upgrade cilium to 1.8.0 and envoy to 1.34.4. However, this version will add much overhead to network.
 - 2.1: use release version to attach uprobe. no symbol. **Only for test**
-- 2.2: use no-modified version, optimize with symbol
+- 2.2: use no-modified version, optimize with symbol **Only for test**
+- 2.3(deprecated): the hookpoint is not the newest version
+- 2.4: update the cilium hookpoint to the newest version -> grpc ✅
+- 2.5: working version on 2.4 -> http1 ✅
+
 
 ### Istio_Perf
 - 1.0: http parsing. Insert fifo write to open perf. From Dispath() -> onHeadersComplete() (not so useful in fine-grain control)

@@ -1,7 +1,7 @@
 # install helm
-# curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-# chmod 700 get_helm.sh
-# ./get_helm.sh
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
 
 # sudo apt-get install -y lvm2
 sudo modprobe dm-snapshot
@@ -52,7 +52,7 @@ cd train-ticket/
 kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 # after nacos-mysql pod launched
-for pod in $(kubectl get pods -n train-ticket --no-headers -o custom-columns=":metadata.name" | grep tsdb-mysql); do
-  kubectl exec -n train-ticket $pod -- mysql -uroot -e "CREATE USER IF NOT EXISTS 'root'@'::1' IDENTIFIED WITH mysql_native_password BY '' ; GRANT ALL ON *.* TO 'root'@'::1' WITH GRANT OPTION ;"
-  kubectl exec -n train-ticket $pod -c xenon -- /sbin/reboot
-done
+# for pod in $(kubectl get pods -n train-ticket --no-headers -o custom-columns=":metadata.name" | grep tsdb-mysql); do
+#   kubectl exec -n train-ticket $pod -- mysql -uroot -e "CREATE USER IF NOT EXISTS 'root'@'::1' IDENTIFIED WITH mysql_native_password BY '' ; GRANT ALL ON *.* TO 'root'@'::1' WITH GRANT OPTION ;"
+#   kubectl exec -n train-ticket $pod -c xenon -- /sbin/reboot
+# done

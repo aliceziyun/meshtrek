@@ -51,6 +51,7 @@ def execute_script(node_number, node_ip, node_home, node_user, file):
     """
     Execute the script file on a remote node.
     """
+    file = os.path.basename(file)
     chmod_command = [
         'ssh', f'{node_user}@{node_ip}',
         'chmod', '+x', os.path.join(node_home, file)

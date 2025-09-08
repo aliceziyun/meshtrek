@@ -42,8 +42,8 @@ helm install openebs openebs/openebs \
   --set ndmOperator.enabled=false
 
 # deploy train ticket
-git clone --depth=1 https://github.com/FudanSELab/train-ticket.git 
-cd train-ticket/
+git clone --depth=1 https://github.com/FudanSELab/train-ticket.git ~/train-ticket
+cd ~/train-ticket/
 
 # after start deploying the mysql node of train ticket
 # make deploy Namespace=yournamespace

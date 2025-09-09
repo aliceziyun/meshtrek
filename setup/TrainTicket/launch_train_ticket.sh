@@ -28,6 +28,8 @@ echo "dm-snapshot" | sudo tee -a /etc/modules-load.d/dm-snapshot.conf
 # sudo systemctl start containerd
 
 # sudo mkfs.ext4 /dev/sda3
+# ---------------------------------------------------------------
+
 sudo mkdir -p /mnt/openebs
 sudo mount /dev/sda3 /mnt/openebs
 
@@ -45,14 +47,5 @@ helm install openebs openebs/openebs \
 git clone --depth=1 https://github.com/FudanSELab/train-ticket.git ~/train-ticket
 cd ~/train-ticket/
 
-# after start deploying the mysql node of train ticket
-# make deploy Namespace=yournamespace
-
 # create default StorageClass
 kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-
-# after nacos-mysql pod launched
-# for pod in $(kubectl get pods -n train-ticket --no-headers -o custom-columns=":metadata.name" | grep tsdb-mysql); do
-#   kubectl exec -n train-ticket $pod -- mysql -uroot -e "CREATE USER IF NOT EXISTS 'root'@'::1' IDENTIFIED WITH mysql_native_password BY '' ; GRANT ALL ON *.* TO 'root'@'::1' WITH GRANT OPTION ;"
-#   kubectl exec -n train-ticket $pod -c xenon -- /sbin/reboot
-# done

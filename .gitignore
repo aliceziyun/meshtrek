@@ -13,3 +13,6 @@ output.log
 /res_perf
 *.txt
 /archive
+*.bkp
+*.dtmp
+*.png

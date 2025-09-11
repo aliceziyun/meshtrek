@@ -5,7 +5,7 @@ cd $(dirname $0)
 
 PERF_EXECUTE_SCRIPT=""
 PERF_TRAVERSE_SCRIPT="perf_traverse.sh"
-NAMESPACE="test"
+NAMESPACE=$2
 
 env_install() {
     # install linux-tools for perf in cilium-envoy container
@@ -45,15 +45,15 @@ perf_cilium() {
 
 perf_istio() {
     # get all pod in test namespace
-    PODS=$(kubectl get pods -n $NAMESPACE  -o jsonpath='{.items[*].metadata.name}')
+    PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
 
     # copy script to each sidecar pod and execute it
-    # for POD in $PODS; do
-    #     echo "Processing pod: $POD"
-    #     kubectl cp $PERF_EXECUTE_SCRIPT $POD:/tmp/perf_istio.sh -n $NAMESPACE -c istio-proxy
-    #     kubectl exec -n $NAMESPACE $POD -c istio-proxy -- chmod +x /tmp/perf_istio.sh
-    #     kubectl exec -n $NAMESPACE $POD -c istio-proxy -- /tmp/perf_istio.sh
-    # done
+    for POD in $PODS; do
+        echo "Processing pod: $POD"
+        kubectl cp $PERF_EXECUTE_SCRIPT $POD:/tmp/perf_istio.sh -n $NAMESPACE -c istio-proxy
+        kubectl exec -n $NAMESPACE $POD -c istio-proxy -- chmod +x /tmp/perf_istio.sh
+        kubectl exec -n $NAMESPACE $POD -c istio-proxy -- /tmp/perf_istio.sh
+    done
 
     # when the script is done, copy all perf results back
     for POD in $PODS; do

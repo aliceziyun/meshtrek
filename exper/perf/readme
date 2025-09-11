@@ -1,0 +1,4 @@
+## How to use this perf trace in service mesh
+Run `./perf_all [mesh_type] [namespace]`
+创建一个sh脚本叫benchmark_simple在overhead目录里，运行wrk2脚本30-50秒左右
+perf结果会被traverse成perf.script到本地的perf_result文件夹下，非常之方便

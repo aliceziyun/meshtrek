@@ -2,8 +2,6 @@ local socket = require("socket")
 math.randomseed(socket.gettime()*1000)
 math.random(); math.random(); math.random()
 
-local url = "http://10.104.113.231:5001"
-
 local function get_user()
   local id = math.random(0, 500)
   local user_name = "Cornell_" .. tostring(id)
@@ -36,7 +34,7 @@ local function search_hotel()
   local lon = -122.095 + (math.random(0, 325) - 157.0)/1000.0
 
   local method = "GET"
-  local path = url .. "/new?hotels?inDate=" .. in_date_str .. 
+  local path = "/hotels?inDate=" .. in_date_str .. 
     "&outDate=" .. out_date_str .. "&lat=" .. tostring(lat) .. "&lon=" .. tostring(lon)
 
   local headers = {}
@@ -59,7 +57,7 @@ local function recommend()
   local lon = -122.095 + (math.random(0, 325) - 157.0)/1000.0
 
   local method = "GET"
-  local path = url .. "/new?recommendations?require=" .. req_param .. 
+  local path = "/recommendations?require=" .. req_param .. 
     "&lat=" .. tostring(lat) .. "&lon=" .. tostring(lon)
   local headers = {}
   -- headers["Content-Type"] = "application/x-www-form-urlencoded"
@@ -91,7 +89,7 @@ local function reserve()
   local num_room = "1"
 
   local method = "POST"
-  local path = url .. "/new?reservation?inDate=" .. in_date_str .. 
+  local path = "/reservation?inDate=" .. in_date_str .. 
     "&outDate=" .. out_date_str .. "&lat=" .. tostring(lat) .. "&lon=" .. tostring(lon) ..
     "&hotelId=" .. hotel_id .. "&customerName=" .. cust_name .. "&username=" .. user_id ..
     "&password=" .. password .. "&number=" .. num_room
@@ -103,7 +101,7 @@ end
 local function user_login()
   local user_name, password = get_user()
   local method = "POST"
-  local path = url .. "/new?user?username=" .. user_name .. "&password=" .. password
+  local path = "/user?username=" .. user_name .. "&password=" .. password
   local headers = {}
   -- headers["Content-Type"] = "application/x-www-form-urlencoded"
   return wrk.format(method, path, headers, nil)
@@ -118,12 +116,12 @@ request = function()
 
   local coin = math.random()
   if coin < search_ratio then
-    return search_hotel(url)
+    return search_hotel()
   elseif coin < search_ratio + recommend_ratio then
-    return recommend(url)
+    return recommend()
   elseif coin < search_ratio + recommend_ratio + user_ratio then
-    return user_login(url)
+    return user_login()
   else 
-    return reserve(url)
+    return reserve()
   end
 end

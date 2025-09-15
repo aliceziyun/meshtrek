@@ -52,8 +52,10 @@ perf_istio() {
         echo "Processing pod: $POD"
         kubectl cp $PERF_EXECUTE_SCRIPT $POD:/tmp/perf_istio.sh -n $NAMESPACE -c istio-proxy
         kubectl exec -n $NAMESPACE $POD -c istio-proxy -- chmod +x /tmp/perf_istio.sh
-        kubectl exec -n $NAMESPACE $POD -c istio-proxy -- /tmp/perf_istio.sh
+        kubectl exec -n $NAMESPACE $POD -c istio-proxy -- /tmp/perf_istio.sh &
     done
+
+    wait
 
     # when the script is done, copy all perf results back
     for POD in $PODS; do

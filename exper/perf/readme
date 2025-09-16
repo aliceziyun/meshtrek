@@ -1,0 +1,8 @@
+## How to use this perf trace in service mesh
+注意，如果想用这个脚本，istio必须是perf版本
+`docker.io/alicesong2002/istio_perf:v1.1`
+cilium可以手动安装一些包所以没问题
+
+Run `./perf_all [mesh_type] [namespace]`
+创建一个sh脚本叫benchmark_simple在overhead目录里，运行wrk2脚本30-50秒左右
+perf结果会被traverse成perf.script到本地的perf_result文件夹下，非常之方便

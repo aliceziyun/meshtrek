@@ -1,134 +1,24 @@
 #!/usr/bin/python3
 
-# no read and write
-# 1st stage: http parsing - from dispatch() to on HeaderComplete()
-# 2nd stage: filters(request) from onHeaderComplete() to dispatch()
-# 3rd stage: http parsing - from dispatch() to on HeaderComplete()
-# 4th stage: filters(response) from Upstream::decodeHeaders() to doDeferredStreamDestroy()
-
 from bcc import BPF
 import ctypes
 import subprocess
 
-program = r"""
-#include <uapi/linux/ptrace.h>
-struct connection_info_t {
-    char x_request_id[40];
-    u32 connection_id;
-    u32 upstream_id;
-    u64 time_start;
-    u64 time_http_parsed;
-    u64 time_request_filters_end;
-    u64 time_upstream_recorded;
-    u64 time_end;
+import argparse
+import json
+import queue, threading
 
-    u64 upstream_time_start;
-    u64 upstream_time_http_parsed;
-};
+from http1_uprobe import HTTP1Uprobe
+from http2_uprobe import HTTP2Uprobe
 
-BPF_HASH(connection_id_map, u32, struct connection_info_t);
-BPF_PERF_OUTPUT(trace_events);
+global log_queue
 
-int http_parse_start(struct pt_regs *ctx) {
-    u32 connection_id = PT_REGS_PARM2(ctx);
-    u64 ts = bpf_ktime_get_tai_ns();
-
-    struct connection_info_t info = {};
-    info.connection_id = connection_id;
-    info.time_start = ts;
-
-    connection_id_map.update(&connection_id, &info);
-
-    return 0;
-}
-
-int http_parse_end(struct pt_regs *ctx) {
-    u32 connection_id = PT_REGS_PARM2(ctx);
-    u64 ts = bpf_ktime_get_tai_ns();
-    
-    struct connection_info_t *info = connection_id_map.lookup(&connection_id);
-    if (info) {
-        info->time_http_parsed = ts;
-    }
-
-    return 0;
-}
-
-int filters_end(struct pt_regs *ctx) {
-    u32 connection_id = PT_REGS_PARM4(ctx);
-    struct connection_info_t *info = connection_id_map.lookup(&connection_id);
-    if (info) {
-        const char* str = (const char *)PT_REGS_PARM2(ctx);
-
-        u64 size = 36; // we know its 36 bytes
-        bpf_probe_read_str(info->x_request_id, sizeof(info->x_request_id), str);
-        info->x_request_id[size] = '\0';
-        info->time_request_filters_end = bpf_ktime_get_tai_ns();
-
-        return 0;
-    } else {
-        // bpf_trace_printk("Connection ID not found in map: %d\\n", PT_REGS_PARM4(ctx));
-        return 0;
-    }
-}
-
-int upstream(struct pt_regs *ctx) {
-    u32 connection_id = PT_REGS_PARM3(ctx);
-    u32 upstream_id = PT_REGS_PARM2(ctx);
-
-    struct connection_info_t *upstream_info = connection_id_map.lookup(&upstream_id);
-    if(upstream_info) {
-        struct connection_info_t *info = connection_id_map.lookup(&connection_id);
-        if(info) {
-            info->time_upstream_recorded = bpf_ktime_get_tai_ns();
-            info->upstream_id = upstream_id;
-
-            info->upstream_time_start = upstream_info->time_start;
-            info->upstream_time_http_parsed = upstream_info->time_http_parsed;
-        }
-
-        // remove upstream connection info from the map
-        connection_id_map.delete(&upstream_id);
-    }
-
-    return 0;
-}
-
-int request_end(struct pt_regs *ctx) {
-    u32 connection_id = PT_REGS_PARM2(ctx);
-    u64 ts = bpf_ktime_get_tai_ns();
-
-    struct connection_info_t *info = connection_id_map.lookup(&connection_id);
-    if (info) {
-        info->time_end = ts;
-        trace_events.perf_submit(ctx, info, sizeof(*info));
-        // remove the connection info from the map
-        connection_id_map.delete(&connection_id);
-    } else {
-        // bpf_trace_printk("Connection ID not found in map: %d\\n", connection_id);
-    }
-    
-    return 0;
-}
-"""
-
-hook_symbol_list = [
-    "_ZN5Envoy4Http5Http114ConnectionImpl17hookpointDispatchEi",
-    "_ZN5Envoy4Http5Http114ConnectionImpl26hookpointOnHeadersCompleteEi",
-    "_ZN5Envoy6Router15UpstreamRequest17hookpointUpstreamEiim",
-    "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream19hookpointFiltersEndENSt3__117basic_string_viewIcNS3_11char_traitsIcEEEEim",
-    "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30hookpointOnCodecEncodeCompleteEim",
-]
-
-hook_function_list = ["http_parse_start", "http_parse_end", "upstream", "filters_end", "request_end"]
-
-b = BPF(text=program)
-binary_path = "/usr/local/bin/envoy"
-# binary_path = "/usr/bin/cilium-envoy"
-
-def find_envoy_pid():
-    cmd = "ps aux | grep '/usr/local/bin/envoy' | grep -v grep"
-    # cmd = "ps aux | grep '/usr/bin/cilium-envoy -c /var/run/cilium/envoy/bootstrap-config.json --base-id 0' | grep -v grep"
+def find_envoy_pid(type):
+    cmd = ...
+    if type == "cilium":
+        cmd = "ps aux | grep '/usr/bin/cilium-envoy -c /var/run/cilium/envoy/bootstrap-config.json --base-id 0' | grep -v grep"
+    elif type == "istio":
+        cmd = "ps aux | grep '/usr/local/bin/envoy' | grep -v grep"
     result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, text=True)
 
     for line in result.stdout.strip().split('\n'):
@@ -140,52 +30,83 @@ def find_envoy_pid():
     
     raise RuntimeError("Envoy process not found")
 
-target_pid = find_envoy_pid()
-for i, symbol in enumerate(hook_symbol_list):
-    b.attach_uprobe(sym=symbol, fn_name=hook_function_list[i], name=binary_path, pid=target_pid)
-
-# -------------- extra data structure --------------
-output_file = "/tmp/trace_output.log"
-import queue, threading
-
-log_queue = queue.Queue()
-def log_worker():
-    with open(output_file, "a") as f:
-        while True:
-            try:
-                line = log_queue.get(timeout=1)
-                f.write(line)
-                f.flush()
-            except queue.Empty:
-                continue
-
-# Start the log worker thread
-threading.Thread(target=log_worker, daemon=True).start()
-
 def callback(cpu, data, size):
     class ConnInfo(ctypes.Structure):
         _fields_ = [
-            ("x_request_id", ctypes.c_char * 40),
-            ("connection_id", ctypes.c_uint),
-            ("upstream_id", ctypes.c_uint),
+            ("x_request_id", ctypes.c_char * 17),
+            ("tmp_stream_id", ctypes.c_uint),
+            ("upstream_id", ctypes.c_ulonglong),
             ("time_start", ctypes.c_ulonglong),
-            ("time_http_parsed", ctypes.c_ulonglong),
-            ("time_request_filters_end", ctypes.c_ulonglong),
-            ("time_upstream_recorded", ctypes.c_ulonglong),
+            ("time_request_filter_start", ctypes.c_ulonglong),
+            ("time_process_start", ctypes.c_ulonglong),
+            ("time_response_filter_start", ctypes.c_ulonglong),
             ("time_end", ctypes.c_ulonglong),
-            ("time_upstream_start", ctypes.c_ulonglong),
-            ("time_upstream_http_parsed", ctypes.c_ulonglong),
+            ("response_parse_start", ctypes.c_ulonglong),
+            ("response_parse_end", ctypes.c_ulonglong),
         ]
     event = ctypes.cast(data, ctypes.POINTER(ConnInfo)).contents
     x_request_id_str = event.x_request_id.split(b'\x00', 1)[0].decode(errors="replace")
-    log_queue.put(f"Connection ID: {event.connection_id}, X-Request-ID: {x_request_id_str}, Time Start: {event.time_start}, Time HTTP Parsed: {event.time_http_parsed}, Time Filters End: {event.time_request_filters_end}, Upstream Time Start: {event.time_upstream_start}, Upstream Time HTTP Parsed: {event.time_upstream_http_parsed}, Upstream Time Recorded: {event.time_upstream_recorded}, Time End: {event.time_end}\n")
+    log_data = {
+        "Connection ID": event.connection_id,
+        "X-Request-ID": x_request_id_str,
+        "Time Start": event.time_start,
+        "Time Request Filter Start": event.time_request_filter_start,
+        "Time Process Start": event.time_process_start,
+        "Time Response Filter Start": event.time_response_filter_start,
+        "Response Parse Start": event.response_parse_start,
+        "Response Parse End": event.response_parse_end,
+    }
+    log_queue.put(json.dump(log_data))
 
-# ----------- register callbacks ------------------
-b["trace_events"].open_perf_buffer(callback, page_cnt=256)
+def start_trace(type, http_version):
+    binary_path = ...
+    uprobe = ...
 
-print("Tracing... Ctrl+C to stop.")
-try:
-    while True:
-        b.perf_buffer_poll(timeout=5)
-except KeyboardInterrupt:
-    pass
+    if http_version == 1:
+        uprobe = HTTP1Uprobe()
+    elif http_version == 2:
+        uprobe = HTTP2Uprobe()
+    b = BPF(text=uprobe.program)
+
+    # start working thread to collect logs
+    output_file = "/tmp/trace_output.log"
+    log_queue = queue.Queue()
+    def log_worker():
+        with open(output_file, "a") as f:
+            while True:
+                try:
+                    line = log_queue.get(timeout=1)
+                    f.write(line)
+                    f.flush()
+                except queue.Empty:
+                    continue
+    threading.Thread(target=log_worker, daemon=True).start()
+
+    # attach uprobes
+    if type == "cilium":
+        binary_path = "/usr/bin/cilium-envoy"
+    elif type == "istio":
+        binary_path = "/usr/local/bin/envoy"
+    else:
+        print("Unknown type")
+        return
+    
+    target_pid = find_envoy_pid(type)
+    for i, symbol in enumerate(uprobe.hook_symbol_list):
+        b.attach_uprobe(sym=symbol, fn_name=uprobe.hook_function_list[i], name=binary_path, pid=target_pid)
+
+    # register call backs
+    b["trace_events"].open_perf_buffer(callback, page_cnt=256)
+
+    print("Tracing... Ctrl+C to stop.")
+    try:
+        while True:
+            b.perf_buffer_poll(timeout=5)
+    except KeyboardInterrupt:
+        pass
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Envoy HTTP/2 Tracing")
+    parser.add_argument("-t", "--type", type=str, choices=["cilium", "istio"], required=True)
+    parser.add_argument("-http", choices=[1,2], required=True, help="HTTP version to trace")
+    start_trace(parser.t, parser.http)

@@ -1,4 +1,4 @@
-class HttpUprobe:
+class Http1Uprobe:
     program = r"""
     #include <uapi/linux/ptrace.h>
     struct connection_info_t {

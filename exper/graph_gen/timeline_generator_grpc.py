@@ -120,7 +120,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     the_table.scale(1, 1.5)
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig(f"timeline_{target_x_request_id}.png", dpi=300)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate timeline for Request under service mesh.")

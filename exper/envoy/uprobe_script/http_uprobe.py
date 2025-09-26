@@ -14,7 +14,7 @@ class HttpUprobe:
     };
 
     BPF_HASH(request_map, u64, struct request_info_t);
-    BPF_HASH(unique_stream_id_map, u32, u64);  // used for http2 to find upstream
+    BPF_HASH(unique_stream_id_map, u64, u64);  // used for http2 to find upstream
     BPF_PERF_OUTPUT(trace_events);
 
     // ConnectionImpl::dispatch <connection_id>
@@ -87,7 +87,7 @@ class HttpUprobe:
     int record_unique_stream_id(struct pt_regs *ctx) {
         u32 connection_id = PT_REGS_PARM2(ctx);
         u32 plain_stream_id = PT_REGS_PARM3(ctx);
-        u32 unique_stream_id = PT_REGS_PARM4(ctx);
+        u64 unique_stream_id = PT_REGS_PARM4(ctx);
 
         u64 key = ((u64)plain_stream_id << 32) | ((u64)connection_id);
         unique_stream_id_map.update(&unique_stream_id, &key);
@@ -119,7 +119,7 @@ class HttpUprobe:
     // UpstreamRequest::decodeHeaders <stream_id, unique_stream_id>
     int http2_response_filter_start(struct pt_regs *ctx) {
         u64 stream_id = (u64) PT_REGS_PARM2(ctx);
-        u32 unique_stream_id = (u32) PT_REGS_PARM3(ctx);
+        u64 unique_stream_id = (u32) PT_REGS_PARM3(ctx);
         u64 ts = bpf_ktime_get_tai_ns();
 
         u64* key = unique_stream_id_map.lookup(&unique_stream_id);

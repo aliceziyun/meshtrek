@@ -3,7 +3,6 @@
 cd "$(dirname "$0")"
 
 PODS=
-TRACE_SCRIPT="./uprobe_script/envoy_filter.py" # fill the script you want to run here!
 
 MESH_TYPE=$1
 NAMESPACE=$2
@@ -21,9 +20,11 @@ fi
 
 for pod in $PODS; do
   if [ "$MESH_TYPE" == "cilium" ]; then
-      kubectl cp "$TRACE_SCRIPT" "$NAMESPACE/$pod:/tmp/envoy_http_trace.py"
+      kubectl cp ./uprobe_script/envoy_trace.py "$NAMESPACE/$pod:/tmp/envoy_trace.py"
+      kubectl cp ./uprobe_script/http_uprobe.py "$NAMESPACE/$pod:/tmp/http_uprobe.py"
   else
-      kubectl cp "$TRACE_SCRIPT" "$NAMESPACE/$pod:/tmp/envoy_http_trace.py" -c istio-proxy
+      kubectl cp ./uprobe_script/envoy_trace.py "$NAMESPACE/$pod:/tmp/envoy_trace.py" -c istio-proxy
+      kubectl cp ./uprobe_script/http_uprobe.py "$NAMESPACE/$pod:/tmp/http_uprobe.py" -c istio-proxy
   fi
 done
 
@@ -33,9 +34,9 @@ wait
 for pod in $PODS; do
   echo "Running trace on pod: $pod"
   if [ "$MESH_TYPE" == "cilium" ]; then
-      kubectl exec -i -n "$NAMESPACE" "$pod" -- python3 /tmp/envoy_http_trace.py &
+      kubectl exec -i -n "$NAMESPACE" "$pod" -- python3 /tmp/envoy_trace.py -t cilium &
   else
-      kubectl exec -i -n "$NAMESPACE" "$pod" -c istio-proxy -- sudo python3 /tmp/envoy_http_trace.py &
+      kubectl exec -i -n "$NAMESPACE" "$pod" -c istio-proxy -- sudo python3 /tmp/envoy_trace.py -t istio&
   fi
 done
 

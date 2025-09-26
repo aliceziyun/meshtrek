@@ -10,7 +10,7 @@ import queue, threading
 
 from http_uprobe import HttpUprobe
 
-global log_queue
+log_queue = queue.Queue()
 
 def find_envoy_pid(type):
     cmd = ...
@@ -51,24 +51,23 @@ def callback(cpu, data, size):
         "Time End": event.time_end,
         "Response Parse Start": event.response_parse_start,
     }
-    log_queue.put(json.dump(log_data))
+    log_queue.put(json.dumps(log_data))
 
 def start_trace(type):
     binary_path = ...
-    uprobe = ...
 
     uprobe = HttpUprobe()
     b = BPF(text=uprobe.program)
 
     # start working thread to collect logs
     output_file = "/tmp/trace_output.log"
-    log_queue = queue.Queue()
     def log_worker():
         with open(output_file, "a") as f:
             while True:
                 try:
                     line = log_queue.get(timeout=1)
                     f.write(line)
+                    f.write("\n")
                     f.flush()
                 except queue.Empty:
                     continue

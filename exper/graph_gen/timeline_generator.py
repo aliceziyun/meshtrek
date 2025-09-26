@@ -8,7 +8,7 @@ import argparse
 import os
 import re
 
-base_colors = ["#4caf50", "#2196f3", "#ff9800", "#f44336", "#9c27b0", "#00bcd4"]
+base_colors = ["#4caf50", "#2196f3", "#ff9800", "#f44336", "#00bcd4"]
 
 def get_events_with_x_request_id(target_x_request_id, data_dir):
     process_timelines = defaultdict(list)
@@ -25,31 +25,27 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
                             parts = lines.strip().split(", ")
                             data = {p.split(": ")[0]: p.split(": ")[1] for p in parts}
 
-                            conn_id = int(data["Connection ID"])
                             pid = i
-                            start = int(data["Time Start"])
-                            http_parsed = int(data["Time HTTP Parsed"])
-                            filter_end = int(data["Time Filters End"])
-                            upstream_time_start = int(data["Upstream Time Start"])
-                            upstream_http_parsed = int(data["Upstream Time HTTP Parsed"])
-                            upstream = int(data["Upstream Time Recorded"])
+                            http_start = int(data["Time HTTP Start"])
+                            request_filter_start = int(data["Time Request Filter Start"])
+                            filter_end = int(data["Time Process Start"])
+                            upstream_http_start = int(data["Response Parse Start"])
+                            response_filter_start = int(data["Time Response Filter Start"])
                             end = int(data["Time End"])
 
                             process_timelines[pid].append({
                                 "service_name" : service_name, 
-                                "conn_id": conn_id,
-                                "start": start,
-                                "http_parsed": http_parsed,
-                                "filters_end": filter_end,
-                                "upstream_start": upstream_time_start,
-                                "upstream_http_parsed": upstream_http_parsed,
-                                "upstream": upstream,
+                                "http_start": http_start,
+                                "request_filter_start": request_filter_start,
+                                "process_start": filter_end,
+                                "upstream_http_start": upstream_http_start,
+                                "response_filter_start": response_filter_start,
                                 "end": end
                             })
     
     # sort events by start time
     for pid, events in process_timelines.items():
-        events.sort(key=lambda x: x["start"])
+        events.sort(key=lambda x: x["http_start"])
     
     all_events = []
     for pid, events in process_timelines.items():
@@ -58,16 +54,15 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
                 "pid": pid,
                 "service_name": evt["service_name"],
                 "conn_id": evt["conn_id"],
-                "start": evt["start"],
-                "http_parsed": evt["http_parsed"],
-                "filters_end": evt["filters_end"],
-                "upstream_start": evt["upstream_start"],
-                "upstream_http_parsed": evt["upstream_http_parsed"],
-                "upstream": evt["upstream"],
+                "http_start": evt["http_start"],
+                "request_filter_start": evt["request_filter_start"],
+                "process_start": evt["process_start"],
+                "upstream_http_start": evt["upstream_http_start"],
+                "response_filter_start": evt["response_filter_start"],
                 "end": evt["end"]
             })
 
-    all_events.sort(key=lambda x: x["start"])
+    all_events.sort(key=lambda x: x["http_start"])
     all_events.reverse()
 
     return all_events, process_timelines
@@ -79,7 +74,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
 
     t_start = all_events[-1]["start"] if all_events else 0
     for i, evt in enumerate(all_events):
-        t = [evt["start"], evt["http_parsed"], evt["filters_end"], evt["upstream_start"], evt["upstream_http_parsed"], evt["upstream"], evt["end"]]
+        t = [evt["http_start"], evt["request_filter_start"], evt["process_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
         pid = evt['pid']
 
         y = i
@@ -98,7 +93,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     ax_table = plt.subplot(gs[1])
     ax_table.axis("off")
 
-    table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Process Time", "Upstream Http Parsing", "Other Operations", "Response Filters", "Overhead Ratio"]
+    table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Process Time", "Upstream Http Parsing", "Response Filters", "Overhead Ratio"]
     table_data = []
 
     legend_labels = table_header[1:]
@@ -108,7 +103,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
 
     for pid, events in process_timelines.items():
         for evt in events:
-            t = [evt["start"], evt["http_parsed"], evt["filters_end"], evt["upstream_start"], evt["upstream_http_parsed"], evt["upstream"], evt["end"]]
+            t = [evt["start"], evt["request_filter_start"], evt["request_filter_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
             time_intervals = [(t[i+1] - t[i]) / 1e6 for i in range(len(t) - 1)]
             other_time = time_intervals[0] + time_intervals[1] + time_intervals[3] + time_intervals[4] + time_intervals[5]
             overhead_ratio =  other_time / time_intervals[2] if time_intervals[2] > 0 else 0
@@ -119,7 +114,6 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
                 f"{time_intervals[2]:.2f} ms",
                 f"{time_intervals[3]:.2f} ms",
                 f"{time_intervals[4]:.2f} ms",
-                f"{time_intervals[5]:.2f} ms",
                 f"{overhead_ratio:.2%}"
             ])
 
@@ -142,7 +136,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # target_x_request_id = args.x_request_id
-    target_x_request_id = "f332df13-f481-4c47-9144-474c8a51c92e"
+    target_x_request_id = "c0b41a26-e63c-9313-9826-a8a8837b03a5"
     data_dir = args.data_dir
     
     all_events, time_lines = get_events_with_x_request_id(target_x_request_id, data_dir)
@@ -152,4 +146,4 @@ if __name__ == "__main__":
     pid_to_idx = {pid: i for i, pid in enumerate(pid_list)}
     max_idx = len(pid_list) - 1 if pid_list else 1
 
-    generate_timeline_graph(all_events, time_lines, target_x_request_id)
+    generate_timeline_graph(all_events, time_lines, target_x_request_id) 

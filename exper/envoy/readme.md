@@ -112,8 +112,7 @@ I should have done this earlier...
 - 13.5: gRPC version of bookinfo, only have filters ✅
 - 13.6: working version of bookinfo, trace the full chain ✅
 
-- 14.0 & 14.1(deprecated): connect stream id in http2, but can't associate plain stream id with envoy assigned stream id.
-- 14.2: working version of associating plain stream id with envoy assigned id.
+- 14.x(deprecated): trying to add parsing time recorded of http2
 
 ### Cilium Envoy Modified
 - 2.0(deprecated): upgrade cilium to 1.8.0 and envoy to 1.34.4. However, this version will add much overhead to network.

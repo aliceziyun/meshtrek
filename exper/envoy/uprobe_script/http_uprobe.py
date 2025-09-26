@@ -156,9 +156,21 @@ class HttpUprobe:
     }
     """
 
-    hook_symbol_list = []
+    hook_symbol_list = [
+        "_ZN5Envoy4Http5Http114ConnectionImpl17hookpointDispatchEi",
+        "_ZN5Envoy4Http5Http214ConnectionImpl12Http2Visitor32hookpointOnBeginHeadersForStreamEjj",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream21hookpointFiltersStartEiim",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream19hookpointFiltersEndENSt3__117basic_string_viewIcNS3_11char_traitsIcEEEEm",
+        "_ZN5Envoy4Http5Http214ConnectionImpl16ClientStreamImpl29hookpointRecordUniqueStreamIdEjji",
+        "_ZN5Envoy6Router15UpstreamRequest22hookpointUpstreamHttp1Emj",
+        "_ZN5Envoy6Router15UpstreamRequest22hookpointUpstreamHttp2Emi",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30hookpointOnCodecEncodeCompleteEm"
+    ]
 
-    hook_function_list = []
+    hook_function_list = [
+        "http1_parse_start", "http2_parse_start", "request_filter_start", "process_start",
+        "record_unique_stream_id", "http1_response_filter_start", "http2_response_filter_start", "request_end"
+    ]
 
     def __init__(self):
         pass

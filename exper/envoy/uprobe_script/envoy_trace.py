@@ -8,8 +8,7 @@ import argparse
 import json
 import queue, threading
 
-from http1_uprobe import HTTP1Uprobe
-from http2_uprobe import HTTP2Uprobe
+from http_uprobe import HttpUprobe
 
 global log_queue
 
@@ -58,14 +57,11 @@ def callback(cpu, data, size):
     }
     log_queue.put(json.dump(log_data))
 
-def start_trace(type, http_version):
+def start_trace(type):
     binary_path = ...
     uprobe = ...
 
-    if http_version == 1:
-        uprobe = HTTP1Uprobe()
-    elif http_version == 2:
-        uprobe = HTTP2Uprobe()
+    uprobe = HttpUprobe()
     b = BPF(text=uprobe.program)
 
     # start working thread to collect logs
@@ -108,5 +104,4 @@ def start_trace(type, http_version):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Envoy HTTP/2 Tracing")
     parser.add_argument("-t", "--type", type=str, choices=["cilium", "istio"], required=True)
-    parser.add_argument("-http", choices=[1,2], required=True, help="HTTP version to trace")
     start_trace(parser.t, parser.http)

@@ -32,28 +32,24 @@ def find_envoy_pid(type):
 def callback(cpu, data, size):
     class ConnInfo(ctypes.Structure):
         _fields_ = [
-            ("x_request_id", ctypes.c_char * 17),
-            ("tmp_stream_id", ctypes.c_uint),
-            ("upstream_id", ctypes.c_ulonglong),
-            ("time_start", ctypes.c_ulonglong),
+            ("x_request_id", ctypes.c_char * 37),
+            ("time_http_start", ctypes.c_ulonglong),
             ("time_request_filter_start", ctypes.c_ulonglong),
             ("time_process_start", ctypes.c_ulonglong),
             ("time_response_filter_start", ctypes.c_ulonglong),
             ("time_end", ctypes.c_ulonglong),
             ("response_parse_start", ctypes.c_ulonglong),
-            ("response_parse_end", ctypes.c_ulonglong),
         ]
     event = ctypes.cast(data, ctypes.POINTER(ConnInfo)).contents
     x_request_id_str = event.x_request_id.split(b'\x00', 1)[0].decode(errors="replace")
     log_data = {
-        "Connection ID": event.connection_id,
         "X-Request-ID": x_request_id_str,
-        "Time Start": event.time_start,
+        "Time HTTP Start": event.time_http_start,
         "Time Request Filter Start": event.time_request_filter_start,
         "Time Process Start": event.time_process_start,
         "Time Response Filter Start": event.time_response_filter_start,
+        "Time End": event.time_end,
         "Response Parse Start": event.response_parse_start,
-        "Response Parse End": event.response_parse_end,
     }
     log_queue.put(json.dump(log_data))
 
@@ -104,4 +100,5 @@ def start_trace(type):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Envoy HTTP/2 Tracing")
     parser.add_argument("-t", "--type", type=str, choices=["cilium", "istio"], required=True)
-    start_trace(parser.t, parser.http)
+    args = parser.parse_args()
+    start_trace(args.type)

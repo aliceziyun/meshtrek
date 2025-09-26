@@ -65,10 +65,10 @@ class HttpUprobe:
         return 0;
     }
 
-    // Http::ConnectionManagerImpl::ActiveStream::decodeHeaders <stream_id, x_request_id>
+    // Http::ConnectionManagerImpl::ActiveStream::decodeHeaders <x_request_id, stream_id>
     int process_start(struct pt_regs *ctx) {
-        u64 stream_id = PT_REGS_PARM2(ctx);
-        const char* str = (const char *)PT_REGS_PARM3(ctx);
+        u64 stream_id = PT_REGS_PARM4(ctx);
+        const char* str = (const char *)PT_REGS_PARM2(ctx);
         u64 ts = bpf_ktime_get_tai_ns();
         struct request_info_t *info = request_map.lookup(&stream_id);
         if (info) {
@@ -83,7 +83,7 @@ class HttpUprobe:
         return 0;
     }
 
-    // Somewhere <conenction_id, plain_stream_id, unique_stream_id>
+    // ConnectionImpl::ClientStreamImpl::decodeHeaders() <conenction_id, plain_stream_id, unique_stream_id>
     int record_unique_stream_id(struct pt_regs *ctx) {
         u32 connection_id = PT_REGS_PARM2(ctx);
         u32 plain_stream_id = PT_REGS_PARM3(ctx);
@@ -96,9 +96,9 @@ class HttpUprobe:
 
     // UpstreamRequest::decodeHeaders <stream_id, upstream_connection_id>
     int http1_response_filter_start(struct pt_regs *ctx) {
-        u32 upstream_connection_id = PT_REGS_PARM2(ctx);
+        u32 upstream_connection_id = PT_REGS_PARM3(ctx);
         u64 key = (u64) upstream_connection_id;
-        u64 stream_id = (u64) PT_REGS_PARM3(ctx);
+        u64 stream_id = (u64) PT_REGS_PARM2(ctx);
         u64 ts = bpf_ktime_get_tai_ns();
 
         struct request_info_t *upstream_info = request_map.lookup(&key);

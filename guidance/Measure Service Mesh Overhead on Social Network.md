@@ -8,12 +8,13 @@ Before the experiment, make sure every operation is ran under directory `./mesht
 
    ```shell
    kubectl create namespace social
+   kubectl label namespace social istio-injection=enabled
    ```
 
 2. Deploy social network application
 
    ```shell
-   helm install ./setup/socialNetwork --namespace social
+   helm install ./setup/SocialNetwork --namespace social
    ```
 
    *ps: helm is a tool to automatically deploy pods in Kubernetes cluster, this tool is already installed in the machine*

@@ -23,7 +23,14 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
                     for lines in f:
                         if target_x_request_id in lines:
                             parts = lines.strip().split(", ")
-                            data = {p.split(": ")[0]: p.split(": ")[1] for p in parts}
+                            data = {}
+                            for p in parts:
+                                key, val = p.split(": ", 1)
+                                key = key.strip('"{}')
+                                val = val.strip('"{}')
+                                data[key] = val
+
+                            print(data)
 
                             pid = i
                             http_start = int(data["Time HTTP Start"])
@@ -53,7 +60,6 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
             all_events.append({
                 "pid": pid,
                 "service_name": evt["service_name"],
-                "conn_id": evt["conn_id"],
                 "http_start": evt["http_start"],
                 "request_filter_start": evt["request_filter_start"],
                 "process_start": evt["process_start"],
@@ -72,7 +78,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
     ax = plt.subplot(gs[0])
 
-    t_start = all_events[-1]["start"] if all_events else 0
+    t_start = all_events[-1]["http_start"] if all_events else 0
     for i, evt in enumerate(all_events):
         t = [evt["http_start"], evt["request_filter_start"], evt["process_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
         pid = evt['pid']
@@ -93,7 +99,8 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     ax_table = plt.subplot(gs[1])
     ax_table.axis("off")
 
-    table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Process Time", "Upstream Http Parsing", "Response Filters", "Overhead Ratio"]
+    # table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Process Time", "Upstream Http Parsing", "Response Filters", "Overhead Ratio"]
+    table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Process Time", "Upstream Http Parsing", "Response Filters"]
     table_data = []
 
     legend_labels = table_header[1:]
@@ -103,10 +110,10 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
 
     for pid, events in process_timelines.items():
         for evt in events:
-            t = [evt["start"], evt["request_filter_start"], evt["request_filter_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
+            t = [evt["http_start"], evt["request_filter_start"], evt["process_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
             time_intervals = [(t[i+1] - t[i]) / 1e6 for i in range(len(t) - 1)]
-            other_time = time_intervals[0] + time_intervals[1] + time_intervals[3] + time_intervals[4] + time_intervals[5]
-            overhead_ratio =  other_time / time_intervals[2] if time_intervals[2] > 0 else 0
+            # other_time = time_intervals[0] + time_intervals[1] + time_intervals[3] + time_intervals[4] + time_intervals[5]
+            # overhead_ratio =  other_time / time_intervals[2] if time_intervals[2] > 0 else 0
             table_data.append([
                 str(evt['service_name']),
                 f"{time_intervals[0]:.2f} ms",
@@ -114,7 +121,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
                 f"{time_intervals[2]:.2f} ms",
                 f"{time_intervals[3]:.2f} ms",
                 f"{time_intervals[4]:.2f} ms",
-                f"{overhead_ratio:.2%}"
+                # f"{overhead_ratio:.2%}"
             ])
 
     the_table = ax_table.table(cellText=table_data,
@@ -136,7 +143,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # target_x_request_id = args.x_request_id
-    target_x_request_id = "c0b41a26-e63c-9313-9826-a8a8837b03a5"
+    target_x_request_id = "4e9789fb2a633ab3"
     data_dir = args.data_dir
     
     all_events, time_lines = get_events_with_x_request_id(target_x_request_id, data_dir)

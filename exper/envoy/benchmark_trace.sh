@@ -6,6 +6,7 @@ NAMESPACE=
 MESH_TYPE=$1
 MICRO_SERVICE=$2
 RPS=$3
+DURATION=$4
 
 trace_bookinfo() {
     NAMESPACE="bookinfo"
@@ -16,7 +17,7 @@ trace_bookinfo() {
     echo "Request URL: $request_url"
     echo "Running RPS=$RPS..."
 
-    ~/DeathStarBench/wrk2/wrk -t 10 -c 10 -d 30 -L "http://$request_url" -R $RPS
+    ~/wrk2/wrk -t 10 -c 10 -d "$DURATION" -L "http://$request_url" -R $RPS
 
     wait
 
@@ -49,7 +50,7 @@ trace_hotel() {
     # cp ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua.bak
     # sed -i "s|http://localhost:5000|http://${ip}:5000|g" ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua/
 
-    ~/DeathStarBench/wrk2/wrk -D exp -t 10 -c 20 -d 30 -L -s ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua "http://$request_url" -R $RPS
+    ~/DeathStarBench/wrk2/wrk -D exp -t 10 -c 20 -d "$DURATION" -L -s ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua "http://$request_url" -R $RPS
 
     wait
 

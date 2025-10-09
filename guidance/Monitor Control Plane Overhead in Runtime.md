@@ -1,31 +1,31 @@
 ## Monitor Control Plane Overhead in Runtime
 
-本实验的目的：在后续的调整pod资源分配的实验中，我们不能忽视Kubernetes系统pod和Istio控制平面的开销。因此我们每次需要根据真实运行情况的数据，预留一部分的资源给这些系统pod。
+**Purpose of the Experiment: **In the upcoming experiments on adjusting pod resource allocation, we must not overlook the overhead of Kubernetes system pods and the Istio control plane. Therefore, for each run, we need to reserve a portion of resources for these system pods based on real runtime data.
 
 
 
-目前集群中已有的内容：
+**Current Cluster Setup**
 
-1. helm已安装
-2. 无istio注入的bookinfo application，在namespace *bookinfo*下
+1. Helm is installed.
+2. A *bookinfo* application is deployed in the *`bookinfo`* namespace, without Istio sidecar injection.
 
 
 
 ## Install Prometheus
 
-普罗米修斯是一个及时且fine-grained的检测容器cpu和memory使用量的工具。作为Kubernetes中的工具，普罗米修斯也是以pod的形式运行在集群中，并以一定的时间间隔采集当前集群中pod资源用量。
+Prometheus is a timely and fine-grained tool for monitoring container CPU and memory usage. As a tool in Kubernetes, Prometheus also runs in the cluster as a pod and collects pod resource usage at regular intervals.
 
-TODO:
+**TODO:**
 
-Install Prometheus, and use `kubectl patch...` or `kubectl port-forward...` to expose Prometheus port to outside machine, so we can access the dashboard from our local machine.
+Install Prometheus, and use `kubectl patch...` or `kubectl port-forward...` to expose the Prometheus port to the outside machine, so that we can access the dashboard from our local machine.
 
 
 
-## 监控一定负载下pod的资源用量
+## Monitoring Pod Resource Usage Under a Fixed Load
 
-使用脚本向application发起较高负载的请求，并记录该过程中各pod的峰值cpu和memory用量。
+Use a script to send high-load requests to the application and record the peak CPU and memory usage of each pod during this process.
 
-脚本使用方法：
+**Script usage**:
 
 ```shell
 cd ~meshtrek
@@ -35,13 +35,13 @@ cd ~meshtrek
 - mesh_type: istio / cilium
 - micro_service: bookinfo / hotel
 - RPS: offered request per seconds
-- Duration: how long the experiement should run, e.g 30s, 1m
+- Duration: how long the experiment should run, e.g 30s, 1m
 
 ### No Service-Mesh
 
-TODO:
+**TODO**:
 
-Run the script with: `./exper/benchmark_trace.sh none bookinfo 300 30m  `， 记录30分钟内以下pod的峰值cpu/memory用量
+Run the script with: `./exper/benchmark_trace.sh none bookinfo 300 30m  `, and try to record the peak CPU and memory usage within 30 minutes for the following pods:
 
 - All pods under `bookinfo` namespace
 - All pods under `kube-flannel` namespace
@@ -49,9 +49,11 @@ Run the script with: `./exper/benchmark_trace.sh none bookinfo 300 30m  `， 记
 
 Suggestions:
 
-- 在正式实验开始前，可以先将Duration设置成30s，简单验证一下数据采集是否可行。
+- You can record the data in any format, graph or csv, but in some human-readable format.
 
-- 如何让实验线程保持后台运行状态：
+- Before starting the formal experiment, you can first set the Duration to 30s to quickly verify how and whether data collection works.
+
+- How to keep the experiment thread running in the background:
 
   ```shell
   tmux new -s <name>  # new tmux session
@@ -64,7 +66,7 @@ Suggestions:
 
 ### With Service-Mesh
 
-首先需要清理原实验，并向bookinfo namespace中注入istio
+First, clean up the previous experiment and inject Istio into the `bookinfo` namespace.
 
 ```shell
 kubectl delete -f ~/istio-1.26.0/samples/bookinfo/platform/kube/bookinfo.yaml -n bookinfo
@@ -72,9 +74,9 @@ kubectl label namespace bookinfo istio-injection=enabled
 kubectl apply -f ~/istio-1.26.0/samples/bookinfo/platform/kube/bookinfo.yaml -n bookinfo
 ```
 
-TODO:
+**TODO**:
 
-Run the script with: `./exper/benchmark_trace.sh none bookinfo 300 30m  `（本实验中不需要mesh_type这个参数）， 记录30分钟内以下pod的峰值cpu/memory用量
+Run the script with: `./exper/benchmark_trace.sh none bookinfo 300 30m  `(in this experiment the `mesh_type` parameter is not required), and record the peak CPU and memory usage of the following pods within 30 minutes.
 
 - All pods under `bookinfo` namespace
 - All pods under `kube-flannel` namespace
@@ -85,9 +87,9 @@ Run the script with: `./exper/benchmark_trace.sh none bookinfo 300 30m  `（本�
 
 ## Next Step
 
-在获取这些数据后，我们将根据采集到的资源消耗量：
+After collecting these data, we will use the measured resource consumption to:
 
-1. 为system pods预留足够的cpu和memory
-2. 固定pod调度模式，例如，我们会尽量把application中资源消耗大的pods调度到不同的节点上
-3. 为application pod分配和峰值cpu成比例的资源
-4. 由于bookinfo只是一个toy example，我们之后会将该方法重复用在hotel-reservation上，并将hotel-reservation作为参考。但bookinfo很适合上手，并固定研究方法。
+1. Reserve sufficient CPU and memory for system pods.
+2. Fix the pod scheduling strategy — for example, we will try to schedule resource-intensive application pods onto different nodes.
+3. Allocate resources to application pods in proportion to their peak CPU usage.
+4. Since `bookinfo` is just a toy example, we will later repeat this method on `hotel-reservation` and use that as the real reference. However, `bookinfo` is well-suited for getting started and establishing the methodology.

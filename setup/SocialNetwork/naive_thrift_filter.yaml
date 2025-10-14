@@ -1,0 +1,34 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: thrift-demo
+  namespace: social
+spec:
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        # The port dedicated to thirft
+        portNumber: 9090
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: REPLACE
+      value:
+        name: envoy.filters.network.thrift_proxy
+        typed_config: 
+          "@type": type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy
+          stat_prefix: "text-service-thrift"
+          transport: AUTO_TRANSPORT
+          protocol: AUTO_PROTOCOL
+          # thrift_filters:
+          # - name: envoy.filters.thrift.router
+          route_config:
+            routes:
+            - match:
+                # empty string matches any request method name
+                method_name: ""
+              route:
+                cluster: "inbound|9090||"

@@ -32,10 +32,10 @@ trace_bookinfo() {
             kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
         done
     fi
+    fi
 
     echo "Experiment completed."
 }
-
 
 trace_hotel() {
     NAMESPACE="hotel"
@@ -64,6 +64,7 @@ trace_hotel() {
         for pod in $PODS; do
             kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
         done
+    fi
     fi
 
     wait

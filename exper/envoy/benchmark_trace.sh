@@ -26,16 +26,16 @@ trace_bookinfo() {
         for pod in $PODS; do
             kubectl cp "kube-system/$pod:/tmp/trace_output.log" ~/trace_res/trace_output_"$pod".log
         done
-    else
+    else if [ "$MESH_TYPE" == "istio" ]; then
         PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
         for pod in $PODS; do
             kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
         done
     fi
+    fi
 
     echo "Experiment completed."
 }
-
 
 trace_hotel() {
     NAMESPACE="hotel"
@@ -59,11 +59,12 @@ trace_hotel() {
         for pod in $PODS; do
             kubectl cp "kube-system/$pod:/tmp/trace_output.log" ~/trace_res/trace_output_"$pod".log
         done
-    else
+    else if [ "$MESH_TYPE" == "istio" ]; then
         PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
         for pod in $PODS; do
             kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
         done
+    fi
     fi
 
     wait

@@ -61,7 +61,7 @@ spec:
           mountPath: {{ .mountPath }}
         {{- end }}
         {{- end }}
-        - name: istio-proxy
+      - name: istio-proxy
         image: docker.io/alicesong2002/modified_istio_proxy:v15.0
         imagePullPolicy: IfNotPresent
         securityContext:

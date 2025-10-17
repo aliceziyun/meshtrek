@@ -114,6 +114,8 @@ I should have done this earlier...
 
 - 14.x(deprecated): trying to add parsing time recorded of http2
 
+- 15.0: working version for full trace on both http1 and http2 ✅
+
 ### Cilium Envoy Modified
 - 2.0(deprecated): upgrade cilium to 1.8.0 and envoy to 1.34.4. However, this version will add much overhead to network.
 - 2.1: use release version to attach uprobe. no symbol. **Only for test**
@@ -125,3 +127,6 @@ I should have done this earlier...
 ### Istio_Perf
 - 1.0: http parsing. Insert fifo write to open perf. From Dispath() -> onHeadersComplete() (not so useful in fine-grain control)
 - 1.1: based on modified istio proxy **v10.1** ✅
+
+### Modified_Istio_for_Thrift
+- v1.0(deprecated): add print log for testing

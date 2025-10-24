@@ -10,6 +10,8 @@ If you want to run this script, your ssh key shouldn't have a passphrase.
 '''
 class ShellHelper:
     def __init__(self, config):
+        with open(config, 'r') as f:
+            config = json.load(f)
         self.config = config
 
     def scp_command(self, local_path, remote_path, node_ip, node_user):
@@ -53,6 +55,7 @@ class ShellHelper:
         """
         Execute the script file on a remote node.
         """
+        print(f"[*] Executing script on node {node_number} ({node_ip})...")
         file = os.path.basename(file)
         chmod_command = [
             'ssh', f'{node_user}@{node_ip}',
@@ -64,7 +67,7 @@ class ShellHelper:
             'ssh', f'{node_user}@{node_ip}',
             '/bin/bash', os.path.join(node_home, file)
         ]
-        result = subprocess.run(command, check=True)
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
         return result.stdout.strip()
 
     def execute_parallel(self, file=None, mode=0):

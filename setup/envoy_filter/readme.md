@@ -29,4 +29,10 @@ Reference: https://www.alibabacloud.com/help/zh/asm/
 ### Other
 
 - [DNS parsing](https://www.alibabacloud.com/help/zh/asm/sidecar/use-the-dns-proxy-feature-in-an-asm-instance?spm=a2c63.l28256.0.0.5f966185koUV9t): Use sidecar to cache the list of known services. And use sidecar to do DNS parsing.
-- [Wasm Filter](https://www.alibabacloud.com/help/zh/asm/sidecar/use-coraza-wasm-plug-in-to-implement-waf-capability-on-asm-gateway?spm=a2c63.p38356.0.i12):
+- [Wasm Filter](https://www.alibabacloud.com/help/zh/asm/sidecar/use-coraza-wasm-plug-in-to-implement-waf-capability-on-asm-gateway?spm=a2c63.p38356.0.i12): An sandbox extension which allows user implement functionality without modifying the source code of Envoy (Feels like this method is different from other filters of Envoy)
+
+### Example
+
+- end-to-end canary release: add service tag to header or payload, the traffic is processed at the **gateway**, then route to different services (this seems not useful in gRPC)
+- response header: add field to response header to ensure security
+- metrics observation: service mesh generate Istio metrics and provide the information to metric monitor tool like Prometheus, then auto scale the service

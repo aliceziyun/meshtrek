@@ -39,18 +39,14 @@ trace_bookinfo() {
 
 trace_hotel() {
     NAMESPACE="hotel"
-    local ip=$(kubectl get service frontend2 -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
-    local port=5001
+    local ip=$(kubectl get service frontend -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
+    local port=5000
     local request_url="${ip}:${port}"
 
     echo "Request URL: $request_url"
     echo "Running RPS=$RPS..."
 
-    # change the url in mixed-workload_type_1.lua
-    # cp ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua.bak
-    # sed -i "s|http://localhost:5000|http://${ip}:5000|g" ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua/
-
-    ~/DeathStarBench/wrk2/wrk -D exp -t 10 -c 20 -d "$DURATION" -L -s ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua "http://$request_url" -R $RPS
+    ~/DeathStarBench/wrk2/wrk -D exp -t 6 -c 10 -d "$DURATION" -L -s ~/meshtrek/setup/benchmark/HotelReserve/wrk2/frontend_normal.lua "http://$request_url" -R $RPS
 
     wait
 
@@ -68,9 +64,6 @@ trace_hotel() {
     fi
 
     wait
-
-    # restore the lua file
-    mv ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua.bak ~/DeathStarBench/hotelReservation/wrk2/scripts/hotel-reservation/mixed-workload_type_1.lua
 
     echo "Experiment completed."
 }

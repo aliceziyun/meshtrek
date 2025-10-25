@@ -10,4 +10,4 @@ Run `./setup/environment/promethus/download_promethus.sh` on main node.
 Run `kubectl get pod -n hotel` to make sure every node is in running state.
 
 ## Start the Experiment
-- First We need to find out the best configuration for hotel-reservation without service mesh.
+1. First We need to find out the best configuration for hotel-reservation without service mesh.

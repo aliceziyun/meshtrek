@@ -22,7 +22,7 @@ stages = ["INIT", "THREAD", "CONNECTION", "CPU", "END"]
 class KubeConfigFinder:
     def __init__(self):
         self.config = {
-            "target_RPS": 300,
+            "target_RPS": 150,
             "thread": 4,
             "connection": 4,
             "cpu_for_each_pod": 500
@@ -60,6 +60,7 @@ class KubeConfigFinder:
     def find_best_config(self):
         while True:
             if self.current_stage == "INIT":
+                print("[*] Initializing cluster...")
                 self.init_cluster()
                 self.find_best_RPS()
                 self.current_stage = stages[1]
@@ -67,6 +68,7 @@ class KubeConfigFinder:
             elif self.current_stage == "THREAD":
                 self.config["thread"] += 1
                 old_RPS = self.config["target_RPS"]
+                print(f"[*] Testing with thread={self.config['thread']}")
                 self.find_best_RPS()
                 if self.config["target_RPS"] > old_RPS:
                     continue
@@ -77,6 +79,7 @@ class KubeConfigFinder:
             elif self.current_stage == "CONNECTION":
                 self.config["connection"] += 2
                 old_RPS = self.config["target_RPS"]
+                print(f"[*] Testing with connection={self.config['connection']}")
                 self.find_best_RPS()
                 if self.config["target_RPS"] > old_RPS:
                     continue
@@ -89,6 +92,7 @@ class KubeConfigFinder:
                 self.config["cpu_for_each_pod"] += 500
                 script_path = os.path.join(os.path.dirname(__file__), "script/confine_cpu.sh")
                 execute_script(script_path, [str(self.config["cpu_for_each_pod"]) + "m", self.namespace])
+                print(f"[*] Testing with cpu_for_each_pod={self.config['cpu_for_each_pod']}m")
                 self.find_best_RPS()
                 if self.config["target_RPS"] > old_RPS:
                     self.current_stage = stages[1]
@@ -98,6 +102,7 @@ class KubeConfigFinder:
                     self.current_stage = stages[4]
                     continue
             elif self.current_stage == "END":
+                print("[*] Script complete.")
                 break
         return self.config
     

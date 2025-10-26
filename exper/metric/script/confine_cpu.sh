@@ -13,8 +13,18 @@ for deploy in $deployments; do
       "value": {"limits": {"cpu": "'$TARGET_CPU'"}, "requests": {"cpu": "'$DEFAULT_CPU'"}}}
     ]'
 done
+
+wait
 echo "Patched CPU limits to $TARGET_CPU for all deployments in namespace '$NAMESPACE'."
 
-echo "Waiting for all pods in namespace '$NAMESPACE' to be ready..."
-kubectl wait --for=condition=ready pod -n $NAMESPACE --all --timeout=300s
-echo "All pods are ready."
+echo "Waiting for pods to be ready..."
+for i in {1..60}; do
+  not_ready=$(kubectl get pods -n "$NAMESPACE" --no-headers 2>/dev/null | grep -v 'Running' | wc -l)
+  if [ "$not_ready" -eq 0 ]; then
+    echo "All pods ready."
+    exit 0
+  fi
+  sleep 5
+done
+echo "Timeout: Some pods not ready."
+exit 1

@@ -1,5 +1,6 @@
 import subprocess
 import os
+import math
 
 def execute_script(script_path: str, args: list = []):
     result = subprocess.run([script_path] + list(map(str, args)), capture_output=True, text=True)
@@ -13,7 +14,6 @@ def get_achieved_RPS(output):
             parts = line.split("Requests/sec:")
             if len(parts) > 1:
                 rps_value = parts[1].strip().split()[0]
-                print(f"Achieved RPS: {rps_value}")
                 return float(rps_value)
     return 0.0
 
@@ -29,7 +29,7 @@ class KubeConfigFinder:
         }
 
         self.namespace = "hotel"
-        self.duration = 60
+        self.duration = 30
         self.current_stage = stages[0]
     
     def run_benchmark(self):
@@ -40,21 +40,27 @@ class KubeConfigFinder:
         for _ in range(3):
             output = execute_script(script_path, [self.namespace, str(self.config["thread"]), str(self.config["connection"]), str(self.config["target_RPS"]), str(self.duration)])
             achieved_RPS += get_achieved_RPS(output)
-        return achieved_RPS / 3
+        result = achieved_RPS / 3
+        print(f"[*] Benchmark result: Achieved RPS = {result}")
+        return result
 
     def init_cluster(self):
         script_path = os.path.join(os.path.dirname(__file__), "script/confine_cpu.sh")
-        execute_script(script_path, [str(self.config["cpu_for_each_pod"]) + "m", self.namespace])
+        output = execute_script(script_path, [str(self.config["cpu_for_each_pod"]) + "m", self.namespace])
+        print("[*] Initialized cluster CPU limits...")
+        print(output)
         self.current_stage = stages[1]
 
     def find_best_RPS(self):
         while True:
             achieved_RPS = self.run_benchmark()
-            if self.config["target_RPS"] - achieved_RPS < 20:
+            if achieved_RPS == 0:
+                break
+            if self.config["target_RPS"] - achieved_RPS <= 10:
                 self.config["target_RPS"] += 10
                 continue
             else:
-                self.config["target_RPS"] -= 10 # step back
+                self.config["target_RPS"] = math.floor(achieved_RPS / 10) * 10
                 break
     
     def find_best_config(self):
@@ -62,11 +68,18 @@ class KubeConfigFinder:
             if self.current_stage == "INIT":
                 print("[*] Initializing cluster...")
                 self.init_cluster()
+                print(f"[*] Finding a init RPS value={self.config['target_RPS']}")
                 self.find_best_RPS()
                 self.current_stage = stages[1]
                 continue
             elif self.current_stage == "THREAD":
-                self.config["thread"] += 1
+                connection_equal_to_thread = False
+                if self.config["thread"] == self.config["connection"]:
+                    self.config["thread"] += 1
+                    self.config["connection"] += 1
+                    connection_equal_to_thread = True
+                else:
+                    self.config["thread"] += 1
                 old_RPS = self.config["target_RPS"]
                 print(f"[*] Testing with thread={self.config['thread']}")
                 self.find_best_RPS()
@@ -74,6 +87,8 @@ class KubeConfigFinder:
                     continue
                 else:
                     self.config["thread"] -= 1
+                    if connection_equal_to_thread:
+                        self.config["connection"] -= 1
                     self.current_stage = stages[2]
                     continue
             elif self.current_stage == "CONNECTION":
@@ -90,8 +105,10 @@ class KubeConfigFinder:
             elif self.current_stage == "CPU":
                 old_RPS = self.config["target_RPS"]
                 self.config["cpu_for_each_pod"] += 500
+                print("[*] Updated CPU configuration:")
                 script_path = os.path.join(os.path.dirname(__file__), "script/confine_cpu.sh")
-                execute_script(script_path, [str(self.config["cpu_for_each_pod"]) + "m", self.namespace])
+                output = execute_script(script_path, [str(self.config["cpu_for_each_pod"]) + "m", self.namespace])
+                print(output)
                 print(f"[*] Testing with cpu_for_each_pod={self.config['cpu_for_each_pod']}m")
                 self.find_best_RPS()
                 if self.config["target_RPS"] > old_RPS:

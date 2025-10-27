@@ -22,7 +22,7 @@ stages = ["INIT", "THREAD", "CONNECTION", "CPU", "END"]
 class KubeConfigFinder:
     def __init__(self):
         self.config = {
-            "target_RPS": 150,
+            "target_RPS": 220,
             "thread": 4,
             "connection": 4,
             "cpu_for_each_pod": 500

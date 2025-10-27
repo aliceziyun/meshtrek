@@ -57,9 +57,11 @@ class KubeConfigFinder:
             if achieved_RPS == 0:
                 break
             if self.config["target_RPS"] - achieved_RPS <= 10:
+                print(f"[*] Increasing target_RPS from {self.config['target_RPS']} to {self.config['target_RPS'] + 10}")
                 self.config["target_RPS"] += 10
                 continue
             else:
+                print(f"[*] Found best target_RPS: {math.floor(achieved_RPS / 10) * 10}")
                 self.config["target_RPS"] = math.floor(achieved_RPS / 10) * 10
                 break
     

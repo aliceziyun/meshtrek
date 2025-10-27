@@ -11,7 +11,7 @@ for deploy in $deployments; do
     -p='[
       {"op": "replace", "path": "/spec/template/spec/containers/0/resources",
       "value": {"limits": {"cpu": "'$TARGET_CPU'"}, "requests": {"cpu": "'$DEFAULT_CPU'"}}}
-    ]'
+    ]' > /dev/null
 done
 
 wait

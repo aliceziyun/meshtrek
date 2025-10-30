@@ -12,6 +12,9 @@ def execute_script(script_path: str, args: list = []):
 
 def get_achieved_RPS(output):
     for line in output.splitlines():
+        if "Non-2xx or 3xx responses:" in line:
+            print("[!] Error responses detected during the benchmark. Please check the service health.")
+            exit(1)
         if "Requests/sec:" in line:
             parts = line.split("Requests/sec:")
             if len(parts) > 1:
@@ -34,6 +37,7 @@ def get_p50(output):
 
 class KubeConfigFinder:
     def __init__(self, core, namespace):
+        self.core = core
         self.thread = math.floor(core * 0.8)
         self.connection = self.thread
         self.rps_base = 10
@@ -96,7 +100,8 @@ class KubeConfigFinder:
                 break
             
             current_rps += self.rps_step
-            time.sleep(30)
+            execute_script(os.path.join(os.path.dirname(__file__), "./script/restart_cluster.sh"), [self.namespace])
+            time.sleep(10)
         
         best_rps = math.floor(achieved_RPS/10) * 10
         print("[*] Finished testing best RPS, result is {} RPS".format(best_rps))

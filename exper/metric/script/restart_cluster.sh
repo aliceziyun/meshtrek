@@ -4,9 +4,9 @@ NAMESPACE=$1
 
 if [ "$NAMESPACE" == "hotel" ]; then
     echo "Restarting Hotel Reservation Service cluster in namespace: $NAMESPACE"
-    kubectl delete -Rf ~/DeathStarBench/hotelReservation/kubernetes/ -n hotel
+    kubectl delete -Rf ~/meshtrek/setup/benchmark/HotelReserve/kubernetes -n hotel
     sleep 5
-    kubectl apply -Rf ~/DeathStarBench/hotelReservation/kubernetes/ -n hotel
+    kubectl apply -Rf ~/meshtrek/setup/benchmark/HotelReserve/kubernetes -n hotel
 
     echo "Waiting for pods to be ready..."
     for i in {1..60}; do

@@ -42,6 +42,20 @@ class KubeConfigFinder:
 
         self.rps_start = 100
         self.rps_step = 100
+        
+        self.base_p50 = 0
+        self.count = 0
+
+    def check_p50(self, p50):
+        self.count += 1
+        if self.base_p50 == 0:
+            self.base_p50 = p50
+        else:
+            if p50 > self.base_p50 * 2:
+                print(f"[!] The experiment enviroment may be corrupted. Please reset the environment.")
+                exit(1)
+            else:
+                self.base_p50 = (self.base_p50 * (self.count - 1) + p50) / self.count
 
     def find_best_RPS(self):
         print("[*] Testing best RPS without CPU limits...")
@@ -53,6 +67,7 @@ class KubeConfigFinder:
 
         base_p50 = get_p50(output)
         print(f"[*] Base p50 latency at {self.rps_base} RPS: {base_p50} ms")
+        self.check_p50(base_p50)
         print("--------------------------------------------------")
 
         current_rps = self.rps_start

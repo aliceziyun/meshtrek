@@ -2,6 +2,7 @@ import subprocess
 import os
 import math
 import time
+import argparse
 
 def execute_script(script_path: str, args: list = []):
     result = subprocess.run([script_path] + list(map(str, args)), capture_output=True, text=True)
@@ -18,116 +19,116 @@ def get_achieved_RPS(output):
                 return float(rps_value)
     return 0.0
 
-stages = ["INIT", "THREAD", "CONNECTION", "CPU", "END"]
+def get_p50(output):
+    for line in output.splitlines():
+        if "50.000%" in line:
+            parts = line.split("50.000%")
+            if len(parts) > 1:
+                p50_value = parts[1].strip().split()[0]
+                if p50_value.endswith("ms"):
+                    p50_value = p50_value[:-2]
+                elif p50_value.endswith("s"):
+                    p50_value = float(p50_value[:-1]) * 1000
+                return float(p50_value)
+    return math.inf
 
 class KubeConfigFinder:
-    def __init__(self):
-        self.config = {
-            "target_RPS": 220,
-            "thread": 4,
-            "connection": 4,
-            "cpu_for_each_pod": 500
-        }
-
-        self.namespace = "hotel"
+    def __init__(self, core, namespace):
+        self.thread = math.floor(core * 0.8)
+        self.connection = self.thread
+        self.rps_base = 10
+        self.namespace = namespace
         self.duration = 30
-        self.current_stage = stages[0]
-    
-    def run_benchmark(self):
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        script_path = os.path.join(base_dir, "./overhead/benchmark.sh")
-        achieved_RPS = 0.0
-        # Run benchmark three times
-        for _ in range(3):
-            output = execute_script(script_path, [self.namespace, str(self.config["thread"]), str(self.config["connection"]), str(self.config["target_RPS"]), str(self.duration)])
-            achieved_RPS += get_achieved_RPS(output)
-        result = achieved_RPS / 3
-        print(f"[*] Benchmark result: Achieved RPS = {result}")
-        return result
 
-    def init_cluster(self):
-        script_path = os.path.join(os.path.dirname(__file__), "script/confine_cpu.sh")
-        output = execute_script(script_path, [str(self.config["cpu_for_each_pod"]) + "m", self.namespace])
-        print("[*] Initialized cluster CPU limits...")
-        print(output)
-        self.current_stage = stages[1]
+        self.rps_start = 100
+        self.rps_step = 100
 
     def find_best_RPS(self):
+        print("[*] Testing best RPS without CPU limits...")
+
+        # First get the base p50 with low RPS
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        script_path = os.path.join(base_dir, "./overhead/benchmark.sh")
+        output = execute_script(script_path, [self.namespace, str(self.thread), str(self.connection), str(self.rps_base), str(self.duration)])
+
+        base_p50 = get_p50(output)
+        print(f"[*] Base p50 latency at {self.rps_base} RPS: {base_p50} ms")
+        print("--------------------------------------------------")
+
+        current_rps = self.rps_start
         while True:
-            achieved_RPS = self.run_benchmark()
+            output = execute_script(script_path, [self.namespace, str(self.thread), str(self.connection), str(current_rps), str(self.duration)])
+            achieved_RPS = get_achieved_RPS(output)
+            p50_latency = get_p50(output)
+
+            print(f"[*] Target RPS: {current_rps}, Achieved RPS: {achieved_RPS}, p50 latency: {p50_latency} ms")
+
             if achieved_RPS == 0:
+                print("[*] Achieved RPS is 0, stopping test.")
                 break
-            if self.config["target_RPS"] - achieved_RPS <= 10:
-                print(f"[*] Increasing target_RPS from {self.config['target_RPS']} to {self.config['target_RPS'] + 10}")
-                self.config["target_RPS"] += 10
-                continue
-            else:
-                print(f"[*] Found best target_RPS: {math.floor(achieved_RPS / 10) * 10}")
-                self.config["target_RPS"] = math.floor(achieved_RPS / 10) * 10
+
+            if p50_latency > base_p50 * 10:
+                print(f"[*] p50 latency {p50_latency} ms exceeded base p50 latency threshold, stopping test.")
                 break
-    
+            
+            current_rps += self.rps_step
+            time.sleep(30)
+        
+        best_rps = math.floor(achieved_RPS/10) * 10
+        print("[*] Finished testing best RPS, result is {} RPS".format(best_rps))
+        return best_rps
+
     def find_best_config(self):
+        # Find best RPS in coarse-grained
+        print("[*] Finding best RPS in coarse-grained...")
+        best_rps = self.find_best_RPS()
+
+        # Find best RPS in fine-grained
+        print("[*] Finding best RPS in fine-grained...")
+        self.rps_base = best_rps - self.rps_step
+        self.rps_step = 10
+        best_rps = self.find_best_RPS()
+
+        # Find best thread
+        self.duration = 60
+        print("[*] Finding best thread...")
+        self.rps_base = best_rps
+        best_thread = self.thread
+        best_connection = self.connection
         while True:
-            if self.current_stage == "INIT":
-                print("[*] Initializing cluster...")
-                self.init_cluster()
-                print(f"[*] Finding a init RPS value={self.config['target_RPS']}")
-                self.find_best_RPS()
-                self.current_stage = stages[1]
-                continue
-            elif self.current_stage == "THREAD":
-                connection_equal_to_thread = False
-                if self.config["thread"] == self.config["connection"]:
-                    self.config["thread"] += 1
-                    self.config["connection"] += 1
-                    connection_equal_to_thread = True
-                else:
-                    self.config["thread"] += 1
-                old_RPS = self.config["target_RPS"]
-                print(f"[*] Testing with thread={self.config['thread']}")
-                self.find_best_RPS()
-                if self.config["target_RPS"] > old_RPS:
-                    continue
-                else:
-                    self.config["thread"] -= 1
-                    if connection_equal_to_thread:
-                        self.config["connection"] -= 1
-                    self.current_stage = stages[2]
-                    continue
-            elif self.current_stage == "CONNECTION":
-                self.config["connection"] += 2
-                old_RPS = self.config["target_RPS"]
-                print(f"[*] Testing with connection={self.config['connection']}")
-                self.find_best_RPS()
-                if self.config["target_RPS"] > old_RPS:
-                    continue
-                else:
-                    self.config["connection"] -= 2
-                    self.current_stage = stages[3]
-                    continue
-            elif self.current_stage == "CPU":
-                old_RPS = self.config["target_RPS"]
-                self.config["cpu_for_each_pod"] += 500
-                print("[*] Updated CPU configuration:")
-                script_path = os.path.join(os.path.dirname(__file__), "script/confine_cpu.sh")
-                output = execute_script(script_path, [str(self.config["cpu_for_each_pod"]) + "m", self.namespace])
-                print(output)
-                print(f"[*] Testing with cpu_for_each_pod={self.config['cpu_for_each_pod']}m")
-                self.find_best_RPS()
-                if self.config["target_RPS"] > old_RPS:
-                    self.current_stage = stages[1]
-                    continue
-                else:
-                    self.config["cpu_for_each_pod"] -= 500
-                    self.current_stage = stages[4]
-                    continue
-            elif self.current_stage == "END":
-                print("[*] Script complete.")
+            self.thread += 1
+            self.connection = self.thread
+            print(f"[*] Testing with thread={self.thread}, connection={self.connection}")
+            achieved_RPS = self.find_best_RPS()
+            if achieved_RPS > best_rps:
+                best_rps = achieved_RPS
+                best_thread = self.thread
+                best_connection = self.connection
+            else:
                 break
-        return self.config
-    
+        self.thread = best_thread
+        self.connection = best_connection
+
+        # Find best connection
+        print("[*] Finding best connection...")
+        while True:
+            self.connection += 2
+            print(f"[*] Testing with thread={self.thread}, connection={self.connection}")
+            achieved_RPS = self.find_best_RPS()
+            if achieved_RPS > best_rps:
+                best_rps = achieved_RPS
+                best_connection = self.connection
+            else:
+                break
+        self.connection = best_connection
+
+        print(f"[*] Best configuration found: thread={self.thread}, connection={self.connection}, best RPS={best_rps}")
+
 if __name__ == "__main__":
-    finder = KubeConfigFinder()
-    best_config = finder.find_best_config()
-    print("Best Config Found:")
-    print(best_config)
+    parser = argparse.ArgumentParser(description="Find the best Kubernetes configuration")
+    parser.add_argument("--core", type=int, required=True, help="Number of CPU cores available")
+    parser.add_argument("--namespace", type=str, required=True, help="Kubernetes namespace to use")
+    args = parser.parse_args()
+
+    config_finder = KubeConfigFinder(args.core, args.namespace)
+    config_finder.find_best_config()

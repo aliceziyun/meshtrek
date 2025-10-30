@@ -95,7 +95,9 @@ class ShellHelper:
     
 if __name__ == "__main__":
     # create the shell helper
-    shell_helper = ShellHelper("./config.json")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(current_dir, "./config.json")
+    shell_helper = ShellHelper(config_path)
 
     # parse the command line arguments
     parser = argparse.ArgumentParser(description="Setup script for remote nodes.")
@@ -111,7 +113,7 @@ if __name__ == "__main__":
         help="0: all nodes, 1: execute on worker nodes only, 2: execute on main node only"
     )
     args = parser.parse_args()
-    file = args.f
+    file = os.path.join(current_dir, args.f) if args.f else None
     mode = args.m
 
     if file is None:

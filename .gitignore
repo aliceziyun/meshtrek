@@ -16,3 +16,4 @@ output.log
 *.bkp
 *.dtmp
 *.png
+/result_metric

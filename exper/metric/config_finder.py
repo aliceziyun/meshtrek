@@ -56,6 +56,9 @@ class KubeConfigFinder:
         self.count += 1
         if self.base_p50 == 0:
             self.base_p50 = p50
+        if self.base_p50 > 1000:
+            print(f"[!] The base p50 latency is too high ({self.base_p50} ms). Please check the environment.")
+            exit(1)
         else:
             if p50 > self.base_p50 * 2:
                 print(f"[!] The experiment enviroment may be corrupted. Please reset the environment.")

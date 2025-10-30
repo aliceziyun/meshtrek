@@ -98,7 +98,7 @@ class KubeConfigFinder:
                 print("[*] Achieved RPS is 0, stopping test.")
                 break
 
-            if p50 > base_p50 * 10:
+            if p50 > base_p50 * 2:
                 print(f"[*] p50 latency {p50} ms exceeded base p50 latency threshold, stopping test.")
                 break
             

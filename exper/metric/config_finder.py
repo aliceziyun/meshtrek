@@ -46,6 +46,8 @@ class KubeConfigFinder:
         self.base_p50 = 0
         self.count = 0
 
+        self.batch = 1
+
     def check_p50(self, p50):
         self.count += 1
         if self.base_p50 == 0:
@@ -56,34 +58,41 @@ class KubeConfigFinder:
                 exit(1)
             else:
                 self.base_p50 = (self.base_p50 * (self.count - 1) + p50) / self.count
+    
+    def execute_batch(self):
+        avg_p50, avg_rps = 0, 0
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        script_path = os.path.join(base_dir, "./overhead/benchmark.sh")
+        for _ in range(self.batch):
+            output = execute_script(script_path, [self.namespace, str(self.thread), str(self.connection), str(self.rps_base), str(self.duration)])
+            avg_p50 += get_p50(output)
+            avg_rps += get_achieved_RPS(output)
+            time.sleep(10)
+        
+        return avg_p50 / self.batch, avg_rps / self.batch
 
     def find_best_RPS(self):
         print("[*] Testing best RPS without CPU limits...")
 
         # First get the base p50 with low RPS
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        script_path = os.path.join(base_dir, "./overhead/benchmark.sh")
-        output = execute_script(script_path, [self.namespace, str(self.thread), str(self.connection), str(self.rps_base), str(self.duration)])
+        base_p50, _ = self.execute_batch()
 
-        base_p50 = get_p50(output)
         print(f"[*] Base p50 latency at {self.rps_base} RPS: {base_p50} ms")
         self.check_p50(base_p50)
         print("--------------------------------------------------")
 
         current_rps = self.rps_start
         while True:
-            output = execute_script(script_path, [self.namespace, str(self.thread), str(self.connection), str(current_rps), str(self.duration)])
-            achieved_RPS = get_achieved_RPS(output)
-            p50_latency = get_p50(output)
+            p50, achieved_RPS = self.execute_batch()
 
-            print(f"[*] Target RPS: {current_rps}, Achieved RPS: {achieved_RPS}, p50 latency: {p50_latency} ms")
+            print(f"[*] Target RPS: {current_rps}, Achieved RPS: {achieved_RPS}, p50 latency: {p50} ms")
 
             if achieved_RPS == 0:
                 print("[*] Achieved RPS is 0, stopping test.")
                 break
 
-            if p50_latency > base_p50 * 10:
-                print(f"[*] p50 latency {p50_latency} ms exceeded base p50 latency threshold, stopping test.")
+            if p50 > base_p50 * 10:
+                print(f"[*] p50 latency {p50} ms exceeded base p50 latency threshold, stopping test.")
                 break
             
             current_rps += self.rps_step

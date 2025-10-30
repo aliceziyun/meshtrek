@@ -66,12 +66,12 @@ class KubeConfigFinder:
             else:
                 self.base_p50 = (self.base_p50 * (self.count - 1) + p50) / self.count
     
-    def execute_batch(self):
+    def execute_batch(self, rps):
         avg_p50, avg_rps = 0, 0
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         script_path = os.path.join(base_dir, "./overhead/benchmark.sh")
         for _ in range(self.batch):
-            output = execute_script(script_path, [self.namespace, str(self.thread), str(self.connection), str(self.rps_base), str(self.duration)])
+            output = execute_script(script_path, [self.namespace, str(self.thread), str(self.connection), str(rps), str(self.duration)])
             avg_p50 += get_p50(output)
             avg_rps += get_achieved_RPS(output)
             time.sleep(10)
@@ -82,7 +82,7 @@ class KubeConfigFinder:
         print("[*] Testing best RPS without CPU limits...")
 
         # First get the base p50 with low RPS
-        base_p50, _ = self.execute_batch()
+        base_p50, _ = self.execute_batch(self.rps_base)
 
         print(f"[*] Base p50 latency at {self.rps_base} RPS: {base_p50} ms")
         self.check_p50(base_p50)
@@ -90,7 +90,7 @@ class KubeConfigFinder:
 
         current_rps = self.rps_start
         while True:
-            p50, achieved_RPS = self.execute_batch()
+            p50, achieved_RPS = self.execute_batch(current_rps)
 
             print(f"[*] Target RPS: {current_rps}, Achieved RPS: {achieved_RPS}, p50 latency: {p50} ms")
 
@@ -103,7 +103,7 @@ class KubeConfigFinder:
                 break
             
             current_rps += self.rps_step
-            execute_script(os.path.join(os.path.dirname(__file__), "./script/restart_cluster.sh"), [self.namespace])
+            # execute_script(os.path.join(os.path.dirname(__file__), "./script/restart_cluster.sh"), [self.namespace])
             time.sleep(10)
         
         best_rps = math.floor(achieved_RPS/10) * 10

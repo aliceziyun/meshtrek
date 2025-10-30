@@ -19,7 +19,8 @@ sed -i 's|- ./user|- /go/bin/user|' ~/DeathStarBench/hotelReservation/kubernetes
 cd ~/DeathStarBench/
 kubectl create namespace hotel
 # sudo ~/DeathStarBench/hotelReservation/kubernetes/scripts/build-docker-images.sh
-kubectl apply -Rf ~/DeathStarBench/hotelReservation/kubernetes/ -n hotel
+# kubectl apply -Rf ~/DeathStarBench/hotelReservation/kubernetes/ -n hotel
+kubectl apply -Rf ~/meshtrek/setup/benchmark/HotelReserve/kubernetes/ -n hotel
 
 cd ~/DeathStarBench/wrk2
 sudo apt install -y libssl-dev

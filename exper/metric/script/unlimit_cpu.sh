@@ -1,3 +1,5 @@
+#!/bin/bash
+
 NAMESPACE=$1
 
 deployments=$(kubectl get deployments -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')

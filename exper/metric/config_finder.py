@@ -40,7 +40,7 @@ class KubeConfigFinder:
         self.core = core
         self.thread = math.floor(core * 0.8)
         self.connection = self.thread
-        self.rps_base = 10
+        self.rps_base = 20
         self.namespace = namespace
         self.duration = 30
 
@@ -76,6 +76,7 @@ class KubeConfigFinder:
         return avg_p50 / self.batch, avg_rps / self.batch
 
     def find_best_RPS(self):
+        execute_script(os.path.join(os.path.dirname(__file__), "./script/unlimit_cpu.sh"), [self.namespace])
         print("[*] Testing best RPS without CPU limits...")
 
         # First get the base p50 with low RPS
@@ -100,6 +101,7 @@ class KubeConfigFinder:
                 break
             
             current_rps += self.rps_step
+            execute_script(os.path.join(os.path.dirname(__file__), "./script/unlimit_cpu.sh"), [self.namespace])
             execute_script(os.path.join(os.path.dirname(__file__), "./script/restart_cluster.sh"), [self.namespace])
             time.sleep(10)
         

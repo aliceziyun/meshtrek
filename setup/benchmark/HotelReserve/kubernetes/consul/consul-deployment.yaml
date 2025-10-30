@@ -21,7 +21,6 @@ spec:
         kompose.version: 1.22.0 (955b78124)
         sidecar.istio.io/statsInclusionPrefixes: cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grp,listener,connection_manager
         sidecar.istio.io/statsInclusionRegexps: http.*
-        sidecar.istio.io/inject: "false"
       creationTimestamp: null
       labels:
         io.kompose.service: consul
@@ -35,21 +34,5 @@ spec:
             - containerPort: 8500
             - containerPort: 53
               protocol: UDP
-          resources:
-            requests:
-              cpu: 100m
-            limits:
-              cpu: 1000m
-      volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: lib-modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: linux-headers
-        hostPath:
-          path: /usr/src
-          type: Directory
       restartPolicy: Always
 status: {}

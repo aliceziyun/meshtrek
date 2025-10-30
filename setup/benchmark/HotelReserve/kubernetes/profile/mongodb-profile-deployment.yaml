@@ -31,47 +31,13 @@ spec:
           name: hotel-reserv-profile-mongo
           ports:
             - containerPort: 27017
-          resources:
-            requests:
-              cpu: 100m
-            limits:
-              cpu: 1000m
           volumeMounts:
             - mountPath: /data/db
               name: profile
-        - name: istio-proxy
-          image: docker.io/alicesong2002/modified_istio_proxy:v11.5
-          securityContext:
-            allowPrivilegeEscalation: true
-            privileged: true
-            capabilities:
-              add: ["SYS_ADMIN"]
-          volumeMounts:
-          - mountPath: /lib/modules
-            name: lib-modules
-          - mountPath: /usr/src
-            name: linux-headers
-          - name: tmp
-            mountPath: /tmp
-          resources:
-            limits:
-              memory: "3000Mi"
-            requests:
-              memory: "3000Mi"
       hostname: profile-db
       restartPolicy: Always
       volumes:
         - name: profile
           persistentVolumeClaim:
             claimName: profile-pvc
-        - name: tmp
-          emptyDir: {}
-        - name: lib-modules
-          hostPath:
-            path: /lib/modules
-            type: Directory
-        - name: linux-headers
-          hostPath:
-            path: /usr/src
-            type: Directory
 status: {}

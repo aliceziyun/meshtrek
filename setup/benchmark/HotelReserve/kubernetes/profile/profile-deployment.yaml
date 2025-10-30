@@ -28,44 +28,9 @@ spec:
       containers:
         - command:
             - /go/bin/profile
-          image: docker.io/alicesong2002/hotel-reservation-modified:v1.2
+          image: deathstarbench/hotel-reservation:latest
           name: hotel-reserv-profile
           ports:
             - containerPort: 8081
-          resources:
-            requests:
-              cpu: 100m
-            limits:
-              cpu: 1000m
-        - name: istio-proxy
-          image: docker.io/alicesong2002/modified_istio_proxy:v11.5
-          securityContext:
-            allowPrivilegeEscalation: true
-            privileged: true
-            capabilities:
-              add: ["SYS_ADMIN"]
-          volumeMounts:
-          - mountPath: /lib/modules
-            name: lib-modules
-          - mountPath: /usr/src
-            name: linux-headers
-          - name: tmp
-            mountPath: /tmp
-          resources:
-            limits:
-              memory: "3000Mi"
-            requests:
-              memory: "3000Mi"
-      volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: lib-modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: linux-headers
-        hostPath:
-          path: /usr/src
-          type: Directory
       restartPolicy: Always
 status: {}

@@ -12,7 +12,7 @@ Note: Directly limiting the application's CPU may cause bugs, so during the expe
 
 
 
-#### Step0
+### Step0
 
 Set up cluster. Fill the `config.json` under `./mestrek/setup/environment/` on your local, then run `pytho3 ./meshtrek/setup/environment/setup_kube.py` on your local
 
@@ -24,7 +24,7 @@ Purpose: Identify the application's optimal RPS and resource allocation so that 
 
 #### Hotel-Reservation
 
-**Deloy hotel-reservation**: 
+**Deploy hotel-reservation**: 
 
 Run `./meshtrek/setup/benchmark/HotelResere/launch_hotel.sh` on the main node. This will automatically setup the application under namespace `hotel`.
 

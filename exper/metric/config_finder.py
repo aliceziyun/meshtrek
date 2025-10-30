@@ -123,6 +123,7 @@ class KubeConfigFinder:
 
         # Find best thread
         self.duration = 60
+        self.batch = 2
         print("[*] Finding best thread...")
         self.rps_base = best_rps
         best_thread = self.thread

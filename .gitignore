@@ -17,3 +17,4 @@ output.log
 *.dtmp
 *.png
 /result_metric
+*.pdf

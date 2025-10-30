@@ -117,15 +117,14 @@ class KubeConfigFinder:
 
         # Find best RPS in fine-grained
         print("[*] Finding best RPS in fine-grained...")
-        self.rps_base = best_rps - self.rps_step
+        self.rps_start = best_rps - self.rps_step
         self.rps_step = 10
         best_rps = self.find_best_RPS()
 
         # Find best thread
         self.duration = 60
-        self.batch = 2
         print("[*] Finding best thread...")
-        self.rps_base = best_rps
+        self.rps_start = best_rps
         best_thread = self.thread
         best_connection = self.connection
         while True:

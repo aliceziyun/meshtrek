@@ -12,6 +12,12 @@ Note: Directly limiting the application's CPU may cause bugs, so during the expe
 
 
 
+#### Step0
+
+Set up cluster. Fill the `config.json` under `./mestrek/setup/environment/` on your local, then run `pytho3 ./meshtrek/setup/environment/setup_kube.py` on your local
+
+
+
 ### Step1
 
 Purpose: Identify the application's optimal RPS and resource allocation so that we can move its pods to fixed nodes and use this RPS as the baseline for future experiments.
@@ -20,11 +26,13 @@ Purpose: Identify the application's optimal RPS and resource allocation so that 
 
 **Deloy hotel-reservation**: 
 
-Run `./meshtrek/setup/benchmark/HotelResere/launch_hotel.sh`. This will automatically setup the application under namespace `hotel`.
+Run `./meshtrek/setup/benchmark/HotelResere/launch_hotel.sh` on the main node. This will automatically setup the application under namespace `hotel`.
 
 **Determine the best <thread, connection, RPS> for load test**
 
-Run `python3 -u ~/meshtrek/exper/metric/config_finder.py > ~/meshtrek/exper/config_hotel.log`
+```bash
+python3 -u ~/meshtrek/exper/metric/config_finder.py --core <number_of_cores> --namespace <namespace> > ~/meshtrek/exper/config_hotel.log
+```
 
 The log file will be redirected to `~/meshtrek/exper/config_hotel.log`.
 

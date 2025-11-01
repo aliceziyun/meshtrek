@@ -36,4 +36,11 @@ spec:
           ports:
             - containerPort: 11211
       restartPolicy: Always
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                io.kompose.service: profile
+            topologyKey: "kubernetes.io/hostname"
 status: {}

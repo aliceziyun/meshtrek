@@ -2,10 +2,10 @@
     "nodes_user": "aliceso",
     "nodes_number": 4,
     "nodes": [
-        "clnode101.clemson.cloudlab.us",
-        "clnode119.clemson.cloudlab.us",
-        "clnode107.clemson.cloudlab.us",
-        "clnode128.clemson.cloudlab.us"
+        "clnode152.clemson.cloudlab.us",
+        "clnode161.clemson.cloudlab.us",
+        "clnode156.clemson.cloudlab.us",
+        "clnode135.clemson.cloudlab.us"
     ],
     "nodes_home": "/users/aliceso"
 }

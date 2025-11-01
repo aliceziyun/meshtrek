@@ -35,6 +35,12 @@ spec:
           name: hotel-reserv-rate-mmc
           ports:
             - containerPort: 11211
-          
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                io.kompose.service: rate
+            topologyKey: "kubernetes.io/hostname"
       restartPolicy: Always
 status: {}

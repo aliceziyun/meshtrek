@@ -41,4 +41,11 @@ spec:
         - name: recommendation
           persistentVolumeClaim:
             claimName: recommendation-pvc
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                io.kompose.service: recommendation
+            topologyKey: "kubernetes.io/hostname"
 status: {}

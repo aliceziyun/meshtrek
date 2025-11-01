@@ -31,7 +31,6 @@ spec:
           name: hotel-reserv-user-mongo
           ports:
             - containerPort: 27017
-          
           volumeMounts:
             - mountPath: /data/db
               name: user
@@ -41,4 +40,11 @@ spec:
         - name: user
           persistentVolumeClaim:
             claimName: user-pvc
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                io.kompose.service: user
+            topologyKey: "kubernetes.io/hostname"
 status: {}

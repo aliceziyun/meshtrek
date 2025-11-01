@@ -40,4 +40,11 @@ spec:
         - name: profile
           persistentVolumeClaim:
             claimName: profile-pvc
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                io.kompose.service: profile
+            topologyKey: "kubernetes.io/hostname"
 status: {}

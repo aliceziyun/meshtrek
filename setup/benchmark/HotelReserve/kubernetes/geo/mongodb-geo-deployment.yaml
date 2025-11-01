@@ -39,4 +39,11 @@ spec:
         - name: geo
           persistentVolumeClaim:
             claimName: geo-pvc
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                io.kompose.service: geo
+            topologyKey: "kubernetes.io/hostname"
 status: {}

@@ -15,6 +15,11 @@ sed -i 's|- ./reservation|- /go/bin/reservation|' ~/DeathStarBench/hotelReservat
 sed -i 's|- ./search|- /go/bin/search|' ~/DeathStarBench/hotelReservation/kubernetes/search/search-deployment.yaml
 sed -i 's|- ./user|- /go/bin/user|' ~/DeathStarBench/hotelReservation/kubernetes/user/user-deployment.yaml
 
+sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+sudo chmod +x /usr/local/bin/yq
+
+~/meshtrek/exper/metric/script/fix_schedule.sh
+
 # deploy DeathStar
 cd ~/DeathStarBench/
 kubectl create namespace hotel

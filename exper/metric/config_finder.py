@@ -40,7 +40,7 @@ class KubeConfigFinder:
         self.namespace = namespace
         self.duration = 30
 
-        self.rps_start = 500
+        self.rps_start = 100
         self.rps_step = 100
         self.end_rps = 700
         

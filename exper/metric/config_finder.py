@@ -4,12 +4,7 @@ import math
 import time
 import argparse
 
-
-def execute_script(script_path: str, args: list = []):
-    result = subprocess.run([script_path] + list(map(str, args)), capture_output=True, text=True)
-    if result.returncode != 0:
-        raise RuntimeError(f"Script {script_path} failed with error: {result.stderr}")
-    return result.stdout
+from exper.shell_helper import ShellHelper
 
 def get_achieved_RPS(output):
     for line in output.splitlines():
@@ -37,7 +32,7 @@ def get_p50(output):
     return math.inf
 
 class KubeConfigFinder:
-    def __init__(self, core, namespace):
+    def __init__(self, core, namespace, config_file):
         self.core = core
         self.thread = math.floor(core * 0.8)
         self.connection = self.thread
@@ -52,6 +47,9 @@ class KubeConfigFinder:
         self.count = 0
 
         self.batch = 1
+
+        self.shell_helper = ShellHelper(config_file)
+        self.basepath = "~/meshtrek/exper/"
 
     def check_p50(self, p50):
         self.count += 1
@@ -69,18 +67,49 @@ class KubeConfigFinder:
     
     def execute_batch(self, rps):
         avg_p50, avg_rps = 0, 0
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        script_path = os.path.join(base_dir, "./overhead/benchmark.sh")
+        script_path = os.path.join(self.basepath, "./overhead/benchmark.sh")
         for _ in range(self.batch):
-            output = execute_script(script_path, [self.namespace, str(self.thread), str(self.connection), str(rps), str(self.duration)])
+            output = self.shell_helper.execute_script(
+                self.shell_helper.config["nodes"][0],
+                self.shell_helper.config["nodes_user"],
+                script_path,
+                [str(self.namespace), str(self.thread), str(self.connection), str(rps), str(self.duration)]
+            )
             avg_p50 += get_p50(output)
             avg_rps += get_achieved_RPS(output)
             time.sleep(10)
         
         return avg_p50 / self.batch, avg_rps / self.batch
+    
+    def reset_cluster(self):
+        print("[*] Resetting the cluster...")
+
+        # Delete the cluster
+        self.shell_helper.execute_script(
+            self.shell_helper.config["nodes"][0],
+            self.shell_helper.config["nodes_user"],
+            os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
+            ["delete", self.namespace]
+        )
+
+        # Reset the database
+        self.shell_helper.execute_parallel(
+            os.path.join(self.basepath, "./metric/script/reset_database_for_hotel.sh"), mode=1
+        )
+
+        # Restart the cluster
+        self.shell_helper.execute_script(
+            self.shell_helper.config["nodes"][0],
+            self.shell_helper.config["nodes_user"],
+            os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
+            ["launch", self.namespace]
+        )
+        time.sleep(30)
 
     def find_best_RPS(self):
         print("[*] Testing best RPS without CPU limits...")
+
+        self.reset_cluster()
 
         # First get the base p50 with low RPS
         base_p50, _ = self.execute_batch(self.rps_base)
@@ -104,14 +133,17 @@ class KubeConfigFinder:
                 break
             
             current_rps += self.rps_step
-            execute_script(os.path.join(os.path.dirname(__file__), "./script/restart_cluster.sh"), [self.namespace])
-            time.sleep(30)
+            self.reset_cluster()
         
         best_rps = math.floor(achieved_RPS/10) * 10
         print("[*] Finished testing best RPS, result is {} RPS".format(best_rps))
         return best_rps
 
     def find_best_config(self):
+        # clean up the environment first
+        print("[*] Cleaning up the environment...")
+        
+
         # Find best RPS in coarse-grained
         print("[*] Finding best RPS in coarse-grained...")
         best_rps = self.find_best_RPS()
@@ -163,5 +195,6 @@ if __name__ == "__main__":
     parser.add_argument("--namespace", type=str, required=True, help="Kubernetes namespace to use")
     args = parser.parse_args()
 
-    config_finder = KubeConfigFinder(args.core, args.namespace)
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../config.json")
+    config_finder = KubeConfigFinder(args.core, args.namespace, config_path)
     config_finder.find_best_config()

@@ -1,6 +1,5 @@
 import re
 import os
-import json
 from exper.shell_helper import ShellHelper
 
 class KubeSetUp:
@@ -11,7 +10,8 @@ class KubeSetUp:
     def environment_setup(self):
         print("[*] Setting up Kubernetes environment on all nodes...")
         setup_script_path = os.path.join(self.current_dir, "./kube/kube.sh")
-        self.shell_helper.execute_parallel(setup_script_path, mode=0)
+        self.shell_helper.copy_files_to_nodes(setup_script_path, mode=0)
+        self.shell_helper.execute_parallel(self.shell_helper.get_home_path(setup_script_path), mode=0)
 
     def init_kubernetes_on_main(self):
         print("[*] Initializing Kubernetes on main node...")
@@ -37,8 +37,10 @@ class KubeSetUp:
         with open(join_kube_path, "w") as f:
             f.write(f"sudo {join_command}")
 
-        self.shell_helper.execute_parallel(join_kube_path, mode=1)
-        self.shell_helper.execute_parallel(after_join_path, mode=2)
+        self.shell_helper.copy_files_to_nodes(join_kube_path, mode=1)
+        self.shell_helper.execute_parallel(self.shell_helper.get_home_path(join_kube_path), mode=1)
+        self.shell_helper.copy_files_to_nodes(after_join_path, mode=2)
+        self.shell_helper.execute_parallel(self.shell_helper.get_home_path(after_join_path), mode=2)
 
     def kube_cluster_setup(self):
         self.environment_setup()

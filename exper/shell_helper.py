@@ -14,6 +14,11 @@ class ShellHelper:
             config = json.load(f)
         self.config = config
 
+    def get_home_path(self, file_path):
+        filename = os.path.basename(file_path)
+        home_path = os.path.join(self.config["nodes_home"], filename)
+        return home_path
+
     def scp_command(self, local_path, remote_path, node_ip, node_user):
         """
         Generate the scp command to copy a file to a remote node.
@@ -51,30 +56,26 @@ class ShellHelper:
             print(f"File {file} does not exist.")
             exit(1)
 
-    def execute_script(self, node_number, node_ip, node_home, node_user, file):
+    def execute_script(self, node_ip, node_user, file, args=[]):
         """
         Execute the script file on a remote node.
         """
-        print(f"[*] Executing script on node {node_number} ({node_ip})...")
-        file = os.path.basename(file)
+        # print(f"[*] Executing script on node {node_number} ({node_ip})...")
         chmod_command = [
             'ssh', f'{node_user}@{node_ip}',
-            'chmod', '+x', os.path.join(node_home, file)
+            'chmod', '+x', file
         ]
         subprocess.run(chmod_command, check=True)
 
         command = [
             'ssh', f'{node_user}@{node_ip}',
-            '/bin/bash', os.path.join(node_home, file)
+            '/bin/bash', file, *args
         ]
         result = subprocess.run(command, check=True, capture_output=True, text=True)
         return result.stdout.strip()
 
-    def execute_parallel(self, file=None, mode=0):
+    def execute_parallel(self, file=None, mode=0, args=[]):
         config = self.config
-
-        # check if the file exists and copy it to the nodes
-        self.copy_files_to_nodes(file, mode)
 
         # execute the setup script on each node
         processes = []
@@ -85,7 +86,7 @@ class ShellHelper:
             if mode == 2 and i != 0:
                 # skip worker nodes if main_mode is enabled
                 continue
-            args = (i, node, config["nodes_home"], config["nodes_user"], file)
+            args = (node, config["nodes_user"], file, args)
             p = Process(target=self.execute_script, args=args)
             processes.append(p)
             p.start()
@@ -121,4 +122,5 @@ if __name__ == "__main__":
         help_text = parser.format_help()
         print(help_text)
         exit(1)
+    shell_helper.copy_files_to_nodes(file, mode)
     shell_helper.execute_parallel(file, mode)

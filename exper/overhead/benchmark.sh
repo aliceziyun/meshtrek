@@ -17,7 +17,7 @@ benchmark_hotel() {
     echo "Benchmarking Hotel Reservation Service" | tee -a "$OUTPUT_FILE"
     echo "Threads: $THREADS, Connections: $CONNECTIONS, Target RPS: $TARGET_RPS, Duration: $DURATION seconds" | tee -a "$OUTPUT_FILE"
 
-    ~/DeathStarBench/wrk2/wrk -D exp -t "$THREADS" -c "$CONNECTIONS" -d "$DURATION" -L -s ~/meshtrek/setup/benchmark/HotelReserve/wrk2/frontend_normal.lua "http://$request_url" -R "$TARGET_RPS"
+    ~/DeathStarBench/wrk2/wrk -D exp -t "$THREADS" -c "$CONNECTIONS" -d "$DURATION" -L -s ~/meshtrek/resources/benchmark/HotelReserve/wrk2/frontend_normal.lua "http://$request_url" -R "$TARGET_RPS"
 
     wait
 }

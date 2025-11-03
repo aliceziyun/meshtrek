@@ -71,6 +71,7 @@ class ShellHelper:
             'ssh', f'{node_user}@{node_ip}',
             '/bin/bash', file, *args
         ]
+
         result = subprocess.run(command, check=True, capture_output=True, text=True)
         return result.stdout.strip()
 
@@ -86,8 +87,8 @@ class ShellHelper:
             if mode == 2 and i != 0:
                 # skip worker nodes if main_mode is enabled
                 continue
-            args = (node, config["nodes_user"], file, args)
-            p = Process(target=self.execute_script, args=args)
+            execute_args = (node, config["nodes_user"], file, args)
+            p = Process(target=self.execute_script, args=execute_args)
             processes.append(p)
             p.start()
 
@@ -123,4 +124,4 @@ if __name__ == "__main__":
         print(help_text)
         exit(1)
     shell_helper.copy_files_to_nodes(file, mode)
-    shell_helper.execute_parallel(file, mode)
+    shell_helper.execute_parallel(shell_helper.get_home_path(file), mode)

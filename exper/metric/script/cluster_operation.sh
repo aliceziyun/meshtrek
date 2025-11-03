@@ -7,7 +7,7 @@ launch() {
     if [ "$NAMESPACE" == "hotel" ]; then
         echo "Restarting Hotel Reservation Service cluster in namespace: $NAMESPACE"
         sleep 5
-        kubectl apply -Rf ~/meshtrek/setup/benchmark/HotelReserve/kubernetes -n hotel
+        kubectl apply -Rf ~/meshtrek/resources/benchmark/HotelReserve/kubernetes -n hotel
 
         echo "Waiting for pods to be ready..."
         for i in {1..60}; do
@@ -29,7 +29,7 @@ launch() {
 delete() {
     if [ "$NAMESPACE" == "hotel" ]; then
         echo "Deleting Hotel Reservation Service cluster in namespace: $NAMESPACE"
-        kubectl delete -Rf ~/meshtrek/setup/benchmark/HotelReserve/kubernetes -n hotel
+        kubectl delete -Rf ~/meshtrek/resources/benchmark/HotelReserve/kubernetes -n hotel
     else
         echo "Unsupported namespace: $NAMESPACE"
         exit 1

@@ -89,7 +89,7 @@ class KubeConfigFinder:
             self.shell_helper.config["nodes"][0],
             self.shell_helper.config["nodes_user"],
             os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
-            ["delete", self.namespace]
+            [self.namespace, "delete"]
         )
 
         # Reset the database
@@ -102,7 +102,7 @@ class KubeConfigFinder:
             self.shell_helper.config["nodes"][0],
             self.shell_helper.config["nodes_user"],
             os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
-            ["launch", self.namespace]
+            [self.namespace, "launch"]
         )
         time.sleep(30)
 

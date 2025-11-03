@@ -46,7 +46,7 @@ trace_hotel() {
     echo "Request URL: $request_url"
     echo "Running RPS=$RPS..."
 
-    ~/DeathStarBench/wrk2/wrk -D exp -t 6 -c 10 -d "$DURATION" -L -s ~/meshtrek/setup/benchmark/HotelReserve/wrk2/frontend_normal.lua "http://$request_url" -R $RPS
+    ~/DeathStarBench/wrk2/wrk -D exp -t 6 -c 10 -d "$DURATION" -L -s ~/meshtrek/resources/benchmark/HotelReserve/wrk2/frontend_normal.lua "http://$request_url" -R $RPS
 
     wait
 

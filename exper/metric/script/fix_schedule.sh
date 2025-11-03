@@ -7,7 +7,7 @@ if [ ${#nodes[@]} -eq 0 ]; then
   exit 1
 fi
 
-base_dir="$HOME/meshtrek/setup/benchmark/HotelReserve/kubernetes"
+base_dir="$HOME/meshtrek/resources/benchmark/HotelReserve/kubernetes"
 group_one=("frontend" "search" "recommendation" "consul")
 group_two=("rate" "profile" "user")
 group_three=("reservation" "geo" "jaeger")

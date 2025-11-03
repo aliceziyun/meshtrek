@@ -28,7 +28,7 @@ spec:
       containers:
         - command:
             - /go/bin/search
-          image: deathstarbench/hotel-reservation:latest
+          image: docker.io/alicesong2002/hotel-reservation-modified:v1.2
           name: hotel-reserv-search
           ports:
             - containerPort: 8082

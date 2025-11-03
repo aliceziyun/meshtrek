@@ -28,7 +28,7 @@ spec:
       containers:
         - command:
             - /go/bin/frontend
-          image: deathstarbench/hotel-reservation:latest
+          image: docker.io/alicesong2002/hotel-reservation-modified:v1.2
           name: hotel-reserv-frontend
           ports:
             - containerPort: 5000

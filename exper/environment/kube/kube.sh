@@ -9,7 +9,8 @@ sudo apt update -yq
 sudo apt install docker.io -yq
 sudo systemctl enable docker
 
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key \
+  | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 sudo apt update -yq
 sudo apt install kubeadm kubelet kubectl -yq
@@ -44,3 +45,5 @@ sudo tee /etc/docker/daemon.json <<EOF
        }
 EOF
 sudo systemctl daemon-reload && sudo systemctl restart docker
+
+git clone https://github.com/aliceziyun/meshtrek.git ~/meshtrek

@@ -18,7 +18,7 @@ class KubeSetUp:
         config = self.shell_helper.config
         init_script_path = os.path.join(self.current_dir, "./kube/init_kube.sh")
         self.shell_helper.copy_files_to_nodes(init_script_path, mode=2)
-        result = self.shell_helper.execute_script(config["nodes"][0], config["nodes_user"], init_script_path)
+        result = self.shell_helper.execute_script(config["nodes"][0], config["nodes_user"], self.shell_helper.get_home_path(init_script_path))
         match = re.search(r"(kubeadm join\s[\s\S]+?)(?:\n\n|\Z)", str(result))
         join_command = ""
         if match:

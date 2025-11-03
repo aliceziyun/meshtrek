@@ -1,2 +1,1 @@
-git clone https://github.com/aliceziyun/meshtrek.git ~/meshtrek
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --upload-certs

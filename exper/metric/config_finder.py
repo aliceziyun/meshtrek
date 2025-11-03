@@ -4,6 +4,7 @@ import math
 import time
 import argparse
 
+
 def execute_script(script_path: str, args: list = []):
     result = subprocess.run([script_path] + list(map(str, args)), capture_output=True, text=True)
     if result.returncode != 0:

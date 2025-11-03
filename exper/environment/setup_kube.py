@@ -1,7 +1,7 @@
 import re
 import os
 import json
-from shell_helper import ShellHelper
+from exper.shell_helper import ShellHelper
 
 class KubeSetUp:
     def __init__(self, config_path):
@@ -47,5 +47,5 @@ class KubeSetUp:
 
 if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    kube_setup = KubeSetUp(os.path.join(current_dir, "./config.json"))
+    kube_setup = KubeSetUp(os.path.join(current_dir, "../config.json"))
     kube_setup.kube_cluster_setup()

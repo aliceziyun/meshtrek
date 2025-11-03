@@ -104,7 +104,7 @@ class KubeConfigFinder:
             
             current_rps += self.rps_step
             execute_script(os.path.join(os.path.dirname(__file__), "./script/restart_cluster.sh"), [self.namespace])
-            time.sleep(60)
+            time.sleep(30)
         
         best_rps = math.floor(achieved_RPS/10) * 10
         print("[*] Finished testing best RPS, result is {} RPS".format(best_rps))

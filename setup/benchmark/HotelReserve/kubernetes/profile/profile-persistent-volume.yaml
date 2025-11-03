@@ -9,6 +9,7 @@ spec:
   capacity:
     storage: 1Gi
   storageClassName: profile-storage
+  persistentVolumeReclaimPolicy: Delete
   hostPath:
     path: /data/volumes/profile-pv   # Where all the hard drives are mounted
     type: DirectoryOrCreate

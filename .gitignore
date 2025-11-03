@@ -18,3 +18,5 @@ output.log
 *.png
 /result_metric
 *.pdf
+*.pyc
+*.log

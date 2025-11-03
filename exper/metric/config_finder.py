@@ -40,8 +40,9 @@ class KubeConfigFinder:
         self.namespace = namespace
         self.duration = 30
 
-        self.rps_start = 100
+        self.rps_start = 500
         self.rps_step = 100
+        self.end_rps = 700
         
         self.base_p50 = 0
         self.count = 0
@@ -77,7 +78,7 @@ class KubeConfigFinder:
             )
             avg_p50 += get_p50(output)
             avg_rps += get_achieved_RPS(output)
-            time.sleep(10)
+            self.reset_cluster()
         
         return avg_p50 / self.batch, avg_rps / self.batch
     
@@ -109,8 +110,6 @@ class KubeConfigFinder:
     def find_best_RPS(self):
         print("[*] Testing best RPS without CPU limits...")
 
-        self.reset_cluster()
-
         # First get the base p50 with low RPS
         base_p50, _ = self.execute_batch(self.rps_base)
 
@@ -128,12 +127,11 @@ class KubeConfigFinder:
                 print("[*] Achieved RPS is 0, stopping test.")
                 break
 
-            if p50 > base_p50 * 2:
+            if p50 > self.base_p50 * 1.5:
                 print(f"[*] p50 latency {p50} ms exceeded base p50 latency threshold, stopping test.")
                 break
             
             current_rps += self.rps_step
-            self.reset_cluster()
         
         best_rps = math.floor(achieved_RPS/10) * 10
         print("[*] Finished testing best RPS, result is {} RPS".format(best_rps))
@@ -142,7 +140,7 @@ class KubeConfigFinder:
     def find_best_config(self):
         # clean up the environment first
         print("[*] Cleaning up the environment...")
-        
+        self.reset_cluster()
 
         # Find best RPS in coarse-grained
         print("[*] Finding best RPS in coarse-grained...")
@@ -150,12 +148,13 @@ class KubeConfigFinder:
 
         # Find best RPS in fine-grained
         print("[*] Finding best RPS in fine-grained...")
-        self.rps_start = best_rps - self.rps_step
+        self.batch = 3
+        self.duration = 60
+        self.rps_start = best_rps - 100
         self.rps_step = 10
         best_rps = self.find_best_RPS()
 
         # Find best thread
-        self.duration = 60
         print("[*] Finding best thread...")
         self.rps_start = best_rps
         best_thread = self.thread
@@ -189,6 +188,32 @@ class KubeConfigFinder:
 
         print(f"[*] Best configuration found: thread={self.thread}, connection={self.connection}, best RPS={best_rps}")
 
+    # def do_repeat_measurement(self):
+    #     print("[*] Starting repeat measurements...")
+    #     print("[*] Cleaning up the environment...")
+    #     self.reset_cluster()
+
+    #     self.batch = 3
+    #     self.rps_step = 10
+    #     _ = self.find_best_RPS()
+
+    #     print("--------------------------------------------------")
+
+    #     while self.thread < 20:
+    #         self.thread += 1
+    #         self.connection = self.thread
+    #         print(f"[*] Testing with thread={self.thread}, connection={self.connection}")
+    #         _ = self.find_best_RPS()
+
+    #     print("--------------------------------------------------")
+
+    #     self.connection = 12
+    #     self.thread = 12
+    #     while self.connection < 30:
+    #         self.connection += 2
+    #         print(f"[*] Testing with thread={self.thread}, connection={self.connection}")
+    #         _ = self.find_best_RPS()
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Find the best Kubernetes configuration")
     parser.add_argument("--core", type=int, required=True, help="Number of CPU cores available")
@@ -197,4 +222,5 @@ if __name__ == "__main__":
 
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../config.json")
     config_finder = KubeConfigFinder(args.core, args.namespace, config_path)
+    # config_finder.do_repeat_measurement()
     config_finder.find_best_config()

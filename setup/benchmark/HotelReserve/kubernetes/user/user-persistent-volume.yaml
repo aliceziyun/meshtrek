@@ -9,7 +9,7 @@ spec:
   capacity:
     storage: 1Gi
   storageClassName: user-storage
-  persistentVolumeReclaimPolicy: Delete
+  
   hostPath:
     path: /data/volumes/user-pv   # Where all the hard drives are mounted
     type: DirectoryOrCreate

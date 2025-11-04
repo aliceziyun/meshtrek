@@ -60,12 +60,37 @@ spec:
           subPath: {{ $configMap.name }}
         {{- end }}
         {{- end }}
-      {{- end -}}
+      - name: istio-proxy
+        image: docker.io/alicesong2002/modified_istio_proxy:v15.0
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: true
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN"]
+        volumeMounts:
+          - mountPath: /lib/modules
+            name: lib-modules
+          - mountPath: /usr/src
+            name: linux-headers
+          - name: tmp
+            mountPath: /tmp
+      {{- end -}}        
       {{- if $.Values.configMaps }}
       volumes:
       - name: {{ $.Values.name }}-config
         configMap:
           name: {{ $.Values.name }}
+      - name: tmp
+        emptyDir: {}
+      - name: lib-modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: linux-headers
+        hostPath:
+          path: /usr/src
+          type: Directory
       {{- end }}
       {{- if hasKey .Values "topologySpreadConstraints" }}
       topologySpreadConstraints:

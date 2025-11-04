@@ -1,4 +1,4 @@
-{{- define "socialnetwork.templates.baseDeployment" }}
+{{- define "socialnetwork.templates.baseNginxDeployment" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,10 +15,7 @@ spec:
       labels:
         service: {{ .Values.name }}
         app: {{ .Values.name }}
-    spec:
-      {{- if .Values.nodeName}}
-      nodeName: {{ .Values.nodeName }}
-      {{ end }}
+    spec: 
       containers:
       {{- with .Values.container }}
       - name: "{{ .name }}"
@@ -45,7 +42,7 @@ spec:
         - {{ $arg }}
         {{- end -}}
         {{- end }}
-        {{- if hasKey . "resources" }}  
+        {{- if .resources }}  
         resources:
           {{ toYaml .resources | nindent 10 | trim }}
         {{- else if hasKey $.Values.global "resources" }}           
@@ -57,16 +54,89 @@ spec:
         {{- range $configMap := $.Values.configMaps }}
         - name: {{ $.Values.name }}-config
           mountPath: {{ $configMap.mountPath }}
-          subPath: {{ $configMap.name }}
+          subPath: {{ $configMap.name }}        
+        {{- end }}
+        {{- range .volumeMounts }}
+        - name: {{ .name }}
+          mountPath: {{ .mountPath }}
+        {{- end }}
+        {{- end }}
+      - name: istio-proxy
+        image: docker.io/alicesong2002/modified_istio_proxy:v15.0
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: true
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN"]
+        volumeMounts:
+          - mountPath: /lib/modules
+            name: lib-modules
+          - mountPath: /usr/src
+            name: linux-headers
+          - name: tmp
+            mountPath: /tmp
+      {{- end }}
+
+      initContainers:
+      {{- with .Values.initContainer }}
+      - name: "{{ .name }}"
+        image: {{ .dockerRegistry | default $.Values.global.dockerRegistry }}/{{ .image }}:{{ .imageVersion | default $.Values.global.defaultImageVersion }}
+        imagePullPolicy: {{ .imagePullPolicy | default $.Values.global.imagePullPolicy }}
+        {{- if .command}}
+        command: 
+        - {{ .command }}
+        {{- end -}}
+        {{- if .resources }}
+        resources:
+          {{ toYaml .resources | nindent 10 | trim }}
+        {{- else if hasKey $.Values.global "resources" }}
+        resources:
+          {{ toYaml $.Values.global.resources | nindent 10 | trim }}
+        {{- end }}
+        {{- if .env }}
+        env:
+        {{- range $e := .env}}
+        - name: {{ $e.name }}
+          value: "{{ (tpl ($e.value | toString) $) }}"
+        {{ end -}}
+        {{ end -}}
+        {{- if .args}}
+        args:
+        {{- range $arg := .args}}
+        - {{ $arg }}
+        {{- end -}}
+        {{- end }}
+        {{- if .volumeMounts }}        
+        volumeMounts: 
+        {{- range .volumeMounts }}
+        - name: {{ .name }}
+          mountPath: {{ .mountPath }}
         {{- end }}
         {{- end }}
       {{- end -}}
+
       {{- if $.Values.configMaps }}
       volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: lib-modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: linux-headers
+        hostPath:
+          path: /usr/src
+          type: Directory
       - name: {{ $.Values.name }}-config
         configMap:
           name: {{ $.Values.name }}
+      {{- range $.Values.volumes }}
+      - name: {{ .name }}
+        emptyDir: {}
       {{- end }}
+      {{- end }}
+      
       {{- if hasKey .Values "topologySpreadConstraints" }}
       topologySpreadConstraints:
         {{ tpl .Values.topologySpreadConstraints . | nindent 6 | trim }}

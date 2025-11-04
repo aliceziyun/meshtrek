@@ -156,10 +156,10 @@ class KubeConfigFinder:
 
         # Find best thread
         print("[*] Finding best thread...")
-        self.rps_start = best_rps
         best_thread = self.thread
         best_connection = self.connection
         while True:
+            self.rps_start = best_rps
             self.thread += 1
             self.connection = self.thread
             print(f"[*] Testing with thread={self.thread}, connection={self.connection}")
@@ -176,6 +176,7 @@ class KubeConfigFinder:
         # Find best connection
         print("[*] Finding best connection...")
         while True:
+            self.rps_start = best_rps
             self.connection += 2
             print(f"[*] Testing with thread={self.thread}, connection={self.connection}")
             achieved_RPS = self.find_best_RPS()

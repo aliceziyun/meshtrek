@@ -18,13 +18,11 @@ sed -i 's|- ./user|- /go/bin/user|' ~/DeathStarBench/hotelReservation/kubernetes
 sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
 sudo chmod +x /usr/local/bin/yq
 
-~/meshtrek/exper/metric/script/fix_schedule.sh
+~/meshtrek/exper/metric/script/fix_schedule_hotel.sh
 
 # deploy DeathStar
 cd ~/DeathStarBench/
 kubectl create namespace hotel
-# sudo ~/DeathStarBench/hotelReservation/kubernetes/scripts/build-docker-images.sh
-# kubectl apply -Rf ~/DeathStarBench/hotelReservation/kubernetes/ -n hotel
 kubectl apply -Rf ~/meshtrek/resources/benchmark/HotelReserve/kubernetes/ -n hotel
 
 cd ~/DeathStarBench/wrk2

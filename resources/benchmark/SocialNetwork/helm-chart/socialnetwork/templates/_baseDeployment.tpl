@@ -16,9 +16,10 @@ spec:
         service: {{ .Values.name }}
         app: {{ .Values.name }}
     spec:
-      {{- if .Values.nodeName}}
-      nodeName: {{ .Values.nodeName }}
+      {{- if .Values.nodeSelector}}
+      nodeSelector: {{ .Values.nodeSelector }}
       {{ end }}
+
       containers:
       {{- with .Values.container }}
       - name: "{{ .name }}"

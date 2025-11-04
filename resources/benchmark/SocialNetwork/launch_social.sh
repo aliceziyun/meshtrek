@@ -4,8 +4,11 @@ chmod 700 get_helm.sh
 
 git clone https://github.com/delimitrou/DeathStarBench.git ~/DeathStarBench
 
+# fix scheduling
+~/meshtrek/exper/metric/script/fix_schedule_social.sh
+
 kubectl create ns social
-# helm install socialnetwork ~/DeathStarBench/socialNetwork/helm-chart/socialnetwork/ --namespace social
+helm install socialnetwork ~/meshtrek/resources/benchmark/SocialNetwork/helm-chart/socialnetwork/ --namespace social
 
 sudo apt-get -y install luarocks
 sudo luarocks install luasocket

@@ -17,9 +17,8 @@ spec:
         app: {{ .Values.name }}
     spec:
       {{- if .Values.nodeSelector}}
-      nodeSelector: {{ .Values.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 8 }}
       {{ end }}
-
       containers:
       {{- with .Values.container }}
       - name: "{{ .name }}"

@@ -46,6 +46,7 @@ class MeshConfigFinder:
 
         self.rps_step = 100
         self.rps_base = 30
+        self.duration = 30
         
         self.base_p50 = 0
         self.count = 0
@@ -109,7 +110,7 @@ class MeshConfigFinder:
             os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
             [self.namespace, "launch"]
         )
-        time.sleep(30)
+        time.sleep(15)
 
     def set_cpu_limit(self, cpu_limit):
         self.shell_helper.execute_script(
@@ -174,7 +175,7 @@ class MeshConfigFinder:
             # Directly do test
             print("[*] Finding best RPS in fine-grained...")
             self.batch = 2
-            self.duration = 60
+            self.duration = 40
             self.rps_start = best_rps - 100
             rps_end = best_rps + 40
             self.rps_step = 20

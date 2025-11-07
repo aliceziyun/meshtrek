@@ -24,7 +24,7 @@ benchmark_hotel() {
 
 benchmark_social() {
     NAMESPACE="social"
-    local ip=$(kubectl get service nginx -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
+    local ip=$(kubectl get service nginx-thrift -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
     local port=8080
     local request_url="${ip}:${port}/wrk2-api/post/compose"
     OUTPUT_FILE="social_benchmark_results.txt"
@@ -32,7 +32,7 @@ benchmark_social() {
     echo "Benchmarking Social Network Service" | tee -a "$OUTPUT_FILE"
     echo "Threads: $THREADS, Connections: $CONNECTIONS, Target RPS: $TARGET_RPS, Duration: $DURATION seconds" | tee -a "$OUTPUT_FILE"
 
-    ~/DeathStarBench/wrk2/wrk -D exp -t "$THREADS" -c "$CONNECTIONS" -d "$DURATION" -L ~/meshtrek/resources/benchmark/SocialNetwork/wrk2/mixed_workload.lua "http://$request_url" -R "$TARGET_RPS"
+    ~/DeathStarBench/wrk2/wrk -D exp -t "$THREADS" -c "$CONNECTIONS" -d "$DURATION" -L -s ~/meshtrek/resources/benchmark/SocialNetwork/mixed_workload.lua "http://$request_url" -R "$TARGET_RPS"
 
     wait
 }

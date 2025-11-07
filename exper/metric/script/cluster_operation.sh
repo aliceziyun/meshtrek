@@ -31,6 +31,13 @@ launch() {
 }
 
 delete() {
+    # get pod, if no pod, skip
+    local pods=$(kubectl get pods -n "$NAMESPACE" --no-headers 2>/dev/null | awk '{print $1}')
+    if [ -z "$pods" ]; then
+        echo "No pods found in namespace: $NAMESPACE"
+        return
+    fi
+
     if [ "$NAMESPACE" == "hotel" ]; then
         echo "Deleting Hotel Reservation Service cluster in namespace: $NAMESPACE"
         kubectl delete -Rf ~/meshtrek/resources/benchmark/HotelReserve/kubernetes -n hotel

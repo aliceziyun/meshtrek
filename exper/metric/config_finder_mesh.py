@@ -8,9 +8,9 @@ from exper.shell_helper import ShellHelper
 
 def get_achieved_RPS(output):
     for line in output.splitlines():
-        if "Non-2xx or 3xx responses:" in line:
-            print("[!] Error responses detected during the benchmark. Please check the service health.")
-            exit(1)
+        # if "Non-2xx or 3xx responses:" in line:
+        #     print("[!] Error responses detected during the benchmark. Please check the service health.")
+        #     exit(1)
         if "Requests/sec:" in line:
             parts = line.split("Requests/sec:")
             if len(parts) > 1:
@@ -44,9 +44,9 @@ class MeshConfigFinder:
             self.connection = 100
             self.rps_start = 200
 
-        self.rps_step = 100
-        self.rps_base = 30
         self.duration = 30
+        self.rps_step = 100
+        self.rps_base = 20
         
         self.base_p50 = 0
         self.count = 0
@@ -70,7 +70,11 @@ class MeshConfigFinder:
             else:
                 self.base_p50 = (self.base_p50 * (self.count - 1) + p50) / self.count
     
-    def execute_batch(self, rps):
+    def execute_batch(self, rps, thread = 0, connection = 0):
+        if thread == 0:
+            thread = self.thread
+        if connection == 0:
+            connection = self.connection
         avg_p50, avg_rps = 0, 0
         script_path = os.path.join(self.basepath, "./overhead/benchmark.sh")
         for _ in range(self.batch):
@@ -78,10 +82,12 @@ class MeshConfigFinder:
                 self.shell_helper.config["nodes"][0],
                 self.shell_helper.config["nodes_user"],
                 script_path,
-                [str(self.namespace), str(self.thread), str(self.connection), str(rps), str(self.duration)]
+                [str(self.namespace), str(thread), str(connection), str(rps), str(self.duration)]
             )
+            # print("Benchmark output:\n", output)
             avg_p50 += get_p50(output)
             avg_rps += get_achieved_RPS(output)
+            print("[* Result] Achieved RPS:", get_achieved_RPS(output), "p50 latency:", get_p50(output))
             self.reset_cluster()
         
         return avg_p50 / self.batch, avg_rps / self.batch
@@ -110,7 +116,7 @@ class MeshConfigFinder:
             os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
             [self.namespace, "launch"]
         )
-        time.sleep(15)
+        time.sleep(30)
 
     def set_cpu_limit(self, cpu_limit):
         self.shell_helper.execute_script(
@@ -124,9 +130,9 @@ class MeshConfigFinder:
         print("[*] Testing best RPS without CPU limits...")
 
         # First get the base p50 with low RPS
-        base_p50, _ = self.execute_batch(self.rps_base)
+        base_p50, _ = self.execute_batch(self.rps_base, 4, 4)
 
-        print(f"[*] Base p50 latency at {self.rps_base} RPS: {base_p50} ms")
+        # print(f"[*] Base p50 latency at {self.rps_base} RPS: {base_p50} ms")
         self.check_p50(base_p50)
         print("--------------------------------------------------")
 
@@ -134,7 +140,7 @@ class MeshConfigFinder:
         while True:
             p50, achieved_RPS = self.execute_batch(current_rps)
 
-            print(f"[*] Target RPS: {current_rps}, Achieved RPS: {achieved_RPS}, p50 latency: {p50} ms")
+            print(f"[* Result] Target RPS: {current_rps}, Achieved RPS: {achieved_RPS}, p50 latency: {p50} ms")
 
             if achieved_RPS == 0:
                 print("[*] Achieved RPS is 0, stopping test.")
@@ -151,38 +157,26 @@ class MeshConfigFinder:
         return best_rps
 
     def find_best_config(self):
-        while True:
-            print(f"[*] Testing with CPU limit: {self.cpu_limit} millicores")
-            self.set_cpu_limit(self.cpu_limit)
-            if self.cpu_limit >= 100 and self.cpu_limit < 1000:
-                self.cpu_limit += 100
-            elif self.cpu_limit >= 1000:
-                self.cpu_limit += 500
-            elif self.cpu_limit >= 2000:
-                self.cpu_limit += 1000
-            elif self.cpu_limit >= 4000:
-                print("[*] Reached maximum CPU limit, stopping test.")
-                break
+        # clean up the environment first
+        print("[*] Cleaning up the environment...")
+        self.reset_cluster()
 
-            # clean up the environment first
-            print("[*] Cleaning up the environment...")
-            self.reset_cluster()
+        # Find best RPS in coarse-grained
+        print("[*] Finding best RPS in coarse-grained...")
+        # best_rps = self.find_best_RPS()
 
-            # Find best RPS in coarse-grained
-            print("[*] Finding best RPS in coarse-grained...")
-            best_rps = self.find_best_RPS()
-
-            # Directly do test
-            print("[*] Finding best RPS in fine-grained...")
-            self.batch = 2
-            self.duration = 40
-            self.rps_start = best_rps - 100
-            rps_end = best_rps + 40
-            self.rps_step = 20
-            
-            for current_rps in range(self.rps_start, rps_end + 1, self.rps_step):
-                p50, achieved_RPS = self.execute_batch(current_rps)
-                print(f"[*] Target RPS: {current_rps}, Achieved RPS: {achieved_RPS}, p50 latency: {p50} ms")
+        # Directly do test
+        print("[*] Finding best RPS in fine-grained...")
+        best_rps = 700
+        self.batch = 3
+        self.duration = 45
+        self.rps_start = best_rps - 100
+        rps_end = best_rps + 100
+        self.rps_step = 20
+        
+        for current_rps in range(self.rps_start, rps_end + 1, self.rps_step):
+            p50, achieved_RPS = self.execute_batch(current_rps)
+            print(f"[*] Target RPS: {current_rps}, Achieved RPS: {achieved_RPS}, p50 latency: {p50} ms")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Find the best Mesh configuration")

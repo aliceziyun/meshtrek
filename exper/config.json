@@ -1,11 +1,12 @@
 {
     "nodes_user": "aliceso",
-    "nodes_number": 4,
+    "nodes_number": 5,
     "nodes": [
-        "clnode152.clemson.cloudlab.us",
-        "clnode161.clemson.cloudlab.us",
-        "clnode156.clemson.cloudlab.us",
-        "clnode135.clemson.cloudlab.us"
+        "ms1215.utah.cloudlab.us",
+        "ms1217.utah.cloudlab.us",
+        "ms1243.utah.cloudlab.us",
+        "ms1220.utah.cloudlab.us",
+        "ms1211.utah.cloudlab.us"
     ],
     "nodes_home": "/users/aliceso"
 }

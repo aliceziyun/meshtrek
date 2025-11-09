@@ -3,11 +3,11 @@ apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
   name: "l7-empty"
-  namespace: default
+  namespace: hotel
 spec:
   endpointSelector:
     matchLabels:
-      "k8s:io.kubernetes.pod.namespace": default
+      app: hotel
   ingress:
   - fromEntities:
       - cluster
@@ -19,7 +19,6 @@ spec:
       rules:
         http: [{}]
   - fromEndpoints:
-    - matchLabels: {}
     toPorts:
     - ports:
       - port: "1"

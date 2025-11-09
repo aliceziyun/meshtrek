@@ -12,6 +12,11 @@ group_one=("frontend" "search" "recommendation" "consul")
 group_two=("rate" "profile" "user")
 group_three=("reservation" "geo" "jaeger")
 
+# group_one=("search" "consul")
+# group_two=("rate" "profile" "user")
+# group_three=("reservation" "geo" "jaeger")
+# group_four=("frontend" "recommendation")
+
 patch_group() {
   local group_name="$1"
   local node="$2"
@@ -38,5 +43,6 @@ patch_group() {
 patch_group "group_one"   "${nodes[0]}" "${group_one[@]}"
 patch_group "group_two"   "${nodes[1]}" "${group_two[@]}"
 patch_group "group_three" "${nodes[2]}" "${group_three[@]}"
+# patch_group "group_four"  "${nodes[3]}" "${group_four[@]}"
 
 echo "Scheduling completed, please check the directory"

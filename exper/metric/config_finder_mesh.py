@@ -95,6 +95,15 @@ class MeshConfigFinder:
     def reset_cluster(self):
         print("[*] Resetting the cluster...")
 
+        if self.mesh_type == "ambient":
+            # Reconfigure ambient waypoints
+            self.shell_helper.execute_script(
+                self.shell_helper.config["nodes"][0],
+                self.shell_helper.config["nodes_user"],
+                os.path.join(self.basepath, "./metric/script/ambient_config.sh"),
+                ["delete"]
+            )
+
         # Delete the cluster
         self.shell_helper.execute_script(
             self.shell_helper.config["nodes"][0],
@@ -109,6 +118,15 @@ class MeshConfigFinder:
                 os.path.join(self.basepath, "./metric/script/reset_database_for_hotel.sh"), mode=1
             )
 
+        if self.mesh_type == "ambient":
+            # Reconfigure ambient waypoints
+            self.shell_helper.execute_script(
+                self.shell_helper.config["nodes"][0],
+                self.shell_helper.config["nodes_user"],
+                os.path.join(self.basepath, "./metric/script/ambient_config.sh"),
+                ["apply"]
+            )
+
         # Restart the cluster
         self.shell_helper.execute_script(
             self.shell_helper.config["nodes"][0],
@@ -116,7 +134,15 @@ class MeshConfigFinder:
             os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
             [self.namespace, "launch"]
         )
-        time.sleep(30)
+
+        if self.mesh_type == "ambient":
+            self.shell_helper.execute_script(
+                self.shell_helper.config["nodes"][0],
+                self.shell_helper.config["nodes_user"],
+                os.path.join(self.basepath, "./metric/script/ambient_config.sh"),
+                ["bind"]
+            )
+        time.sleep(15)
 
     def set_cpu_limit(self, cpu_limit):
         self.shell_helper.execute_script(
@@ -163,15 +189,14 @@ class MeshConfigFinder:
 
         # Find best RPS in coarse-grained
         print("[*] Finding best RPS in coarse-grained...")
-        # best_rps = self.find_best_RPS()
+        best_rps = self.find_best_RPS()
 
         # Directly do test
         print("[*] Finding best RPS in fine-grained...")
-        best_rps = 700
         self.batch = 3
         self.duration = 45
-        self.rps_start = best_rps - 100
-        rps_end = best_rps + 100
+        self.rps_start = best_rps - 200
+        rps_end = best_rps + 400
         self.rps_step = 20
         
         for current_rps in range(self.rps_start, rps_end + 1, self.rps_step):

@@ -6,11 +6,9 @@ OPERATION=$2
 launch() {
     if [ "$NAMESPACE" == "hotel" ]; then
         echo "Restarting Hotel Reservation Service cluster in namespace: $NAMESPACE"
-        sleep 5
         kubectl apply -Rf ~/meshtrek/resources/benchmark/HotelReserve/kubernetes -n hotel
     elif [ "$NAMESPACE" == "social" ]; then
         echo "Restarting Social Network Service cluster in namespace: $NAMESPACE"
-        sleep 5
         helm install socialnetwork ~/meshtrek/resources/benchmark/SocialNetwork/helm-chart/socialnetwork/ --namespace social
     else
         echo "Unsupported namespace: $NAMESPACE"

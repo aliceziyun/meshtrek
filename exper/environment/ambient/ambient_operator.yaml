@@ -1,0 +1,14 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: operator
+  profile: ambient
+spec:
+  values:
+    global:
+      waypoint:
+        resources:
+          requests:
+            null
+          limits:
+            null

@@ -154,6 +154,11 @@ elif [ "$1" == "apply_three_node" ]; then
   apply_three_node
 elif [ "$1" == "bind_three_node" ]; then
   bind_three_node
+elif [ "$1" == "apply_each_service" ]; then
+  apply_each_service
+elif [ "$1" == "bind_each_service" ]; then
+  bind_each_service
 else
-  echo "Usage: $0"
+  echo "Usage"
+  exit 1
 fi

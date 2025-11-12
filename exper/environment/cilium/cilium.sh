@@ -6,4 +6,4 @@ sha256sum --check cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
 sudo tar xzvfC cilium-linux-${CLI_ARCH}.tar.gz /usr/local/bin
 rm cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
 
-cilium install --version 1.17.4
+cilium install --version 1.18.0

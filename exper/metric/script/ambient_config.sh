@@ -18,6 +18,10 @@ apply_three_node() {
   done
 
   for i in "${!nodes[@]}"; do
+    # skip the last node
+    if [ $i -ge 3 ]; then
+      break
+    fi
     node="${nodes[$i]}"
     waypoint="${waypoints[$((i % 3))]}"
 
@@ -63,7 +67,6 @@ apply_each_service() {
   node4_services=("frontend" "recommendation" "mongodb-recommendation")
 
   nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
-  declare -n services_arr
 
   for i in {1..4}; do
     node="${nodes[$((i-1))]}"
@@ -74,7 +77,9 @@ apply_each_service() {
 
       echo "Applying waypoint [$waypoint] for service [$svc] on node [$node]"
 
-      istioctl waypoint apply -n hotel --name "$waypoint" --service "$svc"
+      istioctl waypoint apply -n hotel --name "$waypoint"
+
+      sleep 1
 
       kubectl patch deploy "$waypoint" -n hotel --type=json \
       -p='[
@@ -88,6 +93,8 @@ apply_each_service() {
       echo "Patched waypoint [$waypoint] to node [$node]"
     done
   done
+
+  sleep 5
 }
 
 bind_each_node() {
@@ -107,6 +114,8 @@ bind_each_node() {
           echo "Labeled service [$svc] to use waypoint [$waypoint]"
       done
   done
+
+  sleep 5
 }
 
 bind_three_node() {
@@ -117,14 +126,16 @@ bind_three_node() {
   node2_services=("profile" "rate" "memcached-profile" "memcached-rate" "mongodb-profile" "mongodb-rate" "user" "mongodb-user")
   node3_services=("geo" "mongodb-geo" "reservation" "memcached-reserve" "mongodb-reservation")
 
-  for i in "${!nodes[@]}"; do
-      waypoint="${waypoints[$((i % 3))]}"
-      services_var="node$(( (i % 3) +1 ))_services[@]"
+  for i in {1..3}; do
+      waypoint="${waypoints[$((i-1))]}"
+      services_var="node${i}_services[@]"
       for svc in "${!services_var}"; do
           kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint"
           echo "Labeled service [$svc] to use waypoint [$waypoint]"
       done
   done
+
+  sleep 5
 }
 
 bind_each_service() {
@@ -138,10 +149,12 @@ bind_each_service() {
 
     for svc in "${!services_arr}"; do
       waypoint="waypoint-${svc}"
-      istioctl waypoint apply -n hotel --name "$waypoint" --service "$svc"
+      kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint"
       echo "Labeled service [$svc] to use waypoint [$waypoint]"
     done
   done
+
+  sleep 5
 }
 
 if [ "$1" == "delete" ]; then

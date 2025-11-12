@@ -1,4 +1,5 @@
 # this script is to setup Istio environment
+NAMESPACE=$1
 
 # download istio, note this must be done with kubenetes cluster exists
 cd ~
@@ -8,8 +9,8 @@ cd istio-1.26.0
 export PATH=$PWD/bin:$PATH
 # install service mesh for bookinfo application
 istioctl install -f samples/bookinfo/demo-profile-no-gateways.yaml -y
-kubectl create namespace bookinfo
-kubectl label namespace bookinfo istio-injection=enabled
+kubectl create namespace $NAMESPACE
+kubectl label namespace $NAMESPACE istio-injection=enabled
 
 # download k8s gateway api
 # kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \

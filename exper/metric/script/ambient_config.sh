@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# For now, this script only supports Hotel-Reservation
 cd ~/istio-1.26.0
 export PATH=$PWD/bin:$PATH
 
@@ -7,7 +9,7 @@ delete() {
   sleep 10
 }
 
-apply() {
+apply_each_node() {
   nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
   waypoints=("waypoint1" "waypoint2" "waypoint3" "waypoint4")
   for waypoint in "${waypoints[@]}"; do
@@ -30,7 +32,7 @@ apply() {
   done
 }
 
-bind() {
+bind_each_node() {
   nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
   waypoints=("waypoint1" "waypoint2" "waypoint3" "waypoint4")
 
@@ -51,10 +53,10 @@ bind() {
 
 if [ "$1" == "delete" ]; then
   delete
-elif [ "$1" == "apply" ]; then
-  apply
-elif [ "$1" == "bind" ]; then
-  bind
+elif [ "$1" == "apply_each_node" ]; then
+  apply_each_node
+elif [ "$1" == "bind_each_node" ]; then
+  bind_each_node
 else
   echo "Unsupported operation: $1"
   exit 1

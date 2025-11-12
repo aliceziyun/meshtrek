@@ -124,7 +124,7 @@ class MeshConfigFinder:
                 self.shell_helper.config["nodes"][0],
                 self.shell_helper.config["nodes_user"],
                 os.path.join(self.basepath, "./metric/script/ambient_config.sh"),
-                ["apply"]
+                ["apply_each_node"]
             )
 
         # Restart the cluster
@@ -140,7 +140,7 @@ class MeshConfigFinder:
                 self.shell_helper.config["nodes"][0],
                 self.shell_helper.config["nodes_user"],
                 os.path.join(self.basepath, "./metric/script/ambient_config.sh"),
-                ["bind"]
+                ["bind_each_node"]
             )
         time.sleep(15)
 

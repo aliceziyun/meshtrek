@@ -56,6 +56,40 @@ apply_each_node() {
   done
 }
 
+apply_each_service() {
+  node1_services=("search")
+  node2_services=("profile" "rate" "memcached-profile" "memcached-rate" "mongodb-profile" "mongodb-rate" "user" "mongodb-user")
+  node3_services=("geo" "mongodb-geo" "reservation" "memcached-reserve" "mongodb-reservation")
+  node4_services=("frontend" "recommendation" "mongodb-recommendation")
+
+  nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
+  declare -n services_arr
+
+  for i in {1..4}; do
+    node="${nodes[$((i-1))]}"
+    services_arr="node${i}_services[@]"
+
+    for svc in "${!services_arr}"; do
+      waypoint="waypoint-${svc}"
+
+      echo "Applying waypoint [$waypoint] for service [$svc] on node [$node]"
+
+      istioctl waypoint apply -n hotel --name "$waypoint" --service "$svc"
+
+      kubectl patch deploy "$waypoint" -n hotel --type=json \
+      -p='[
+        {
+          "op": "add",
+          "path": "/spec/template/spec/nodeSelector",
+          "value": { "kubernetes.io/hostname": "'"$node"'" }
+        }
+      ]'
+
+      echo "Patched waypoint [$waypoint] to node [$node]"
+    done
+  done
+}
+
 bind_each_node() {
   nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
   waypoints=("waypoint1" "waypoint2" "waypoint3" "waypoint4")
@@ -90,6 +124,23 @@ bind_three_node() {
           kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint"
           echo "Labeled service [$svc] to use waypoint [$waypoint]"
       done
+  done
+}
+
+bind_each_service() {
+  node1_services=("search")
+  node2_services=("profile" "rate" "memcached-profile" "memcached-rate" "mongodb-profile" "mongodb-rate" "user" "mongodb-user")
+  node3_services=("geo" "mongodb-geo" "reservation" "memcached-reserve" "mongodb-reservation")
+  node4_services=("frontend" "recommendation" "mongodb-recommendation")
+
+  for i in {1..4}; do
+    services_arr="node${i}_services[@]"
+
+    for svc in "${!services_arr}"; do
+      waypoint="waypoint-${svc}"
+      istioctl waypoint apply -n hotel --name "$waypoint" --service "$svc"
+      echo "Labeled service [$svc] to use waypoint [$waypoint]"
+    done
   done
 }
 

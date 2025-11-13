@@ -24,6 +24,7 @@ spec:
       creationTimestamp: null
       labels:
         io.kompose.service: rate
+        app: hotel
     spec:
       containers:
         - command:

@@ -24,6 +24,7 @@ spec:
       creationTimestamp: null
       labels:
         io.kompose.service: geo
+        app: hotel
     spec:
       containers:
         - command:

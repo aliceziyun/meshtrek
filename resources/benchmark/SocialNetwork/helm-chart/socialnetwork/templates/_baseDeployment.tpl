@@ -14,7 +14,9 @@ spec:
     metadata:
       labels:
         service: {{ .Values.name }}
-        app: {{ .Values.name }}
+        {{- if .Values.label}}
+          app: {{ .Values.label }}
+        {{ end }}
     spec:
       {{- if .Values.nodeSelector}}
       nodeSelector: {{- toYaml .Values.nodeSelector | nindent 8 }}

@@ -1,4 +1,5 @@
 name: text-service
+label: social
 
 ports:
   - port: 9090

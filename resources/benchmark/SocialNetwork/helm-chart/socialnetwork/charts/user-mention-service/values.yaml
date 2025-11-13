@@ -1,4 +1,5 @@
 name: user-mention-service
+label: social 
 
 ports:
   - port: 9090

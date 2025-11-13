@@ -1,4 +1,5 @@
 name: nginx-thrift
+label: social
 
 ports:
   - port: 8080

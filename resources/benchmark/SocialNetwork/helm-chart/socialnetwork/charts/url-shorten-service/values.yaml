@@ -1,4 +1,5 @@
 name: url-shorten-service
+label: social
 
 ports:
   - port: 9090

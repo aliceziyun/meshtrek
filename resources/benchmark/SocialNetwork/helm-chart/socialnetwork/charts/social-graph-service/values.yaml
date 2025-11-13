@@ -1,4 +1,5 @@
 name: social-graph-service
+label: social
 
 ports:
   - port: 9090

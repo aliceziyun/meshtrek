@@ -1,4 +1,5 @@
 name: home-timeline-service
+label: social
 
 ports:
   - port: 9090

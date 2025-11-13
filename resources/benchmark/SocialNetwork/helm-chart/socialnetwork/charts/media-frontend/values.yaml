@@ -1,4 +1,5 @@
 name: media-frontend
+label: social
 
 ports:
   - port: 8081

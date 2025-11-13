@@ -1,4 +1,5 @@
 name: media-service
+label: social
 
 ports:
   - port: 9090

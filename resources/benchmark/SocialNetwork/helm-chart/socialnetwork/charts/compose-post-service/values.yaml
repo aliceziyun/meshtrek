@@ -1,4 +1,5 @@
 name: compose-post-service
+label: social
 
 ports:
   - port: 9090

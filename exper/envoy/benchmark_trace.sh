@@ -5,8 +5,10 @@ NAMESPACE=
 
 MESH_TYPE=$1
 MICRO_SERVICE=$2
-RPS=$3
-DURATION=$4
+THREADS=$3
+CONNECTIONS=$4
+RPS=$5
+DURATION=$6
 
 trace_bookinfo() {
     NAMESPACE="bookinfo"
@@ -46,7 +48,7 @@ trace_hotel() {
     echo "Request URL: $request_url"
     echo "Running RPS=$RPS..."
 
-    ~/DeathStarBench/wrk2/wrk -D exp -t 4 -c 4 -d "$DURATION" -L -s ~/meshtrek/resources/benchmark/HotelReserve/wrk2/frontend_normal.lua "http://$request_url" -R $RPS
+    ~/DeathStarBench/wrk2/wrk -D exp -t "$THREADS" -c "$CONNECTIONS" -d "$DURATION" -L -s ~/meshtrek/resources/benchmark/HotelReserve/wrk2/frontend_proxy.lua "http://$request_url" -R $RPS
 
     wait
 

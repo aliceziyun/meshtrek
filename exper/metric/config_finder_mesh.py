@@ -128,12 +128,12 @@ class MeshConfigFinder:
             )
 
         # Restart the cluster
-        self.shell_helper.execute_script(
-            self.shell_helper.config["nodes"][0],
-            self.shell_helper.config["nodes_user"],
-            os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
-            [self.namespace, "launch"]
-        )
+        # self.shell_helper.execute_script(
+        #     self.shell_helper.config["nodes"][0],
+        #     self.shell_helper.config["nodes_user"],
+        #     os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
+        #     [self.namespace, "launch"]
+        # )
 
         if self.mesh_type == "ambient":
             self.shell_helper.execute_script(

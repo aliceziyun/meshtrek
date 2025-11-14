@@ -39,14 +39,14 @@ trace_bookinfo() {
 
 trace_hotel() {
     NAMESPACE="hotel"
-    local ip=$(kubectl get service frontend -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
-    local port=5000
+    local ip=$(kubectl get service frontend2 -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
+    local port=5001
     local request_url="${ip}:${port}"
 
     echo "Request URL: $request_url"
     echo "Running RPS=$RPS..."
 
-    ~/DeathStarBench/wrk2/wrk -D exp -t 6 -c 10 -d "$DURATION" -L -s ~/meshtrek/resources/benchmark/HotelReserve/wrk2/frontend_normal.lua "http://$request_url" -R $RPS
+    ~/DeathStarBench/wrk2/wrk -D exp -t 4 -c 4 -d "$DURATION" -L -s ~/meshtrek/resources/benchmark/HotelReserve/wrk2/frontend_normal.lua "http://$request_url" -R $RPS
 
     wait
 

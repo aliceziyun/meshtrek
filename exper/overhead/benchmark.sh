@@ -22,6 +22,20 @@ benchmark_hotel() {
     wait
 }
 
+benchmark_hotel_instrument() {
+    NAMESPACE="hotel"
+    local ip=$(kubectl get service frontend2 -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
+    local port=5001
+    local request_url="${ip}:${port}"
+
+    echo "Benchmarking Instrumented Hotel Reservation Service"
+    echo "Threads: $THREADS, Connections: $CONNECTIONS, Target RPS: $TARGET_RPS, Duration: $DURATION seconds"
+
+    ~/DeathStarBench/wrk2/wrk -D exp -t "$THREADS" -c "$CONNECTIONS" -d "$DURATION" -L -s ~/meshtrek/resources/benchmark/HotelReserve/wrk2/frontend_proxy.lua "http://$request_url" -R "$TARGET_RPS"
+
+    wait
+}
+
 benchmark_social() {
     NAMESPACE="social"
     local ip=$(kubectl get service nginx-thrift -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
@@ -39,6 +53,8 @@ benchmark_social() {
 
 if [ "$MICRO_SERVICE" == "hotel" ]; then
     benchmark_hotel
+elif [ "$MICRO_SERVICE" == "hotel_instrument" ]; then
+    benchmark_hotel_instrument
 elif [ "$MICRO_SERVICE" == "social" ]; then
     benchmark_social
 else

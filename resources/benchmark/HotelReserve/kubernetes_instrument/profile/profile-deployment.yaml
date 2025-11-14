@@ -38,7 +38,7 @@ spec:
             limits:
               cpu: 1000m
         - name: istio-proxy
-          image: docker.io/alicesong2002/modified_istio_proxy:v11.5
+          image: docker.io/alicesong2002/modified_istio_proxy:v15.0
           securityContext:
             allowPrivilegeEscalation: true
             privileged: true

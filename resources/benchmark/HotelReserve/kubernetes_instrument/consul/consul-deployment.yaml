@@ -35,11 +35,11 @@ spec:
             - containerPort: 8500
             - containerPort: 53
               protocol: UDP
-          resources:
-            requests:
-              cpu: 100m
-            limits:
-              cpu: 1000m
+          # resources:
+          #   requests:
+          #     cpu: 100m
+          #   limits:
+          #     cpu: 1000m
       volumes:
       - name: tmp
         emptyDir: {}

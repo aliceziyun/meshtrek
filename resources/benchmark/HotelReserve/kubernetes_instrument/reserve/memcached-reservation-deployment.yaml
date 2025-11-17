@@ -35,11 +35,11 @@ spec:
           name: hotel-reserv-reservation-mmc
           ports:
             - containerPort: 11211
-          resources:
-            requests:
-              cpu: 100m
-            limits:
-              cpu: 1000m
+          # resources:
+          #   requests:
+          #     cpu: 100m
+          #   limits:
+          #     cpu: 1000m
         - name: istio-proxy
           image: docker.io/alicesong2002/modified_istio_proxy:v15.0
           securityContext:

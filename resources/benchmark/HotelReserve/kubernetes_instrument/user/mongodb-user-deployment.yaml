@@ -74,4 +74,11 @@ spec:
           hostPath:
             path: /usr/src
             type: Directory
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                io.kompose.service: user
+            topologyKey: "kubernetes.io/hostname"
 status: {}

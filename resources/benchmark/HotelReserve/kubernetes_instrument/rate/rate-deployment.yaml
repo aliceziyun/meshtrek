@@ -68,4 +68,11 @@ spec:
           path: /usr/src
           type: Directory
       restartPolicy: Always
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                io.kompose.service: rate
+            topologyKey: "kubernetes.io/hostname"
 status: {}

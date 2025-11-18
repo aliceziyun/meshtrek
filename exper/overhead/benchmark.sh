@@ -40,7 +40,7 @@ benchmark_social() {
     NAMESPACE="social"
     local ip=$(kubectl get service nginx-thrift -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
     local port=8080
-    local request_url="${ip}:${port}/wrk2-api/post/compose"
+    local request_url="${ip}:${port}"
     OUTPUT_FILE="social_benchmark_results.txt"
 
     echo "Benchmarking Social Network Service" | tee -a "$OUTPUT_FILE"

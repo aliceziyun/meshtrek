@@ -143,7 +143,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # target_x_request_id = args.x_request_id
-    target_x_request_id = "4e9789fb2a633ab3"
+    target_x_request_id = "20b16af709de125f"
     data_dir = args.data_dir
     
     all_events, time_lines = get_events_with_x_request_id(target_x_request_id, data_dir)

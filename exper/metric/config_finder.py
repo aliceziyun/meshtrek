@@ -224,4 +224,4 @@ if __name__ == "__main__":
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../config.json")
     config_finder = KubeConfigFinder(args.core, args.namespace, config_path)
     # config_finder.do_repeat_measurement()
-    config_finder.find_best_config()
+    # config_finder.find_best_config

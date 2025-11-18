@@ -24,7 +24,7 @@ group_two=("post-storage-memcached" "post-storage-mongodb" "post-storage-service
 group_three=("text-service" "unique-id-service" "url-shorten-memcached" "url-shorten-mongodb" \
              "user-timeline-mongodb" "user-timeline-redis" "user-timeline-service")
 group_four=("url-shorten-service" "user-memcached" "user-mongodb" "user-mention-service" "user-service" \
-            "jaeger" "compose-post-service" "nginx-thrift")
+            "compose-post-service" "nginx-thrift")
 
 patch_group() {
   local group_name="$1"

@@ -74,4 +74,4 @@ spec:
           hostPath:
             path: /usr/src
             type: Directory
-status: {}
+s

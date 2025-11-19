@@ -1,13 +1,13 @@
-# This file allows all traffic to and in the hotel reservation
+# This file allows all traffic to and in the social network
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
   name: "l7-empty"
-  namespace: hotel
+  namespace: social
 spec:
   endpointSelector:
     matchLabels:
-      app: hotel
+      app: social
   ingress:
   - fromEntities:
       - cluster

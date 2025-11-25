@@ -7,6 +7,21 @@ CONNECTIONS=$3
 TARGET_RPS=$4
 DURATION=$5
 
+benchmark_bookinfo() {
+    NAMESPACE="bookinfo"
+    local ip=$(kubectl get service productpage -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
+    local port=9080
+    local request_url="${ip}:${port}/productpage"
+    OUTPUT_FILE="bookinfo_benchmark_results.txt"
+
+    echo "Benchmarking Bookinfo Application" | tee -a "$OUTPUT_FILE"
+    echo "Threads: $THREADS, Connections: $CONNECTIONS, Target RPS: $TARGET_RPS, Duration: $DURATION seconds" | tee -a "$OUTPUT_FILE"
+
+    ~/DeathStarBench/wrk2/wrk -t "$THREADS" -c "$CONNECTIONS" -d "$DURATION" -L "http://$request_url" -R "$TARGET_RPS"
+
+    wait
+}
+
 benchmark_hotel() {
     NAMESPACE="hotel"
     local ip=$(kubectl get service frontend -n "$NAMESPACE" -o jsonpath='{.spec.clusterIP}')
@@ -53,6 +68,8 @@ benchmark_social() {
 
 if [ "$MICRO_SERVICE" == "hotel" ]; then
     benchmark_hotel
+elif [ "$MICRO_SERVICE" == "bookinfo" ]; then
+    benchmark_bookinfo
 elif [ "$MICRO_SERVICE" == "hotel_instrument" ]; then
     benchmark_hotel_instrument
 elif [ "$MICRO_SERVICE" == "social" ]; then

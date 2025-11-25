@@ -10,6 +10,9 @@ launch() {
     elif [ "$NAMESPACE" == "social" ]; then
         echo "Restarting Social Network Service cluster in namespace: $NAMESPACE"
         helm install socialnetwork ~/meshtrek/resources/benchmark/SocialNetwork/helm-chart/socialnetwork/ --namespace social
+    elif [ "$NAMESPACE" == "bookinfo" ]; then
+        echo "Restarting Bookinfo Application cluster in namespace: $NAMESPACE"
+        kubectl apply -f ~/meshtrek/resources/benchmark/Bookinfo/bookinfo_no_limit.yaml -n bookinfo
     else
         echo "Unsupported namespace: $NAMESPACE"
         exit 1
@@ -42,6 +45,9 @@ delete() {
     elif [ "$NAMESPACE" == "social" ]; then
         echo "Deleting Social Network Service cluster in namespace: $NAMESPACE"
         helm uninstall socialnetwork -n social
+    elif [ "$NAMESPACE" == "bookinfo" ]; then
+        echo "Deleting Bookinfo Application cluster in namespace: $NAMESPACE"
+        kubectl delete -f ~/meshtrek/resources/benchmark/Bookinfo/bookinfo_no_limit.yaml -n bookinfo
     else
         echo "Unsupported namespace: $NAMESPACE"
         exit 1

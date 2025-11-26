@@ -17,7 +17,7 @@ global:
   restartPolicy: Always
   serviceType: ClusterIP
   dockerRegistry: docker.io
-  defaultImageVersion: latest
+  defaultImageVersion: v2.3
   redis:
     cluster:
       enabled: false

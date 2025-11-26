@@ -149,4 +149,43 @@ bind_three_node() {
 }
 
 bind_each_service() {
-  node1_services=("home
+  node1_services=("home-timeline-service" "home-timeline-redis" "media-frontend" \
+           "media-memcached" "media-mongodb" "media-service" "jaeger")
+  node2_services=("post-storage-memcached" "post-storage-mongodb" "post-storage-service" \
+           "social-graph-mongodb" "social-graph-redis" "social-graph-service")
+  node3_services=("text-service" "unique-id-service" "url-shorten-memcached" "url-shorten-mongodb" \
+             "user-timeline-mongodb" "user-timeline-redis" "user-timeline-service")
+  node4_services=("url-shorten-service" "user-memcached" "user-mongodb" "user-mention-service" "user-service" \
+            "compose-post-service" "nginx-thrift")
+
+  for i in {1..4}; do
+    services_arr="node${i}_services[@]"
+
+    for svc in "${!services_arr}"; do
+      waypoint="waypoint-${svc}"
+      kubectl label service "$svc" -n social istio.io/use-waypoint="$waypoint"
+      echo "Labeled service [$svc] to use waypoint [$waypoint]"
+    done
+  done
+
+  sleep 5
+}
+
+if [ "$1" == "delete" ]; then
+  delete
+elif [ "$1" == "apply_each_node" ]; then
+  apply_each_node
+elif [ "$1" == "bind_each_node" ]; then
+  bind_each_node
+elif [ "$1" == "apply_three_node" ]; then
+  apply_three_node
+elif [ "$1" == "bind_three_node" ]; then
+  bind_three_node
+elif [ "$1" == "apply_each_service" ]; then
+  apply_each_service
+elif [ "$1" == "bind_each_service" ]; then
+  bind_each_service
+else
+  echo "Usage"
+  exit 1
+fi

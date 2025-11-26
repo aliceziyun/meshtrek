@@ -8,8 +8,9 @@ from exper.shell_helper import ShellHelper
 
 def get_achieved_RPS(output):
     for line in output.splitlines():
-        # if "Non-2xx or 3xx responses:" in line:
-        #     print("[!] Error responses detected during the benchmark. Please check the service health.")
+        if "Non-2xx or 3xx responses:" in line:
+            print("[!] Error responses detected during the benchmark. Please check the service health.")
+            print("[!] Error line:", line)
         #     exit(1)
         if "Requests/sec:" in line:
             parts = line.split("Requests/sec:")
@@ -29,6 +30,19 @@ def get_p50(output):
                 elif p50_value.endswith("s"):
                     p50_value = float(p50_value[:-1]) * 1000
                 return float(p50_value)
+    return math.inf
+
+def get_p99(output):
+    for line in output.splitlines():
+        if "99.000%" in line:
+            parts = line.split("99.000%")
+            if len(parts) > 1:
+                p99_value = parts[1].strip().split()[0]
+                if p99_value.endswith("ms"):
+                    p99_value = p99_value[:-2]
+                elif p99_value.endswith("s"):
+                    p99_value = float(p99_value[:-1]) * 1000
+                return float(p99_value)
     return math.inf
 
 class MeshConfigFinder:
@@ -75,7 +89,7 @@ class MeshConfigFinder:
             thread = self.thread
         if connection == 0:
             connection = self.connection
-        avg_p50, avg_rps = 0, 0
+        avg_p50, avg_p99, avg_rps = 0, 0, 0
         script_path = os.path.join(self.basepath, "./overhead/benchmark.sh")
         for _ in range(self.batch):
             output = self.shell_helper.execute_script(
@@ -85,9 +99,13 @@ class MeshConfigFinder:
                 [str(self.namespace), str(thread), str(connection), str(rps), str(self.duration)]
             )
             # print("Benchmark output:\n", output)
-            avg_p50 += get_p50(output)
-            avg_rps += get_achieved_RPS(output)
-            print("[* Result] Achieved RPS:", get_achieved_RPS(output), "p50 latency:", get_p50(output))
+            p50 = get_p50(output)
+            p99 = get_p99(output)
+            rps = get_achieved_RPS(output)
+            avg_p50 += p50
+            avg_p99 += p99
+            avg_rps += rps
+            print("[* Result] Achieved RPS:", rps, "p50 latency:", p50, "p99 latency:", p99)
             self.reset_cluster()
         
         return avg_p50 / self.batch, avg_rps / self.batch
@@ -118,31 +136,33 @@ class MeshConfigFinder:
                 os.path.join(self.basepath, "./metric/script/reset_database_for_hotel.sh"), mode=1
             )
 
-        if self.mesh_type == "ambient":
-            # Reconfigure ambient waypoints
-            self.shell_helper.execute_script(
-                self.shell_helper.config["nodes"][0],
-                self.shell_helper.config["nodes_user"],
-                os.path.join(self.basepath, "./metric/script/ambient_config.sh"),
-                ["apply_each_node"]
-            )
+            time.sleep(5)
 
         # Restart the cluster
-        # self.shell_helper.execute_script(
-        #     self.shell_helper.config["nodes"][0],
-        #     self.shell_helper.config["nodes_user"],
-        #     os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
-        #     [self.namespace, "launch"]
-        # )
+        self.shell_helper.execute_script(
+            self.shell_helper.config["nodes"][0],
+            self.shell_helper.config["nodes_user"],
+            os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
+            [self.namespace, "launch"]
+        )
 
         if self.mesh_type == "ambient":
-            self.shell_helper.execute_script(
+            # Reconfigure ambient waypoints
+            output = self.shell_helper.execute_script(
                 self.shell_helper.config["nodes"][0],
                 self.shell_helper.config["nodes_user"],
                 os.path.join(self.basepath, "./metric/script/ambient_config.sh"),
-                ["bind_each_node"]
+                ["apply_each_service"]
             )
-        time.sleep(15)
+
+            output = self.shell_helper.execute_script(
+                self.shell_helper.config["nodes"][0],
+                self.shell_helper.config["nodes_user"],
+                os.path.join(self.basepath, "./metric/script/ambient_config.sh"),
+                ["bind_each_service"]
+            )
+        
+        time.sleep(60)
 
     def set_cpu_limit(self, cpu_limit):
         self.shell_helper.execute_script(

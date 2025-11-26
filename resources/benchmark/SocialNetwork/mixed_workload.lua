@@ -40,13 +40,25 @@ local function decRandom(length)
   end
 end
 
+local function escape_json_str(s)
+  if not s then return "" end
+  -- escape backslash and double quotes and common control chars
+  s = s:gsub("\\", "\\\\")
+  s = s:gsub('"', '\\"')
+  s = s:gsub('\n', '\\n')
+  s = s:gsub('\r', '\\r')
+  s = s:gsub('\t', '\\t')
+  return s
+end
+
 local function compose_post()
   local user_index = math.random(0, max_user_index - 1)
   local username = "username_" .. tostring(user_index)
   local user_id = tostring(user_index)
   local text = stringRandom(text_len)
-  local media_ids = '['
-  local media_types = '['
+
+  local media_ids_tbl = {}
+  local media_types_tbl = {}
 
   for i = 0, num_user_mentions, 1 do
     local user_mention_id
@@ -63,28 +75,39 @@ local function compose_post()
     text = text .. " http://" .. stringRandom(64)
   end
 
-  for i = 0, num_media, 1 do
+  -- keep existing override if intended
+  text = "HelloWorld"
+
+  -- build media arrays (use 1..num_media so we create exactly num_media items)
+  for i = 1, (num_media or 0), 1 do
     local media_id = decRandom(18)
-    media_ids = media_ids .. "\"" .. media_id .. "\","
-    media_types = media_types .. "\"png\","
+    table.insert(media_ids_tbl, '"' .. media_id .. '"')
+    table.insert(media_types_tbl, '"png"')
   end
 
-  media_ids = media_ids:sub(1, #media_ids - 1) .. "]"
-  media_types = media_types:sub(1, #media_types - 1) .. "]"
+  local media_ids_json = "[]"
+  local media_types_json = "[]"
+  if #media_ids_tbl > 0 then
+    media_ids_json = "[" .. table.concat(media_ids_tbl, ",") .. "]"
+  end
+  if #media_types_tbl > 0 then
+    media_types_json = "[" .. table.concat(media_types_tbl, ",") .. "]"
+  end
 
   local method = "POST"
   local path = "/wrk2-api/post/compose"
   local headers = {}
-  local body
-  headers["Content-Type"] = "application/x-www-form-urlencoded"
-  if num_media then
-    body   = "username=" .. username .. "&user_id=" .. user_id ..
-        "&text=" .. text .. "&media_ids=" .. media_ids ..
-        "&media_types=" .. media_types .. "&post_type=0"
-  else
-    body   = "username=" .. username .. "&user_id=" .. user_id ..
-        "&text=" .. text .. "&media_ids=" .. "&post_type=0"
-  end
+  headers["Content-Type"] = "application/json"
+
+  -- construct a JSON body with proper escaping
+  local body = '{'
+    .. '"username":"' .. escape_json_str(username) .. '",' 
+    .. '"user_id":"' .. escape_json_str(user_id) .. '",' 
+    .. '"text":"' .. escape_json_str(text) .. '",' 
+    .. '"media_ids":' .. media_ids_json .. ',' 
+    .. '"media_types":' .. media_types_json .. ',' 
+    .. '"post_type":0'
+    .. '}'
 
   return wrk.format(method, path, headers, body)
 end
@@ -97,7 +120,7 @@ local function read_user_timeline()
   local args = "user_id=" .. user_id .. "&start=" .. start .. "&stop=" .. stop
   local method = "GET"
   local headers = {}
-  headers["Content-Type"] = "application/x-www-form-urlencoded"
+  headers["Content-Type"] = "application/json"
   local path = "/wrk2-api/user-timeline/read?" .. args
   return wrk.format(method, path, headers, nil)
 end
@@ -110,7 +133,7 @@ local function read_home_timeline()
     local args = "user_id=" .. user_id .. "&start=" .. start .. "&stop=" .. stop
     local method = "GET"
     local headers = {}
-    headers["Content-Type"] = "application/x-www-form-urlencoded"
+    headers["Content-Type"] = "application/json"
     local path = "/wrk2-api/home-timeline/read?" .. args
     return wrk.format(method, path, headers, nil)
   end

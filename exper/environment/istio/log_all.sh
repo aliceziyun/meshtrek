@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAMESPACE="test"
+NAMESPACE=$1
 
 cd ~/istio-1.26.0
 export PATH=$PWD/bin:$PATH

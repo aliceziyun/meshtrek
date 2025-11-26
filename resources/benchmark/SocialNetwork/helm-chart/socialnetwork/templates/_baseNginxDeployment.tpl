@@ -14,7 +14,7 @@ spec:
     metadata:
       labels:
         service: {{ .Values.name }}
-        app: {{ .Values.name }}
+        app: {{ .Values.label }}
     spec: 
       containers:
       {{- with .Values.container }}

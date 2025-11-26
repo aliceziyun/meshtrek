@@ -15,7 +15,7 @@ spec:
       labels:
         service: {{ .Values.name }}
         {{- if .Values.label}}
-          app: {{ .Values.label }}
+        app: {{ .Values.label }}
         {{ end }}
     spec:
       {{- if .Values.nodeSelector}}

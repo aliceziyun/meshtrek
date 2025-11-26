@@ -1,0 +1,13 @@
+#!/bin/bash
+
+cd $(dirname $0)
+
+random_seed=42
+temp_env=$(mktemp)
+python3 ../../scripts/gen_processing_time.py chain-d2 $random_seed >temp_env
+source temp_env
+rm temp_env
+
+for file in $(ls yamls/*.yaml); do
+    envsubst < $file | kubectl apply -f - 
+done

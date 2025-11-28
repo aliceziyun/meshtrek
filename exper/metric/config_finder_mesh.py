@@ -98,14 +98,14 @@ class MeshConfigFinder:
                 script_path,
                 [str(self.namespace), str(thread), str(connection), str(rps), str(self.duration)]
             )
-            # print("Benchmark output:\n", output)
+            print("Benchmark output:\n", output)
             p50 = get_p50(output)
             p99 = get_p99(output)
-            rps = get_achieved_RPS(output)
+            res_rps = get_achieved_RPS(output)
             avg_p50 += p50
             avg_p99 += p99
-            avg_rps += rps
-            print("[* Result] Achieved RPS:", rps, "p50 latency:", p50, "p99 latency:", p99)
+            avg_rps += res_rps
+            print("[* Result] Achieved RPS:", res_rps, "p50 latency:", p50, "p99 latency:", p99)
             self.reset_cluster()
         
         return avg_p50 / self.batch, avg_rps / self.batch

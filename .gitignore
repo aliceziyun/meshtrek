@@ -21,3 +21,6 @@ output.log
 *.pyc
 *.log
 *.zip
+/before_tg
+exper/config.json
+exper/environment/kube/join_kube.sh

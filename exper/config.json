@@ -1,12 +1,12 @@
 {
-    "nodes_user": "aliceso",
+    "nodes_user": "hsuch",
     "nodes_number": 5,
     "nodes": [
-        "ms1207.utah.cloudlab.us",
-        "ms1222.utah.cloudlab.us",
-        "ms1215.utah.cloudlab.us",
-        "ms1226.utah.cloudlab.us",
-        "ms1235.utah.cloudlab.us"
+        "ms1043.utah.cloudlab.us",
+        "ms0936.utah.cloudlab.us",
+        "ms1027.utah.cloudlab.us",
+        "ms0941.utah.cloudlab.us",
+        "ms0910.utah.cloudlab.us"
     ],
-    "nodes_home": "/users/aliceso"
+    "nodes_home": "/users/hsuch"
 }

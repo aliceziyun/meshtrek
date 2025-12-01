@@ -1,5 +1,6 @@
 import sys
 import random
+import os
 
 service_reuse = {
     "dag-relay": [1, 1, 1, 1, 3, 3, 3],
@@ -39,7 +40,9 @@ leaf_nodes = {
 
 
 def get_baseline_service_processing_time_synthetic(topology, random_seed):
-    target = "service0" # root service, make it the smalledst processing time
+
+    # execution time per service
+    root = "service0" # root service, make it the smalledst processing time
     num = len(service_reuse[topology])
     random.seed(random_seed)
     random_numbers = [random.gauss(40, 15) for i in range(num)]
@@ -48,11 +51,22 @@ def get_baseline_service_processing_time_synthetic(topology, random_seed):
 
     processing_time = {}
     for i in range(num):
-        if f"service{i}" == target:
-            processing_time[f"service{i}"] = round(random_numbers.pop(0)  / service_reuse[topology][i], 2) / 1000
-        else:
-            processing_time[f"service{i}"] = round(random_numbers.pop(-1)  / service_reuse[topology][i], 2) / 1000
+        # if f"service{i}" == root:
+        #     processing_time[f"service{i}"] = round(random_numbers.pop(0)  / service_reuse[topology][i], 2) / 100000
+        # else:
+        #     processing_time[f"service{i}"] = round(random_numbers.pop(-1)  / service_reuse[topology][i], 2) / 100000
+        processing_time[f"service{i}"] = 0.001 # 1ms for all services for synthetic benchmarks
         print(f"export PROCESSING_TIME_SERVICE{i}={'{:.4f}'.format(processing_time[f'service{i}'])}")
+
+    # placement
+    nodes = os.popen("kubectl get nodes --no-headers | awk '{print $1}'").read().strip().split("\n")
+    nodes = nodes[1:]
+    service_placement = {}
+    services = [f"service{i}" for i in range(num)]
+    random.shuffle(services)
+    for i, svc in enumerate(services):
+        print(f"export WORKER_NODE_SERVICE{svc.upper()}={nodes[i % len(nodes)]}")
+
     return processing_time
 
 if __name__ == "__main__":

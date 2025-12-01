@@ -116,6 +116,17 @@ I should have done this earlier...
 
 - 15.0: working version for full trace on both http1 and http2 ✅
 
+- 16.0(deprecated): add IO tracing, but have null pointer bug
+- 16.1(deprecated): incomplete hook interface
+- 16.2: 
+- 16.3: Working IO version (sometimes write and read will lost) ✅
+- 16.4(deprecated): Wrong read position
+- 16.5(deprecated): Wrong read position
+- 16.6: generally correct, but too many requests miss  ✅
+- 16.7: use unique stream id to assoicate
+
+- 16.12:  ✅
+
 ### Cilium Envoy Modified
 - 2.0(deprecated): upgrade cilium to 1.8.0 and envoy to 1.34.4. However, this version will add much overhead to network.
 - 2.1: use release version to attach uprobe. no symbol. **Only for test**

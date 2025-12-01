@@ -1,0 +1,68 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: frontend-l4-policy
+  namespace: hotel
+spec:
+  endpointSelector:
+    matchLabels:
+      io.kompose.service: frontend
+
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        io.kompose.service: search
+    toPorts:
+    - ports:
+      - port: "8082"
+        protocol: TCP
+
+  - toEndpoints:
+    - matchLabels:
+        io.kompose.service: reservation
+    toPorts:
+    - ports:
+      - port: "8087"
+        protocol: TCP
+
+  - toEndpoints:
+    - matchLabels:
+        io.kompose.service: profile
+    toPorts:
+    - ports:
+      - port: "8081"
+        protocol: TCP
+
+  - toEndpoints:
+    - matchLabels:
+        io.kompose.service: recommendation
+    toPorts:
+    - ports:
+      - port: "8085"
+        protocol: TCP
+
+  - toEndpoints:
+    - matchLabels:
+        io.kompose.service: user
+    toPorts:
+    - ports:
+      - port: "8086"
+        protocol: TCP
+
+  - toEndpoints:
+    - matchLabels:
+        io.kubernetes.pod.namespace: kube-system
+        k8s-app: kube-dns
+    toPorts:
+      - ports:
+          - port: "53"
+            protocol: UDP
+        rules:
+          dns:
+            - matchPattern: "*"
+
+  - toEntities:
+    - health
+    - kube-apiserver
+    - world
+    - host

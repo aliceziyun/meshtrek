@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: reservation-l4-policy
+  namespace: hotel
+spec:
+  podSelector:
+    matchLabels:
+      app: hotel
+      io.kompose.service: reservation
+
+  policyTypes:
+  - Egress
+
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          io.kompose.service: mongodb-reservation
+    ports:
+    - protocol: TCP
+      port: 27017
+
+  - to:
+    - podSelector:
+        matchLabels:
+          io.kompose.service: memcached-reservation
+    ports:
+    - protocol: TCP
+      port: 11211

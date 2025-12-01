@@ -39,6 +39,10 @@ def callback(cpu, data, size):
             ("time_response_filter_start", ctypes.c_ulonglong),
             ("time_end", ctypes.c_ulonglong),
             ("response_parse_start", ctypes.c_ulonglong),
+            ("write_start_time", ctypes.c_ulonglong),
+            ("write_end_time", ctypes.c_ulonglong),
+            ("read_start_time", ctypes.c_ulonglong),
+            ("read_end_time", ctypes.c_ulonglong),
         ]
     event = ctypes.cast(data, ctypes.POINTER(ConnInfo)).contents
     x_request_id_str = event.x_request_id.split(b'\x00', 1)[0].decode(errors="replace")
@@ -46,6 +50,10 @@ def callback(cpu, data, size):
         "X-Request-ID": x_request_id_str,
         "Time HTTP Start": event.time_http_start,
         "Time Request Filter Start": event.time_request_filter_start,
+        "Write Start Time": event.write_start_time,
+        "Write End Time": event.write_end_time,
+        "Read Start Time": event.read_start_time,
+        "Read End Time": event.read_end_time,
         "Time Process Start": event.time_process_start,
         "Time Response Filter Start": event.time_response_filter_start,
         "Time End": event.time_end,

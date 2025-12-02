@@ -17,7 +17,8 @@ service_reuse = {
     "fanout-w7": [1, 1, 1, 1, 1, 1, 1, 1],
     "fanout-w10": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     "dag-balanced": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    "dag-unbalanced": [1, 1, 1, 1, 1, 1, 1, 1]
+    "dag-unbalanced": [1, 1, 1, 1, 1, 1, 1, 1],
+    "fanout-w16": [1]*17
 }
 
 leaf_nodes = {

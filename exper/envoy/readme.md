@@ -124,9 +124,12 @@ I should have done this earlier...
 - 2.4: update the cilium hookpoint to the newest version -> grpc ✅
 - 2.5: working version on 2.4 -> http1 ✅
 
+- 3.0: working version for full trace on both http1 and http2 ✅
+
 ### Istio_Perf
 - 1.0: http parsing. Insert fifo write to open perf. From Dispath() -> onHeadersComplete() (not so useful in fine-grain control)
 - 1.1: based on modified istio proxy **v10.1** ✅
 
 ### Modified_Istio_for_Thrift
 - v1.0(deprecated): add print log for testing
+- This branch is deprecated

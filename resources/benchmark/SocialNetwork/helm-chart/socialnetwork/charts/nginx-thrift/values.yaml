@@ -46,8 +46,9 @@ initContainer:
   args: ["-c", "git clone https://github.com/dimoibiehg/DeathStarBench.git /DeathStarBench &&
             cp -r /DeathStarBench/socialNetwork/gen-lua/* /gen-lua/ &&
             cp -r /DeathStarBench/socialNetwork/docker/openresty-thrift/lua-thrift/* /lua-thrift/ &&
-            cp -r /DeathStarBench/socialNetwork/nginx-web-server/lua-scripts/* /lua-scripts/ &&
             cp -r /DeathStarBench/socialNetwork/nginx-web-server/pages/* /pages/ &&
+            git clone https://github.com/aliceziyun/DeathStarBench-mesh.git /DeathStarBench-mesh &&
+            cp -r /DeathStarBench-mesh/socialNetwork/nginx-web-server/lua-scripts/* /lua-scripts/ &&
             cp /DeathStarBench/socialNetwork/keys/* /keys/ "]
 
 volumes:

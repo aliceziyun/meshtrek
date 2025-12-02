@@ -15,7 +15,8 @@ def read_file(file_path):
     return rps, p50
 
 # Plotting scatter points of three different files
-def plot_scatter(file1, file2, file3, file4, file5, file6):
+def plot_scatter(file0, file1, file2, file3, file4, file5, file6):
+    rps0, p50_0 = read_file(file0)
     rps1, p50_1 = read_file(file1)
     rps2, p50_2 = read_file(file2)
     rps3, p50_3 = read_file(file3)
@@ -24,13 +25,15 @@ def plot_scatter(file1, file2, file3, file4, file5, file6):
     rps6, p50_6 = read_file(file6)
 
     plt.figure(figsize=(10, 6))
-    plt.ylim(5, 80)
-    plt.scatter(rps1, p50_1, color='blue', label='Ambient', alpha=0.6)
-    plt.scatter(rps2, p50_2, color='green', label='Ambient 2C', alpha=0.6)
-    plt.scatter(rps3, p50_3, color='red', label='Ambient 4P', alpha=0.6)
-    plt.scatter(rps4, p50_4, color='purple', label='Ambient 4P 1C', alpha=0.6)
-    plt.scatter(rps5, p50_5, color='orange', label='Ambient 3P', alpha=0.6)
-    plt.scatter(rps6, p50_6, color='brown', label='Ambient Each Service', alpha=0.6)
+    plt.xlim(100, 350)
+    plt.ylim(25, 80)
+    plt.scatter(rps0, p50_0, color='black', label='No Mesh', alpha=0.8)
+    plt.scatter(rps1, p50_1, color='green', label='Istio', alpha=0.8)
+    plt.scatter(rps2, p50_2, color='red', label='Istio(no egress)', alpha=0.8)
+    plt.scatter(rps3, p50_3, color='orange', label='Ambient 1P', alpha=0.8)
+    plt.scatter(rps4, p50_4, color='purple', label='Ambient 3P', alpha=0.8)
+    plt.scatter(rps5, p50_5, color='brown', label='Ambient 4P', alpha=0.8)
+    plt.scatter(rps6, p50_6, color='blue', label='Ambient(each service)', alpha=0.8)
 
     plt.xlabel('Achieved RPS')
     plt.ylabel('P50 Latency (ms)')
@@ -41,9 +44,9 @@ def plot_scatter(file1, file2, file3, file4, file5, file6):
     plt.show()
 
 def histogram_mesh():
-    mesh_types = ["No Mesh", "Istio", "Cilium", "Ambient 1 Proxy", "Ambient 3 Proxies", "Ambient 4 Proxies", "Ambient Each Service"]
-    p50 = [5.83, 20.01, 14.60, 21.73, 11.8, 10.7, 9.98]
-    best_rps = [3600,600,1500,600,2800,1600,2800]
+    mesh_types = ["No Mesh", "Istio", "Istio (no egress)", "Cilium", "Ambient 1 Proxy", "Ambient 3 Proxies", "Ambient 4 Proxies", "Ambient Each Service"]
+    p50 = [5.83, 20.01, 12.6, 14.60, 21.73, 18.25, 18.24, 18.33]
+    best_rps = [3600,600,2200,1500,600,1600,1600,1600]
 
     # Rank by p50 latency
     ranked_mesh = sorted(zip(mesh_types, p50, best_rps), key=lambda x: x[1])
@@ -78,11 +81,12 @@ def histogram_mesh():
     plt.savefig('mesh_comparison.png')
     plt.show()
 
-# file1 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/hotel/ambient/result_config_mesh.log"
-# file2 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/hotel/ambient/result_config_mesh_2C.log"
-# file3 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/hotel/ambient/result_config_mesh_4P.log"
-# file4 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/hotel/ambient/result_config_mesh_4P_1C.log"
-# file5 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/hotel/ambient/result_config_mesh_3P.log"
-# file6 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/hotel/ambient/result_config_mesh_NP.log"
-# plot_scatter(file1, file2, file3, file4, file5, file6)
-histogram_mesh()
+file0 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/bookinfo/no_mesh.log"
+file1 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/bookinfo/istio/mesh.log"
+file2 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/bookinfo/istio/mesh_ingress_only.log"
+file3 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/bookinfo/ambient/1P.log"
+file4 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/bookinfo/ambient/3P.log"
+file5 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/bookinfo/ambient/4P.log"
+file6 = "/Users/alicesong/Desktop/research/meshtrek/tmp_res/bookinfo/ambient/NP.log"
+plot_scatter(file0, file1, file2, file3, file4, file5, file6)
+# histogram_mesh()

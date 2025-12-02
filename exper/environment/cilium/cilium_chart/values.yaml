@@ -2461,7 +2461,7 @@ envoy:
     # @schema
     override: ~
     repository: "docker.io/alicesong2002/cilium-envoy-modified"
-    tag: "v2.3"
+    tag: "v3.0"
     pullPolicy: "IfNotPresent"
   # -- Additional containers added to the cilium Envoy DaemonSet.
   extraContainers: []

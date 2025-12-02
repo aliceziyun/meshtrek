@@ -1,0 +1,13 @@
+Running 30s test @ http://10.111.91.132/endpoint1
+  16 threads and 128 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    70.88ms   28.46ms 483.97ms   83.12%
+    Req/Sec   115.21     23.26   181.00     65.90%
+  Latency Distribution
+     50%   67.23ms
+     75%   81.75ms
+     90%   97.87ms
+     99%  157.56ms
+  55034 requests in 30.03s, 8.35MB read
+Requests/sec:   1832.55
+Transfer/sec:    284.55KB

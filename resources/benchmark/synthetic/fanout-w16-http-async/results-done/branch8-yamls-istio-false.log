@@ -1,0 +1,133 @@
+export PROCESSING_TIME_SERVICE0=0.0010
+export PROCESSING_TIME_SERVICE1=0.0010
+export PROCESSING_TIME_SERVICE2=0.0010
+export PROCESSING_TIME_SERVICE3=0.0010
+export PROCESSING_TIME_SERVICE4=0.0010
+export PROCESSING_TIME_SERVICE5=0.0010
+export PROCESSING_TIME_SERVICE6=0.0010
+export PROCESSING_TIME_SERVICE7=0.0010
+export PROCESSING_TIME_SERVICE8=0.0010
+export PROCESSING_TIME_SERVICE9=0.0010
+export PROCESSING_TIME_SERVICE10=0.0010
+export PROCESSING_TIME_SERVICE11=0.0010
+export PROCESSING_TIME_SERVICE12=0.0010
+export PROCESSING_TIME_SERVICE13=0.0010
+export PROCESSING_TIME_SERVICE14=0.0010
+export PROCESSING_TIME_SERVICE15=0.0010
+export PROCESSING_TIME_SERVICE16=0.0010
+export WORKER_NODE_SERVICESERVICE5=node1.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE8=node2.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE12=node3.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE9=node4.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE6=node1.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE7=node2.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE3=node3.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE4=node4.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE13=node1.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE11=node2.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE2=node3.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE16=node4.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE15=node1.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE0=node2.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE1=node3.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE14=node4.test.brown-atlas-pg0.utah.cloudlab.us
+export WORKER_NODE_SERVICESERVICE10=node1.test.brown-atlas-pg0.utah.cloudlab.us
+NAME                         READY   STATUS    RESTARTS   AGE   IP             NODE                                          NOMINATED NODE   READINESS GATES
+service0-c6875b968-nwjz7     1/1     Running   0          38s   10.244.3.149   node3.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service1-7b49bf6b7d-5kd77    1/1     Running   0          34s   10.244.1.127   node4.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service10-d6fcc5b88-wlrvb    1/1     Running   0          38s   10.244.4.144   node1.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service11-55c5668d88-cnbrs   1/1     Running   0          37s   10.244.4.145   node1.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service12-5844c7c964-5zkl8   1/1     Running   0          37s   10.244.4.146   node1.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service13-6896cb6548-dqtn7   1/1     Running   0          36s   10.244.2.239   node2.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service14-7f5b8556f6-xxqc8   1/1     Running   0          36s   10.244.2.240   node2.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service15-759d5d7f8d-n6dmh   1/1     Running   0          35s   10.244.1.126   node4.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service16-5cb44f59f6-dw2s4   1/1     Running   0          35s   10.244.4.147   node1.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service2-5d7bc6c5b8-47mc9    1/1     Running   0          34s   10.244.3.150   node3.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service3-76c4d57fdb-2t6jk    1/1     Running   0          33s   10.244.3.151   node3.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service4-5df65dfcb8-9fgw6    1/1     Running   0          33s   10.244.1.128   node4.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service5-696fcc8898-fs7qv    1/1     Running   0          32s   10.244.1.129   node4.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service6-7ff484fb96-86kd4    1/1     Running   0          32s   10.244.4.148   node1.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service7-5965b7b6c8-kbm9k    1/1     Running   0          32s   10.244.2.241   node2.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service8-54774779d4-crrjw    1/1     Running   0          31s   10.244.4.149   node1.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+service9-5b88676d8b-rl5pw    1/1     Running   0          31s   10.244.3.152   node3.test.brown-atlas-pg0.utah.cloudlab.us   <none>           <none>
+Running 30s test @ http://10.99.240.74/endpoint1
+  4 threads and 16 connections
+  Thread calibration: mean lat.: 8.607ms, rate sampling interval: 17ms
+  Thread calibration: mean lat.: 8.516ms, rate sampling interval: 16ms
+  Thread calibration: mean lat.: 8.610ms, rate sampling interval: 17ms
+  Thread calibration: mean lat.: 7.457ms, rate sampling interval: 16ms
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     7.04ms    1.24ms  15.00ms   77.72%
+    Req/Sec    12.77     45.68   266.00     92.28%
+  Latency Distribution (HdrHistogram - Recorded Latency)
+ 50.000%    6.93ms
+ 75.000%    7.54ms
+ 90.000%    8.36ms
+ 99.000%   11.49ms
+ 99.900%   13.94ms
+ 99.990%   15.01ms
+ 99.999%   15.01ms
+100.000%   15.01ms
+
+  Detailed Percentile spectrum:
+       Value   Percentile   TotalCount 1/(1-Percentile)
+
+       4.435     0.000000            1         1.00
+       5.683     0.100000          100         1.11
+       6.115     0.200000          200         1.25
+       6.411     0.300000          298         1.43
+       6.699     0.400000          397         1.67
+       6.931     0.500000          497         2.00
+       7.043     0.550000          546         2.22
+       7.163     0.600000          596         2.50
+       7.287     0.650000          648         2.86
+       7.407     0.700000          695         3.33
+       7.539     0.750000          745         4.00
+       7.587     0.775000          769         4.44
+       7.723     0.800000          794         5.00
+       7.831     0.825000          819         5.71
+       7.911     0.850000          844         6.67
+       8.051     0.875000          868         8.00
+       8.163     0.887500          881         8.89
+       8.359     0.900000          894        10.00
+       8.535     0.912500          906        11.43
+       8.767     0.925000          918        13.33
+       9.031     0.937500          931        16.00
+       9.175     0.943750          938        17.78
+       9.279     0.950000          944        20.00
+       9.543     0.956250          949        22.86
+       9.807     0.962500          955        26.67
+       9.903     0.968750          961        32.00
+      10.223     0.971875          965        35.56
+      10.335     0.975000          968        40.00
+      10.551     0.978125          971        45.71
+      10.703     0.981250          974        53.33
+      11.039     0.984375          977        64.00
+      11.223     0.985938          979        71.11
+      11.287     0.987500          980        80.00
+      11.495     0.989062          982        91.43
+      11.511     0.990625          983       106.67
+      11.583     0.992188          985       128.00
+      11.599     0.992969          986       142.22
+      11.599     0.993750          986       160.00
+      11.999     0.994531          987       182.86
+      12.263     0.995313          988       213.33
+      12.775     0.996094          989       256.00
+      12.775     0.996484          989       284.44
+      12.775     0.996875          989       320.00
+      13.263     0.997266          990       365.71
+      13.263     0.997656          990       426.67
+      13.935     0.998047          991       512.00
+      13.935     0.998242          991       568.89
+      13.935     0.998437          991       640.00
+      13.935     0.998633          991       731.43
+      13.935     0.998828          991       853.33
+      15.007     0.999023          992      1024.00
+      15.007     1.000000          992          inf
+#[Mean    =        7.039, StdDeviation   =        1.239]
+#[Max     =       15.000, Total count    =          992]
+#[Buckets =           27, SubBuckets     =         2048]
+----------------------------------------------------------
+  1492 requests in 30.02s, 231.67KB read
+Requests/sec:     49.69
+Transfer/sec:      7.72KB

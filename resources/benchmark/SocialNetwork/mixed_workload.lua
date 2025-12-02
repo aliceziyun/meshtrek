@@ -97,17 +97,16 @@ local function compose_post()
   local method = "POST"
   local path = "/wrk2-api/post/compose"
   local headers = {}
-  headers["Content-Type"] = "application/json"
+  headers["Content-Type"] = "application/x-www-form-urlencoded"
 
   -- construct a JSON body with proper escaping
-  local body = '{'
-    .. '"username":"' .. escape_json_str(username) .. '",' 
-    .. '"user_id":"' .. escape_json_str(user_id) .. '",' 
-    .. '"text":"' .. escape_json_str(text) .. '",' 
-    .. '"media_ids":' .. media_ids_json .. ',' 
-    .. '"media_types":' .. media_types_json .. ',' 
-    .. '"post_type":0'
-    .. '}'
+  local body =
+  "username=" .. username ..
+  "&user_id=" .. user_id ..
+  "&post_type=0" ..
+  "&text=" .. text ..
+  "&media_ids=" .. media_ids_json ..
+  "&media_types=" .. media_types_json
 
   return wrk.format(method, path, headers, body)
 end

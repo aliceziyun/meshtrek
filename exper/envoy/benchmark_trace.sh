@@ -101,12 +101,36 @@ trace_social() {
     echo "Experiment completed."
 }
 
+trace_synthetic() {
+    NAMESPACE="default"
+    service0_ip=$(kubectl get svc service0 -o jsonpath='{.spec.clusterIP}')
+    ~/istio-1.26.0/wrk2/wrk -D exp -t "$THREADS" -c "$CONNECTIONS" -d "$DURATION" -L -R $RPS http://$service0_ip/endpoint1
+
+    if [ "$MESH_TYPE" == "cilium" ]; then
+        PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')
+        for pod in $PODS; do
+            kubectl cp "kube-system/$pod:/tmp/trace_output.log" ~/trace_res/trace_output_"$pod".log
+        done
+    else if [ "$MESH_TYPE" == "istio" ]; then
+        PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
+        for pod in $PODS; do
+            kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
+        done
+    fi
+    fi
+
+    echo "Experiment completed."
+
+}
+
 if [ "$MICRO_SERVICE" == "hotel" ]; then
     trace_hotel
 elif [ "$MICRO_SERVICE" == "bookinfo" ]; then
     trace_bookinfo
 elif [ "$MICRO_SERVICE" == "social" ]; then
     trace_social
+elif [ "$MICRO_SERVICE" == "synthetic" ]; then
+    trace_synthetic
 else
     echo "Unknown micro-service: $MICRO_SERVICE"
 fi

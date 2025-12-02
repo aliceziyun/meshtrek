@@ -8,7 +8,7 @@ import argparse
 import os
 import re
 
-base_colors = ["#4caf50", "#2196f3", "#ff9800", "#f44336", "#00bcd4"]
+base_colors = ["#4caf50", "#2196f3", "#d8e91e", "#ff9800","#d8e91e", "#f44336", "#00bcd4"]
 
 def get_events_with_x_request_id(target_x_request_id, data_dir):
     process_timelines = defaultdict(list)
@@ -35,7 +35,11 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
                             pid = i
                             http_start = int(data["Time HTTP Start"])
                             request_filter_start = int(data["Time Request Filter Start"])
-                            filter_end = int(data["Time Process Start"])
+                            # filter_end = int(data["Time Process Start"])
+                            write_start = int(data["Write Start Time"])
+                            process_start = int(data["Write End Time"])
+                            read_start = int(data["Read Start Time"])
+                            read_end = int(data["Read End Time"])
                             upstream_http_start = int(data["Response Parse Start"])
                             response_filter_start = int(data["Time Response Filter Start"])
                             end = int(data["Time End"])
@@ -44,7 +48,10 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
                                 "service_name" : service_name, 
                                 "http_start": http_start,
                                 "request_filter_start": request_filter_start,
-                                "process_start": filter_end,
+                                "write_start": write_start,
+                                "process_start": process_start,
+                                "read_start": read_start,
+                                "read_end": read_end,
                                 "upstream_http_start": upstream_http_start,
                                 "response_filter_start": response_filter_start,
                                 "end": end
@@ -62,7 +69,10 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
                 "service_name": evt["service_name"],
                 "http_start": evt["http_start"],
                 "request_filter_start": evt["request_filter_start"],
+                "write_start": evt["write_start"],
                 "process_start": evt["process_start"],
+                "read_start": evt["read_start"],
+                "read_end": evt["read_end"],
                 "upstream_http_start": evt["upstream_http_start"],
                 "response_filter_start": evt["response_filter_start"],
                 "end": evt["end"]
@@ -80,7 +90,16 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
 
     t_start = all_events[-1]["http_start"] if all_events else 0
     for i, evt in enumerate(all_events):
-        t = [evt["http_start"], evt["request_filter_start"], evt["process_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
+        t = [
+            evt["http_start"], 
+            evt["request_filter_start"], 
+            evt["write_start"],
+            evt["process_start"], 
+            evt["read_start"],
+            evt["upstream_http_start"], 
+            evt["response_filter_start"], 
+            evt["end"]
+        ]
         pid = evt['pid']
 
         y = i
@@ -89,7 +108,11 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
 
         for j in range(len(t) - 1):
             color = base_colors[j]
-            ax.barh(y, (t_rel[j+1] - t_rel[j])/1e6, left=t_rel[j]/1e6, color=color, height=0.3)
+            elapsed = t_rel[j+1] - t_rel[j]
+            if elapsed < 0:
+                print(f"[!] Negative elapsed time detected in {j}.")
+                exit(1)
+            ax.barh(y, elapsed/1e6, left=t_rel[j]/1e6, color=color, height=0.3)
 
     ax.set_yticks(range(len(all_events)))
     ax.set_yticklabels([f"{evt['service_name']}" for evt in all_events])
@@ -100,7 +123,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     ax_table.axis("off")
 
     # table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Process Time", "Upstream Http Parsing", "Response Filters", "Overhead Ratio"]
-    table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Process Time", "Upstream Http Parsing", "Response Filters"]
+    table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Write", "Process Time", "Read", "Upstream Http Parsing", "Response Filters"]
     table_data = []
 
     legend_labels = table_header[1:]
@@ -110,7 +133,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
 
     for pid, events in process_timelines.items():
         for evt in events:
-            t = [evt["http_start"], evt["request_filter_start"], evt["process_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
+            t = [evt["http_start"], evt["request_filter_start"],  evt["write_start"], evt["process_start"], evt["read_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
             time_intervals = [(t[i+1] - t[i]) / 1e6 for i in range(len(t) - 1)]
             # other_time = time_intervals[0] + time_intervals[1] + time_intervals[3] + time_intervals[4] + time_intervals[5]
             # overhead_ratio =  other_time / time_intervals[2] if time_intervals[2] > 0 else 0
@@ -121,6 +144,9 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
                 f"{time_intervals[2]:.2f} ms",
                 f"{time_intervals[3]:.2f} ms",
                 f"{time_intervals[4]:.2f} ms",
+                f"{time_intervals[5]:.2f} ms",
+                f"{time_intervals[6]:.2f} ms",
+                # f"{time_intervals[7]:.2f} ms",
                 # f"{overhead_ratio:.2%}"
             ])
 
@@ -143,7 +169,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # target_x_request_id = args.x_request_id
-    target_x_request_id = "7b7e7516-1831-4217-acd9-a88e582f064"
+    target_x_request_id = "7f122a84f36c7d10"
     data_dir = args.data_dir
     
     all_events, time_lines = get_events_with_x_request_id(target_x_request_id, data_dir)

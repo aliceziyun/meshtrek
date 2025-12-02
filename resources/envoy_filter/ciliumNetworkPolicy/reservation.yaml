@@ -1,0 +1,43 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: reservation-l4-policy
+  namespace: hotel
+spec:
+  endpointSelector:
+    matchLabels:
+      io.kompose.service: reservation
+
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        io.kompose.service: mongodb-reservation
+    toPorts:
+    - ports:
+      - port: "27017"
+        protocol: TCP
+
+  - toEndpoints:
+    - matchLabels:
+        io.kompose.service: memcached-reserve
+    toPorts:
+    - ports:
+      - port: "11211"
+        protocol: TCP
+
+  - toEndpoints:
+    - matchLabels:
+        io.kubernetes.pod.namespace: kube-system
+        k8s-app: kube-dns
+    toPorts:
+      - ports:
+          - port: "53"
+            protocol: UDP
+        rules:
+          dns:
+            - matchPattern: "*"
+
+  - toEntities:
+    - kube-apiserver
+    - world
+    - host

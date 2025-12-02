@@ -1,0 +1,55 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-l4-policy
+  namespace: hotel
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+      io.kompose.service: frontend
+
+  policyTypes:
+  - Egress
+
+  egress:
+
+  - to:
+    - podSelector:
+        matchLabels:
+          app: search
+    ports:
+    - protocol: TCP
+      port: 8082
+
+  - to:
+    - podSelector:
+        matchLabels:
+          app: reservation
+    ports:
+    - protocol: TCP
+      port: 8087
+
+  - to:
+    - podSelector:
+        matchLabels:
+          app: profile
+    ports:
+    - protocol: TCP
+      port: 8081
+
+  - to:
+    - podSelector:
+        matchLabels:
+          app: recommendation
+    ports:
+    - protocol: TCP
+      port: 8085
+
+  - to:
+    - podSelector:
+        matchLabels:
+          app: user
+    ports:
+    - protocol: TCP
+      port: 8086

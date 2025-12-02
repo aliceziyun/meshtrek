@@ -3,11 +3,11 @@ apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
   name: "l7-empty"
-  namespace: social
+  namespace: hotel
 spec:
   endpointSelector:
     matchLabels:
-      app: social
+      app: hotel
   ingress:
   - fromEntities:
       - cluster
@@ -26,3 +26,72 @@ spec:
         protocol: TCP
       rules:
         http: [{}]
+
+  # egress:
+  # - toEndpoints:
+  #   - matchLabels:
+  #       io.kubernetes.pod.namespace: kube-system
+  #       k8s-app: kube-dns
+  #   toPorts:
+  #     - ports:
+  #         - port: "53"
+  #           protocol: UDP
+  #       rules:
+  #         dns:
+  #           - matchPattern: "*"
+
+  # - toEndpoints:
+  #   toPorts:
+  #   - ports:
+  #     - port: "11211"
+  #       protocol: ANY
+  
+  # - toEndpoints:
+  #   toPorts:
+  #   - ports:
+  #     - port: "27017"
+  #       protocol: ANY
+
+  # - toEndpoints:
+  #   - matchLabels:
+  #       app: hotel
+  #   toPorts:
+  #   - ports:
+  #     - port: "1"
+  #       endPort: 52
+  #       protocol: TCP
+  #     rules:
+  #       http: [{}]
+
+  # - toEndpoints:
+  #   - matchLabels:
+  #       app: hotel
+  #   toPorts:
+  #   - ports:
+  #     - port: "54"
+  #       endPort: 11210
+  #       protocol: TCP
+  #     rules:
+  #       http: [{}]
+
+  # - toEndpoints:
+  #   - matchLabels:
+  #       app: hotel
+  #   toPorts:
+  #   - ports:
+  #     - port: "11212"
+  #       endPort: 27016
+  #       protocol: TCP
+  #     rules:
+  #       http: [{}]
+
+  # - toEndpoints:
+  #   - matchLabels:
+  #       app: hotel
+  #   toPorts:
+  #   - ports:
+  #     - port: "27018"
+  #       endPort: 65535
+  #       protocol: TCP
+  #     rules:
+  #       http: [{}]

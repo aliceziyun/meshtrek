@@ -136,8 +136,8 @@ def generator_dot_file(directory, entry_file):
 
         # find all entries with the same x_request_id
         request_entries.extend(find_all_entries_with_x_request_id(target_x_request_id, directory, entry_lines, entry_file))
-        if len(request_entries) not in target_entry_size:       # discard requests which may not be complete
-            continue
+        # if len(request_entries) not in target_entry_size:       # discard requests which may not be complete
+        #     continue
 
         # merge nested requests
         merged_requests = merge_requests(request_entries)

@@ -8,7 +8,7 @@ import argparse
 import os
 import re
 
-base_colors = ["#4caf50", "#2196f3", "#d8e91e", "#ff9800","#d8e91e", "#f44336", "#00bcd4"]
+base_colors = ["#4caf50", "#2196f3","#ccc8c8", "#d8e91e", "#ff9800","#d8e91e", "#f44336", "#00bcd4"]
 
 def get_events_with_x_request_id(target_x_request_id, data_dir):
     process_timelines = defaultdict(list)
@@ -35,7 +35,7 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
                             pid = i
                             http_start = int(data["Time HTTP Start"])
                             request_filter_start = int(data["Time Request Filter Start"])
-                            # filter_end = int(data["Time Process Start"])
+                            filter_end = int(data["Time Process Start"])
                             write_start = int(data["Write Start Time"])
                             process_start = int(data["Write End Time"])
                             read_start = int(data["Read Start Time"])
@@ -48,6 +48,7 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
                                 "service_name" : service_name, 
                                 "http_start": http_start,
                                 "request_filter_start": request_filter_start,
+                                "filter_end": filter_end,
                                 "write_start": write_start,
                                 "process_start": process_start,
                                 "read_start": read_start,
@@ -69,6 +70,7 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
                 "service_name": evt["service_name"],
                 "http_start": evt["http_start"],
                 "request_filter_start": evt["request_filter_start"],
+                "filter_end": evt["filter_end"],
                 "write_start": evt["write_start"],
                 "process_start": evt["process_start"],
                 "read_start": evt["read_start"],
@@ -93,6 +95,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
         t = [
             evt["http_start"], 
             evt["request_filter_start"], 
+            evt["filter_end"],
             evt["write_start"],
             evt["process_start"], 
             evt["read_start"],
@@ -123,7 +126,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     ax_table.axis("off")
 
     # table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Process Time", "Upstream Http Parsing", "Response Filters", "Overhead Ratio"]
-    table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Write", "Process Time", "Read", "Upstream Http Parsing", "Response Filters"]
+    table_header = ["Service", "DownStream Http Parsing", "Request Filters", "Socket Waiting", "Write", "Process Time", "Read", "Upstream Http Parsing", "Response Filters"]
     table_data = []
 
     legend_labels = table_header[1:]
@@ -131,33 +134,33 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     legend_patches = [mpatches.Patch(color=color, label=label) for color, label in zip(legend_colors, legend_labels)]
     ax.legend(handles=legend_patches, loc="upper right")
 
-    for pid, events in process_timelines.items():
-        for evt in events:
-            t = [evt["http_start"], evt["request_filter_start"],  evt["write_start"], evt["process_start"], evt["read_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
-            time_intervals = [(t[i+1] - t[i]) / 1e6 for i in range(len(t) - 1)]
-            # other_time = time_intervals[0] + time_intervals[1] + time_intervals[3] + time_intervals[4] + time_intervals[5]
-            # overhead_ratio =  other_time / time_intervals[2] if time_intervals[2] > 0 else 0
-            table_data.append([
-                str(evt['service_name']),
-                f"{time_intervals[0]:.2f} ms",
-                f"{time_intervals[1]:.2f} ms",
-                f"{time_intervals[2]:.2f} ms",
-                f"{time_intervals[3]:.2f} ms",
-                f"{time_intervals[4]:.2f} ms",
-                f"{time_intervals[5]:.2f} ms",
-                f"{time_intervals[6]:.2f} ms",
-                # f"{time_intervals[7]:.2f} ms",
-                # f"{overhead_ratio:.2%}"
-            ])
+    # for pid, events in process_timelines.items():
+        # for evt in events:
+        #     t = [evt["http_start"], evt["request_filter_start"],  evt["write_start"], evt["process_start"], evt["read_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
+        #     time_intervals = [(t[i+1] - t[i]) / 1e6 for i in range(len(t) - 1)]
+        #     # other_time = time_intervals[0] + time_intervals[1] + time_intervals[3] + time_intervals[4] + time_intervals[5]
+        #     # overhead_ratio =  other_time / time_intervals[2] if time_intervals[2] > 0 else 0
+        #     table_data.append([
+        #         str(evt['service_name']),
+        #         f"{time_intervals[0]:.2f} ms",
+        #         f"{time_intervals[1]:.2f} ms",
+        #         f"{time_intervals[2]:.2f} ms",
+        #         f"{time_intervals[3]:.2f} ms",
+        #         f"{time_intervals[4]:.2f} ms",
+        #         f"{time_intervals[5]:.2f} ms",
+        #         f"{time_intervals[6]:.2f} ms",
+        #         # f"{time_intervals[7]:.2f} ms",
+        #         # f"{overhead_ratio:.2%}"
+        #     ])
 
-    the_table = ax_table.table(cellText=table_data,
-                            colLabels=table_header,
-                            loc='center',
-                            cellLoc='center')
+    # the_table = ax_table.table(cellText=table_data,
+    #                         colLabels=table_header,
+    #                         loc='center',
+    #                         cellLoc='center')
 
-    the_table.auto_set_font_size(False)
-    the_table.set_fontsize(9)
-    the_table.scale(1, 1.5)
+    # the_table.auto_set_font_size(False)
+    # the_table.set_fontsize(9)
+    # the_table.scale(1, 1.5)
 
     plt.tight_layout()
     plt.show()

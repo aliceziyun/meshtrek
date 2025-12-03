@@ -1,10 +1,10 @@
 import os
 import argparse
 import matplotlib.pyplot as plt
-import seaborn as sns
+# import seaborn as sns
 import numpy as np
 from collections import defaultdict
-from scipy.stats import gaussian_kde
+# from scipy.stats import gaussian_kde
 
 result_file = "heatmap_results.txt"
 target_entry_size = [11]
@@ -12,19 +12,21 @@ target_entry_size = [11]
 def get_entry(line):
     parts = line.strip().split(", ")
     data = {p.split(": ")[0]: p.split(": ")[1] for p in parts}
+    data = {k.strip('"{}'): v.strip('"{}') for k, v in data.items()}
+    # print(data)
 
-    x_request_id = data["X-Request-ID"]
+    x_request_id = data['X-Request-ID']
 
     if len(x_request_id) == 0:
         return None, None
 
-    start = int(data["Time Start"])
+    start = int(data['Time HTTP Start'])
     # http_parsed = int(data["Time HTTP Parsed"])
-    filter_end = int(data["Time Request Filter End"])
-    upstream_time_start = int(data["Time Upstream Recorded"])
+    # filter_end = int(data["Time Request Filter End"])
+    # upstream_time_start = int(data["Time Upstream Recorded"])
     # upstream_http_parsed = int(data["Upstream Time HTTP Parsed"])
     # upstream = int(data["Upstream Time Recorded"])
-    end = int(data["Time End"])
+    end = int(data['Time End'])
 
     # entry = {
     #     "x_request_id": x_request_id,
@@ -40,8 +42,8 @@ def get_entry(line):
     entry = {
         "x_request_id": x_request_id,
         "start": start,
-        "process_start": filter_end,
-        "process_end": upstream_time_start,
+        # "process_start": filter_end,
+        # "process_end": upstream_time_start,
         "end": end
     }
 
@@ -88,14 +90,14 @@ def merge_requests(request_entries):
         # compare the process start time to find nested requests
         # WARNING: now the program will not handle the parallel requests, all serial
         merged = False
-        if entry["process_start"] >= current_request["process_start"] and entry["process_end"] <= current_request["process_end"]:
-            # whether it can be merged
-            if (entry["start"] > current_request["start"] and entry["start"] < current_request["process_start"]):
-                current_request["process_start"] = entry["process_start"]
-                merged = True
-            if entry["end"] > current_request["process_end"] and entry["end"] < current_request["end"]:
-                current_request["process_end"] = entry["process_end"]
-                merged = True
+        # if entry["process_start"] >= current_request["process_start"] and entry["process_end"] <= current_request["process_end"]:
+        #     # whether it can be merged
+        #     if (entry["start"] > current_request["start"] and entry["start"] < current_request["process_start"]):
+        #         current_request["process_start"] = entry["process_start"]
+        #         merged = True
+        #     if entry["end"] > current_request["process_end"] and entry["end"] < current_request["end"]:
+        #         current_request["process_end"] = entry["process_end"]
+        #         merged = True
         
         if merged == False:
             current_request = entry
@@ -130,7 +132,7 @@ def generator_dot_file(directory, entry_file):
         processed_x_request_ids.add(x_request_id)
 
         request_entries.append(entry)
-        target_x_request_id = x_request_id
+        target_x_request_id = x_request_id[0:16]
 
         # find all entries with the same x_request_id
         request_entries.extend(find_all_entries_with_x_request_id(target_x_request_id, directory, entry_lines, entry_file))
@@ -143,12 +145,13 @@ def generator_dot_file(directory, entry_file):
         # calculate the [total_time, overhead]
         total_time = merged_requests[0]["end"] - merged_requests[0]["start"]
         overhead = 0
-        for req in merged_requests:
-            overhead += (req["process_start"] - req["start"])
-            overhead += (req["end"] - req["process_end"])
+        # for req in merged_requests:
+        #     overhead += (req["process_start"] - req["start"])
+        #     overhead += (req["end"] - req["process_end"])
         
         result_file_path = os.path.join(os.getcwd(), result_file)
         with open(result_file_path, 'a') as rf:
+            # print(f"Writing result for X-Request-ID: {target_x_request_id}, Total Time: {total_time}, Overhead: {overhead}")
             rf.write(f"{target_x_request_id}, {total_time}, {overhead}\n")
 
 def generate_heatmap_graph():
@@ -195,4 +198,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     generator_dot_file(args.dir, args.entry_file)
-    generate_heatmap_graph()
+    # generate_heatmap_graph()

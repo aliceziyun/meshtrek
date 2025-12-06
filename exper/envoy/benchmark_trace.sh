@@ -104,7 +104,7 @@ trace_social() {
 trace_synthetic() {
     NAMESPACE="default"
     service0_ip=$(kubectl get svc service0 -o jsonpath='{.spec.clusterIP}')
-    ~/istio-1.26.0/wrk2/wrk -D exp -t "$THREADS" -c "$CONNECTIONS" -d "$DURATION" -L -R $RPS http://$service0_ip/endpoint1
+    ~/istio-1.26.0/wrk2/wrk -t "$THREADS" -c "$CONNECTIONS" -d "$DURATION" -L -R $RPS http://$service0_ip/endpoint1
 
     if [ "$MESH_TYPE" == "cilium" ]; then
         PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')

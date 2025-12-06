@@ -86,7 +86,7 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
     return all_events, process_timelines
 
 def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
-    fig = plt.figure(figsize=(12, 6))
+    fig = plt.figure(figsize=(12, 20))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
     ax = plt.subplot(gs[0])
 
@@ -134,36 +134,38 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     legend_patches = [mpatches.Patch(color=color, label=label) for color, label in zip(legend_colors, legend_labels)]
     ax.legend(handles=legend_patches, loc="upper right")
 
-    # for pid, events in process_timelines.items():
-        # for evt in events:
-        #     t = [evt["http_start"], evt["request_filter_start"],  evt["write_start"], evt["process_start"], evt["read_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
-        #     time_intervals = [(t[i+1] - t[i]) / 1e6 for i in range(len(t) - 1)]
-        #     # other_time = time_intervals[0] + time_intervals[1] + time_intervals[3] + time_intervals[4] + time_intervals[5]
-        #     # overhead_ratio =  other_time / time_intervals[2] if time_intervals[2] > 0 else 0
-        #     table_data.append([
-        #         str(evt['service_name']),
-        #         f"{time_intervals[0]:.2f} ms",
-        #         f"{time_intervals[1]:.2f} ms",
-        #         f"{time_intervals[2]:.2f} ms",
-        #         f"{time_intervals[3]:.2f} ms",
-        #         f"{time_intervals[4]:.2f} ms",
-        #         f"{time_intervals[5]:.2f} ms",
-        #         f"{time_intervals[6]:.2f} ms",
-        #         # f"{time_intervals[7]:.2f} ms",
-        #         # f"{overhead_ratio:.2%}"
-        #     ])
+    for pid, events in process_timelines.items():
+        for evt in events:
+            t = [evt["http_start"], evt["request_filter_start"],  evt["write_start"], evt["process_start"], evt["read_start"], evt["upstream_http_start"], evt["response_filter_start"], evt["end"]]
+            time_intervals = [(t[i+1] - t[i]) / 1e6 for i in range(len(t) - 1)]
+            # other_time = time_intervals[0] + time_intervals[1] + time_intervals[3] + time_intervals[4] + time_intervals[5]
+            # overhead_ratio =  other_time / time_intervals[2] if time_intervals[2] > 0 else 0
+            table_data.append([
+                str(evt['service_name']),
+                f"{time_intervals[0]:.2f} ms",
+                f"{time_intervals[1]:.2f} ms",
+                f"{time_intervals[2]:.2f} ms",
+                f"{time_intervals[3]:.2f} ms",
+                f"{time_intervals[4]:.2f} ms",
+                f"{time_intervals[5]:.2f} ms",
+                f"{time_intervals[6]:.2f} ms",
+                # f"{time_intervals[7]:.2f} ms",
+                # f"{overhead_ratio:.2%}"
+            ])
 
-    # the_table = ax_table.table(cellText=table_data,
-    #                         colLabels=table_header,
-    #                         loc='center',
-    #                         cellLoc='center')
+    the_table = ax_table.table(cellText=table_data,
+                            colLabels=table_header,
+                            loc='center',
+                            cellLoc='center')
 
-    # the_table.auto_set_font_size(False)
-    # the_table.set_fontsize(9)
-    # the_table.scale(1, 1.5)
+    the_table.auto_set_font_size(False)
+    the_table.set_fontsize(9)
+    the_table.scale(1, 1.5)
 
     plt.tight_layout()
-    plt.show()
+    # plt.show()
+    plt.savefig(f"timeline_{target_x_request_id}.png", dpi=300)
+    print(f"[*] Timeline graph saved to timeline_{target_x_request_id}.png")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate timeline for Request under service mesh.")
@@ -172,7 +174,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # target_x_request_id = args.x_request_id
-    target_x_request_id = "7f122a84f36c7d10"
+    target_x_request_id = "b5203338-f463-90"
     data_dir = args.data_dir
     
     all_events, time_lines = get_events_with_x_request_id(target_x_request_id, data_dir)

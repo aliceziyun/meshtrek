@@ -5,9 +5,9 @@ mkdir -p results
 
 random_seed=123
 # for each folder of yamls
-# for folder in branch1-yamls branch2-yamls branch4-yamls branch8-yamls branch16-yamls; do
-for folder in branch16-yamls; do
-    for istio_enabled in false; do
+for folder in branch1-yamls branch2-yamls branch4-yamls branch8-yamls branch16-yamls; do
+# for folder in branch16-yamls; do
+    for istio_enabled in false true; do
         echo "Running with istio_enabled=$istio_enabled in folder=$folder"
         outfile="results/$folder-istio-$istio_enabled.log"
         rm -f $outfile
@@ -35,7 +35,7 @@ for folder in branch16-yamls; do
 
         # get service0 ip
         service0_ip=$(kubectl get svc service0 -o jsonpath='{.spec.clusterIP}')
-        # ~/istio-1.26.0/wrk2/wrk -t4 -c16 -R 50 -d 30 -L http://$service0_ip/endpoint1 >> $outfile
+        ~/istio-1.26.0/wrk2/wrk -t4 -c16 -R 50 -d 30 -L http://$service0_ip/endpoint1 >> $outfile
 
         # sleep 30
         ~/wrk/wrk -t16 -c128 -d 30 -L http://$service0_ip/endpoint1 >> $outfile.throughput

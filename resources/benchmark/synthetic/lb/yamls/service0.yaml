@@ -6,7 +6,7 @@ metadata:
         name: config-service0
     namespace: default
 data:
-    conf.json: '{"processes":10,"logging":false,"protocol":"http","endpoints":[{"name":"endpoint1","execution_mode":"sequential","cpu_complexity":{"execution_time":${PROCESSING_TIME_SERVICE0},"threads":1},"network_complexity":{"forward_requests":"asynchronous","response_payload_size":256,"called_services":[{"service":"service1","port":80,"endpoint":"endpoint1","protocol":"http","traffic_forward_ratio":1,"request_payload_size":512,"probability":0}]}}]}'
+    conf.json: '{"processes":10,"logging":false,"protocol":"http","endpoints":[{"name":"endpoint1","execution_mode":"sequential","cpu_complexity":{"execution_time":${PROCESSING_TIME_SERVICE0},"threads":1},"network_complexity":{"forward_requests":"synchronous","response_payload_size":256,"called_services":[{"service":"service1","port":80,"endpoint":"endpoint1","protocol":"http","traffic_forward_ratio":1,"request_payload_size":8,"probability":0}]}}]}'
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -29,25 +29,6 @@ spec:
         spec:
             nodeName: "${WORKER_NODE_SERVICE0}"
             containers:
-                - name: istio-proxy
-                  image: docker.io/alicesong2002/modified_istio_proxy:v16.12
-                  securityContext:
-                    allowPrivilegeEscalation: true
-                    privileged: true
-                    capabilities:
-                      add: ["SYS_ADMIN"]
-                  volumeMounts:
-                  - mountPath: /lib/modules
-                    name: lib-modules
-                  - mountPath: /usr/src
-                    name: linux-headers
-                  - name: tmp
-                    mountPath: /tmp
-                  resources:
-                    limits:
-                      memory: "3000Mi"
-                    requests:
-                      memory: "3000Mi"
                 - name: app
                   image: yizhengx/mesh:synthetic
                   imagePullPolicy: Always
@@ -70,16 +51,6 @@ spec:
                     initialDelaySeconds: 5
                     periodSeconds: 1
             volumes:
-                - name: tmp
-                  emptyDir: {}
-                - name: lib-modules
-                  hostPath:
-                    path: /lib/modules
-                    type: Directory
-                - name: linux-headers
-                  hostPath:
-                    path: /usr/src
-                    type: Directory
                 - name: config-data-volume
                   configMap:
                     name: config-service0

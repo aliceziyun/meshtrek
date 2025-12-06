@@ -49,10 +49,10 @@ kubectl label namespace $NAMESPACE istio-injection=enabled
 # patch services so we can access jaeger from outside
 # kubectl patch svc tracing -n istio-system -p '{"spec":{"type":"NodePort"}}'
 
-# download wrk2 for performance test
-sudo apt install libssl-dev
-sudo apt install zlib1g-dev
-git clone https://github.com/giltene/wrk2.git
-cd wrk2
-make
-cd ..
+# # download wrk2 for performance test
+# sudo apt install libssl-dev
+# sudo apt install zlib1g-dev
+# git clone https://github.com/giltene/wrk2.git
+# cd wrk2
+# make
+# cd ..

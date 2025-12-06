@@ -1,0 +1,67 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: replace-hcm-outbound-srv0
+  namespace: default
+spec:
+  workloadSelector:
+    labels:
+      app: service0
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        name: virtualOutbound
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: REPLACE
+      value:
+        name: envoy.filters.network.tcp_proxy
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
+          stat_prefix: l4_outbound
+          cluster: PassthroughCluster
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        name: 0.0.0.0_80
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: REPLACE
+      value:
+        name: envoy.filters.network.tcp_proxy
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
+          stat_prefix: l4_outbound
+          cluster: PassthroughCluster
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: replace-hcm-outbound-srv1
+  namespace: default
+spec:
+  workloadSelector:
+    labels:
+      app: service1
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        name: virtualOutbound
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: REPLACE
+      value:
+        name: envoy.filters.network.tcp_proxy
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
+          stat_prefix: l4_outbound
+          cluster: PassthroughCluster

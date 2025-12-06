@@ -29,6 +29,25 @@ spec:
         spec:
             nodeName: "${WORKER_NODE_SERVICE12}"
             containers:
+                - name: istio-proxy
+                  image: docker.io/alicesong2002/modified_istio_proxy:v16.12
+                  securityContext:
+                    allowPrivilegeEscalation: true
+                    privileged: true
+                    capabilities:
+                      add: ["SYS_ADMIN"]
+                  volumeMounts:
+                  - mountPath: /lib/modules
+                    name: lib-modules
+                  - mountPath: /usr/src
+                    name: linux-headers
+                  - name: tmp
+                    mountPath: /tmp
+                  resources:
+                    limits:
+                      memory: "3000Mi"
+                    requests:
+                      memory: "3000Mi"
                 - name: app
                   image: yizhengx/mesh:synthetic
                   imagePullPolicy: Always
@@ -51,6 +70,16 @@ spec:
                     initialDelaySeconds: 5
                     periodSeconds: 1
             volumes:
+                - name: tmp
+                  emptyDir: {}
+                - name: lib-modules
+                  hostPath:
+                    path: /lib/modules
+                    type: Directory
+                - name: linux-headers
+                  hostPath:
+                    path: /usr/src
+                    type: Directory
                 - name: config-data-volume
                   configMap:
                     name: config-service12

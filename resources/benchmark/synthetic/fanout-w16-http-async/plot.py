@@ -10,7 +10,7 @@ istio_modes = ["false", "true"]
 
 # Adjust filename rule if needed
 def file_name(branch, istio_mode):
-    return f"results-done/branch{branch}-yamls-istio-{istio_mode}.log"
+    return f"results/branch{branch}-yamls-istio-{istio_mode}.log"
 
 def throughput_file_name(branch, istio_mode):
     # As you described: same as .log but with ".throughput" suffix

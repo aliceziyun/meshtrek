@@ -1,11 +1,15 @@
 import re
 import yaml
+import os
 from pathlib import Path
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # ===========================================
 # Service List
 # ===========================================
-services = ["frontend", "rate", "profile", "geo", "recommendation", "reservation", "search", "user"]
+# services = ["frontend", "rate", "profile", "geo", "recommendation", "reservation", "search", "user"]
+services = ["service0","service1"]
 
 # ===========================================
 # Input directory: listeners output files
@@ -40,13 +44,12 @@ def make_envoyfilter(service, patches):
         "kind": "EnvoyFilter",
         "metadata": {
             "name": unique_name,
-            "namespace": "hotel"
+            "namespace": "default"
         },
         "spec": {
             "workloadSelector": {
                 "labels": {
                     "app": "hotel",
-                    "io.kompose.service": service
                 }
             },
             "configPatches": patches
@@ -174,7 +177,7 @@ def main():
             "kind": "EnvoyFilter",
             "metadata": {
                 "name": "replace-hcm-outbound",
-                "namespace": "hotel"
+                "namespace": "default"
             },
             "spec": {
                 "workloadSelector": {

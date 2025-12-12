@@ -1,0 +1,36 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: hotel-frontend-opa-ext-authz
+  namespace: hotel
+spec:
+  workloadSelector:
+    labels:
+      io.kompose.service: frontend   # matches your frontend pods
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND       # inbound to frontend
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.ext_authz
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+          transport_api_version: V3
+          failure_mode_allow: false          # if OPA fails → deny
+          with_request_body:
+            max_request_bytes: 8192
+            allow_partial_message: true
+          grpc_service:
+            google_grpc:
+              target_uri: "127.0.0.1:9191"  # OPA sidecar
+              stat_prefix: "ext_authz"
+            timeout: 0.5s
+end

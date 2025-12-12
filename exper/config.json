@@ -2,11 +2,11 @@
     "nodes_user": "hsuch",
     "nodes_number": 5,
     "nodes": [
-        "ms1043.utah.cloudlab.us",
-        "ms0936.utah.cloudlab.us",
-        "ms1027.utah.cloudlab.us",
-        "ms0941.utah.cloudlab.us",
-        "ms0910.utah.cloudlab.us"
+        "ms0915.utah.cloudlab.us",
+        "ms0918.utah.cloudlab.us",
+        "ms0944.utah.cloudlab.us",
+        "ms0913.utah.cloudlab.us",
+        "ms1127.utah.cloudlab.us"
     ],
     "nodes_home": "/users/hsuch"
 }

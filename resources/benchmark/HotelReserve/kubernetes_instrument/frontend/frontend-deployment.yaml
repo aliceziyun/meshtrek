@@ -4,6 +4,7 @@ metadata:
   annotations:
     kompose.cmd: kompose convert
     kompose.version: 1.22.0 (955b78124)
+  creationTimestamp: null
   labels:
     io.kompose.service: frontend
   name: frontend
@@ -12,6 +13,7 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: frontend
+  strategy: {}
   template:
     metadata:
       annotations:
@@ -19,15 +21,15 @@ spec:
         kompose.version: 1.22.0 (955b78124)
         sidecar.istio.io/statsInclusionPrefixes: cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grp,listener,connection_manager
         sidecar.istio.io/statsInclusionRegexps: http.*
+      creationTimestamp: null
       labels:
         io.kompose.service: frontend
     spec:
       containers:
-
-        - name: hotel-reserv-frontend
-          image: docker.io/alicesong2002/hotel-reservation-modified:v1.2
-          command:
+        - command:
             - /go/bin/frontend
+          image: docker.io/alicesong2002/hotel-reservation-modified:v1.2
+          name: hotel-reserv-frontend
           securityContext:
             allowPrivilegeEscalation: true
             privileged: true
@@ -35,27 +37,11 @@ spec:
               add: ["SYS_ADMIN"]
           ports:
             - containerPort: 5000
-
-        - name: opa
-          image: openpolicyagent/opa:0.63.0
-          args:
-            - "run"
-            - "--server"
-            - "--addr=0.0.0.0:8181"
-            - "--log-level=info"
-            - "--set=plugins.envoy_ext_authz_grpc.addr=:9191"
-            - "--set=plugins.envoy_ext_authz_grpc.path=istio/authz/allow"
-            - "/policy/hotel-opa-allow-all.rego"
-          ports:
-            - containerPort: 8181
-              name: http
-            - containerPort: 9191
-              name: grpc
-          volumeMounts:
-            - name: opa-policy
-              mountPath: /policy
-
-
+          # resources:
+          #   requests:
+          #     cpu: 100m
+          #   limits:
+          #     cpu: 1000m
         - name: istio-proxy
           image: docker.io/alicesong2002/modified_istio_proxy:v15.0
           securityContext:
@@ -64,31 +50,27 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
           volumeMounts:
-            - mountPath: /lib/modules
-              name: lib-modules
-            - mountPath: /usr/src
-              name: linux-headers
-            - mountPath: /tmp
-              name: tmp
+          - mountPath: /lib/modules
+            name: lib-modules
+          - mountPath: /usr/src
+            name: linux-headers
+          - name: tmp
+            mountPath: /tmp
           resources:
-            requests:
-              memory: "3000Mi"
             limits:
               memory: "3000Mi"
-
+            requests:
+              memory: "3000Mi"
       volumes:
-        - name: tmp
-          emptyDir: {}
-        - name: lib-modules
-          hostPath:
-            path: /lib/modules
-            type: Directory
-        - name: linux-headers
-          hostPath:
-            path: /usr/src
-            type: Directory
-        - name: opa-policy
-          configMap:
-            name: opa-policy
-
+      - name: tmp
+        emptyDir: {}
+      - name: lib-modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: linux-headers
+        hostPath:
+          path: /usr/src
+          type: Directory
       restartPolicy: Always
+status: {}

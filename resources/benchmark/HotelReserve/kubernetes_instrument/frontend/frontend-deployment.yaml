@@ -4,7 +4,6 @@ metadata:
   annotations:
     kompose.cmd: kompose convert
     kompose.version: 1.22.0 (955b78124)
-  creationTimestamp: null
   labels:
     io.kompose.service: frontend
   name: frontend
@@ -13,7 +12,6 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: frontend
-  strategy: {}
   template:
     metadata:
       annotations:
@@ -21,15 +19,17 @@ spec:
         kompose.version: 1.22.0 (955b78124)
         sidecar.istio.io/statsInclusionPrefixes: cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grp,listener,connection_manager
         sidecar.istio.io/statsInclusionRegexps: http.*
-      creationTimestamp: null
       labels:
         io.kompose.service: frontend
     spec:
       containers:
-        - command:
-            - /go/bin/frontend
+        # =========================
+        # Main application
+        # =========================
+        - name: hotel-reserv-frontend
           image: docker.io/alicesong2002/hotel-reservation-modified:v1.2
-          name: hotel-reserv-frontend
+          command:
+            - /go/bin/frontend
           securityContext:
             allowPrivilegeEscalation: true
             privileged: true
@@ -37,11 +37,10 @@ spec:
               add: ["SYS_ADMIN"]
           ports:
             - containerPort: 5000
-          # resources:
-          #   requests:
-          #     cpu: 100m
-          #   limits:
-          #     cpu: 1000m
+
+        # =========================
+        # OPA sidecar (ALLOW ALL)
+        # =========================
         - name: opa
           image: openpolicyagent/opa:0.63.0
           args:
@@ -62,6 +61,10 @@ spec:
               memory: "256Mi"
             limits:
               memory: "256Mi"
+
+        # =========================
+        # Istio proxy (existing)
+        # =========================
         - name: istio-proxy
           image: docker.io/alicesong2002/modified_istio_proxy:v15.0
           securityContext:
@@ -70,27 +73,31 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
           volumeMounts:
-          - mountPath: /lib/modules
-            name: lib-modules
-          - mountPath: /usr/src
-            name: linux-headers
-          - name: tmp
-            mountPath: /tmp
+            - mountPath: /lib/modules
+              name: lib-modules
+            - mountPath: /usr/src
+              name: linux-headers
+            - mountPath: /tmp
+              name: tmp
           resources:
-            limits:
-              memory: "3000Mi"
             requests:
               memory: "3000Mi"
+            limits:
+              memory: "3000Mi"
+
       volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: lib-modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: linux-headers
-        hostPath:
-          path: /usr/src
-          type: Directory
+        - name: tmp
+          emptyDir: {}
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+            type: Directory
+        - name: linux-headers
+          hostPath:
+            path: /usr/src
+            type: Directory
+        - name: opa-policy
+          configMap:
+            name: opa-policy
+
       restartPolicy: Always
-status: {}

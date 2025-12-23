@@ -23,9 +23,7 @@ spec:
         io.kompose.service: frontend
     spec:
       containers:
-        # =========================
-        # Main application
-        # =========================
+
         - name: hotel-reserv-frontend
           image: docker.io/alicesong2002/hotel-reservation-modified:v1.2
           command:
@@ -38,19 +36,19 @@ spec:
           ports:
             - containerPort: 5000
 
-        # =========================
-        # OPA sidecar (ALLOW ALL)
-        # =========================
         - name: opa
           image: openpolicyagent/opa:0.63.0
           args:
             - "run"
             - "--server"
+            - "--addr=0.0.0.0:8181"
             - "--log-level=info"
             - "--set=plugins.envoy_ext_authz_grpc.addr=:9191"
             - "--set=plugins.envoy_ext_authz_grpc.path=istio/authz/allow"
             - "/policy"
           ports:
+            - containerPort: 8181
+              name: http
             - containerPort: 9191
               name: grpc
           volumeMounts:
@@ -62,9 +60,6 @@ spec:
             limits:
               memory: "256Mi"
 
-        # =========================
-        # Istio proxy (existing)
-        # =========================
         - name: istio-proxy
           image: docker.io/alicesong2002/modified_istio_proxy:v15.0
           securityContext:

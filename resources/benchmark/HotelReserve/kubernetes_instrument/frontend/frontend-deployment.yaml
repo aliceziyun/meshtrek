@@ -42,6 +42,26 @@ spec:
           #     cpu: 100m
           #   limits:
           #     cpu: 1000m
+        - name: opa
+          image: openpolicyagent/opa:0.63.0
+          args:
+            - "run"
+            - "--server"
+            - "--log-level=info"
+            - "--set=plugins.envoy_ext_authz_grpc.addr=:9191"
+            - "--set=plugins.envoy_ext_authz_grpc.path=istio/authz/allow"
+            - "/policy"
+          ports:
+            - containerPort: 9191
+              name: grpc
+          volumeMounts:
+            - name: opa-policy
+              mountPath: /policy
+          resources:
+            requests:
+              memory: "256Mi"
+            limits:
+              memory: "256Mi"
         - name: istio-proxy
           image: docker.io/alicesong2002/modified_istio_proxy:v15.0
           securityContext:

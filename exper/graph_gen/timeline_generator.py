@@ -86,7 +86,7 @@ def get_events_with_x_request_id(target_x_request_id, data_dir):
     return all_events, process_timelines
 
 def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
-    fig = plt.figure(figsize=(12, 20))
+    fig = plt.figure(figsize=(12, 16))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
     ax = plt.subplot(gs[0])
 
@@ -160,7 +160,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
                 f"{time_intervals[5]:.2f} ms",
                 f"{time_intervals[6]:.2f} ms",
                 f"{time_intervals[7]:.2f} ms",
-                f"{time_intervals[8]:.2f} ms",
+                # f"{time_intervals[8]:.2f} ms",
                 # f"{overhead_ratio:.2%}"
             ])
 
@@ -174,6 +174,7 @@ def generate_timeline_graph(all_events, process_timelines, target_x_request_id):
     the_table.scale(1, 1.5)
 
     plt.tight_layout()
+    plt.savefig(f"timeline_{target_x_request_id}.png", dpi=300)
     plt.show()
 
 if __name__ == "__main__":
@@ -183,7 +184,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # target_x_request_id = args.x_request_id
-    target_x_request_id = "4ba79e3ece66ba8a"
+    target_x_request_id = "e998d696-6fd3-9bcd-8b5c-c16033cb0e6"
     data_dir = args.data_dir
     
     all_events, time_lines = get_events_with_x_request_id(target_x_request_id, data_dir)

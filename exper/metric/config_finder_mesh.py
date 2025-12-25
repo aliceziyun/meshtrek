@@ -98,7 +98,7 @@ class MeshConfigFinder:
                 script_path,
                 [str(self.namespace), str(thread), str(connection), str(rps), str(self.duration)]
             )
-            print("Benchmark output:\n", output)
+            # print("Benchmark output:\n", output)
             p50 = get_p50(output)
             p99 = get_p99(output)
             res_rps = get_achieved_RPS(output)
@@ -161,8 +161,15 @@ class MeshConfigFinder:
                 os.path.join(self.basepath, "./metric/script/ambient_config.sh"),
                 ["bind_each_service"]
             )
-        
-        time.sleep(60)
+        # elif self.mesh_type == "istio":
+        #     # L4 only policy
+        #     output = self.shell_helper.execute_script(
+        #         self.shell_helper.config["nodes"][0],
+        #         self.shell_helper.config["nodes_user"],
+        #         os.path.join(self.basepath, "./metric/script/l4_only_istio.sh"),
+        #     )
+
+        time.sleep(10)
 
     def set_cpu_limit(self, cpu_limit):
         self.shell_helper.execute_script(
@@ -212,12 +219,12 @@ class MeshConfigFinder:
         best_rps = self.find_best_RPS()
 
         # Directly do test
-        print("[*] Finding best RPS in fine-grained...")
+        # print("[*] Finding best RPS in fine-grained...")
         self.batch = 3
         self.duration = 45
         self.rps_start = best_rps - 200
-        rps_end = best_rps + 400
-        self.rps_step = 20
+        rps_end = best_rps + 200
+        self.rps_step = 50
         
         for current_rps in range(self.rps_start, rps_end + 1, self.rps_step):
             p50, achieved_RPS = self.execute_batch(current_rps)

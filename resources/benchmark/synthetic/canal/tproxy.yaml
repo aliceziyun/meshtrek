@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tproxy-service1
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels: { app: tproxy-service1 }
+  template:
+    metadata:
+      labels: { app: tproxy-service1 }
+    spec:
+      serviceAccountName: tproxy-installer
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: rules
+        image: docker.io/library/ubuntu:22.04
+        securityContext:
+          privileged: true
+        command: ["bash", "-lc"]
+        args:
+          - |
+            set -euo pipefail
+            export DEBIAN_FRONTEND=noninteractive
+
+            # Install deps (public Ubuntu repos)
+            apt-get update -y
+            apt-get install -y --no-install-recommends \
+              iptables iproute2 ca-certificates curl dnsutils
+            rm -rf /var/lib/apt/lists/*
+
+            # Install kubectl (stable)
+            curl -fsSL https://dl.k8s.io/release/stable.txt -o /tmp/kver
+            KVER="$(cat /tmp/kver)"
+            curl -fsSL "https://dl.k8s.io/release/${KVER}/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl
+            chmod +x /usr/local/bin/kubectl
+
+            MARK=1
+            TABLE=100
+            LISTENER_PORT=15001
+
+            TARGET_SVC="service1"
+            TARGET_NS="default"
+            TARGET_PORT=80
+
+            SHARED_NS="mesh-proxy"
+            SHARED_LABEL="app=shared-envoy"
+
+            ensure_sysctls() {
+              sysctl -w net.ipv4.conf.all.rp_filter=0 >/dev/null 2>&1 || true
+              sysctl -w net.ipv4.conf.default.rp_filter=0 >/dev/null 2>&1 || true
+            }
+
+            ensure_policy_routing() {
+              ip rule add fwmark ${MARK} lookup ${TABLE} 2>/dev/null || true
+              ip route add local 0.0.0.0/0 dev lo table ${TABLE} 2>/dev/null || true
+            }
+
+            install_rules() {
+              local svc_ip shared_ips
+
+              svc_ip="$(getent hosts ${TARGET_SVC}.${TARGET_NS}.svc.cluster.local | awk '{print $1}' | head -n1)"
+              if [ -z "${svc_ip}" ]; then
+                echo "ERROR: cannot resolve ${TARGET_SVC}.${TARGET_NS}.svc.cluster.local"
+                return 1
+              fi
+
+              shared_ips="$(kubectl -n ${SHARED_NS} get pod -l ${SHARED_LABEL} -o jsonpath='{.items[*].status.podIP}' 2>/dev/null || true)"
+
+              echo "Resolved ${TARGET_SVC}.${TARGET_NS} -> ${svc_ip}"
+              echo "Shared envoy pod IPs: ${shared_ips:-<none>}"
+
+              # Chain
+              iptables -t mangle -N ENVOY_TPROXY 2>/dev/null || true
+              iptables -t mangle -F ENVOY_TPROXY
+
+              # Basic exclusions
+              iptables -t mangle -A ENVOY_TPROXY -p tcp --dport ${LISTENER_PORT} -j RETURN
+              iptables -t mangle -A ENVOY_TPROXY -d 127.0.0.0/8 -j RETURN
+              iptables -t mangle -A ENVOY_TPROXY -p udp --dport 53 -j RETURN
+              iptables -t mangle -A ENVOY_TPROXY -p tcp --dport 53 -j RETURN
+
+              # Loop avoidance: do NOT intercept traffic originating from shared-envoy pods
+              for ip in ${shared_ips}; do
+                iptables -t mangle -A ENVOY_TPROXY -p tcp -s ${ip}/32 -d ${svc_ip}/32 --dport ${TARGET_PORT} -j RETURN
+              done
+
+              # Intercept ONLY traffic to service1 ClusterIP:80
+              iptables -t mangle -A ENVOY_TPROXY -p tcp -d ${svc_ip}/32 --dport ${TARGET_PORT} \
+                -j TPROXY --on-port ${LISTENER_PORT} --tproxy-mark ${MARK}/${MARK}
+
+              # Hook into PREROUTING (pod traffic)
+              iptables -t mangle -C PREROUTING -p tcp -d ${svc_ip}/32 --dport ${TARGET_PORT} -j ENVOY_TPROXY 2>/dev/null || \
+                iptables -t mangle -A PREROUTING -p tcp -d ${svc_ip}/32 --dport ${TARGET_PORT} -j ENVOY_TPROXY
+
+              echo "Installed TPROXY for ${svc_ip}:${TARGET_PORT} -> local :${LISTENER_PORT} (loop-safe)"
+            }
+
+            ensure_sysctls
+            ensure_policy_routing
+
+            while true; do
+              install_rules || true
+              sleep 10
+            done
+

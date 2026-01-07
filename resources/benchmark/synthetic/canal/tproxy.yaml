@@ -105,3 +105,18 @@ spec:
               sleep 10
             done
 
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Cleaning up iptables rules..."
+                iptables -t mangle -D OUTPUT -j TPROXY_OUTPUT 2>/dev/null || true
+                iptables -t mangle -F TPROXY_OUTPUT 2>/dev/null || true
+                iptables -t mangle -X TPROXY_OUTPUT 2>/dev/null || true
+                ip rule del fwmark 1 lookup 100 2>/dev/null || true
+                ip route del local 0.0.0.0/0 dev lo table 100 2>/dev/null || true
+                iptables -t filter -D INPUT -p tcp --dport 15001 -j ACCEPT 2>/dev/null || true
+                echo "Cleanup complete"

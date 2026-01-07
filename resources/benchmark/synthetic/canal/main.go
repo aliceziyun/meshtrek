@@ -40,6 +40,7 @@ func main() {
 			log.Printf("accept: %v", err)
 			continue
 		}
+		log.Printf("ACCEPTED new connection from: %s", c.RemoteAddr())  // ADD THIS LINE
 		go handleConn(c)
 	}
 }
@@ -65,8 +66,10 @@ func listenTransparent(addr string) (net.Listener, error) {
 
 func handleConn(c net.Conn) {
 	defer c.Close()
+	log.Printf("New connection received from: %s", c.RemoteAddr())
 
 	orig, _ := getOriginalDst(c)
+	log.Printf("Original destination: %s", orig)
 
 	br := bufio.NewReader(c)
 	req, err := http.ReadRequest(br)

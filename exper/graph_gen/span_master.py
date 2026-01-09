@@ -22,7 +22,7 @@ def _build_parser():
 	subparsers = parser.add_subparsers(
 		dest="op",
 		required=True,
-		metavar="{clean,gen}",
+		metavar="{clean,gen,topk,dist}",
 		help="Operation to perform",
 	)
 
@@ -66,17 +66,55 @@ def _build_parser():
 		help="Request id to filter",
 	)
 
+	# op = topk
+	p_topk = subparsers.add_parser(
+		"topk",
+		help="Get top K requests by overhead time",
+	)
+	p_topk.add_argument(
+		"-f",
+		"--file",
+		dest="file",
+		required=True,
+		help="Input file path",
+	)
+	p_topk.add_argument(
+		"-k",
+		"--k",
+		dest="k",
+		type=int,
+		required=True,
+		help="Top K requests to retrieve",
+	)
+	p_topk.add_argument(
+		"-l",
+		"--len",
+		dest="length",
+		type=int,
+		required=True,
+		help="Length of the request"
+	)
+
 	return parser
 
 def read_span_meta_from_file(file):
 	with open(file, 'r') as f:
 		data = json.load(f)
-	return data.get("metadata", {})
+	return data
 
-def get_top_k(file, k):
+def get_top_k(file, k, length):
 	span_meta = read_span_meta_from_file(file)
+
+	# filter by request length
+	span_meta = [(request_id, meta) for request_id, meta in span_meta.items() if meta.get("total_sub_requests", 0) == length]
+	
 	# sorted by overhead time
-	sorted_requests = sorted(span_meta.items(), key=lambda item: item[1].get("overhead", 0), reverse=True)
+	sorted_requests = sorted(
+		span_meta,
+		key=lambda item: item[1].get("overhead", 0),
+		reverse=True
+	)
+
 	top_k_requests = sorted_requests[:k]
 	return top_k_requests
 
@@ -97,8 +135,16 @@ def main(argv=None):
 		plotter.plot_span(spans)
 		return 0
 	if args.op == "topk":
-		# topk(file=args.file, k=args.k)
-		print(f"[topk] file={args.file} k={args.k}")
+		# top_k(file=args.file, k=args.k, length=args.length)
+		top_k_requests = get_top_k(file=args.file, k=args.k, length=args.length)
+		for request_id, meta in top_k_requests:
+			print(f"Request ID: {request_id}, Overhead: {meta.get('overhead', 0)}, Request Time: {meta.get('request_time', 0)}")
+		return 0
+	if args.op == "dist":
+		# dist(file=args.file)
+		print(f"[dist] file={args.file}")
+		span_meta = read_span_meta_from_file(args.file)
+		
 
 	# Should be unreachable due to argparse choices
 	parser.error(f"Unknown op: {args.op}")

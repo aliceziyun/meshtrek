@@ -1,35 +1,52 @@
 import json
 import os
+import span_constant as span_constant
 
 class SpanFormatter:
-    def _write_results_to_file(self):
+    def _write_results_to_file(self, processed):
+        '''
+        write spans and spans_meta to files
+        '''
         print("[*] Writing all results to file...")
         # 写span数据
-        output_path = os.path.join(self.output_dir, "formatted_spans.json")
+        output_path = os.path.join(self.output_dir, "formatted_spans_{}.json".format(processed))
         with open(output_path, 'a') as out_f:
-            json.dump({
-                "spans": self.spans,
-            }, out_f, indent=4)
+            json.dump(self.spans, out_f)
+            out_f.write('\n')
         # 写metadata数据
-        output_meta_path = os.path.join(self.output_dir, "formatted_spans_meta.json")
+        output_meta_path = os.path.join(self.output_dir, "formatted_spans_meta_{}.json".format(processed))
         with open(output_meta_path, 'a') as out_f:
-            json.dump({
-                "spans_meta": self.spans_meta
-            }, out_f, indent=4)
+            json.dump(self.spans_meta, out_f)
+            out_f.write('\n')
         self.spans = {}
         self.spans_meta = {}
 
-    def _process_full_request(self, request_traces):
-        """
-        metadata = {
-            "total_sub_requests": int,
-            "request_time": float
-        }
-        """
-        metadata = {
-            "total_sub_requests": len(request_traces),
-            "request_time": 0.0,
-        }
+    def _cal_times(self, span):
+        wait_time, parse_time, filter_time, process_time = 0, 0, 0, 0
+        # 计算span的各个时间
+        wait_time += span["req"]["Header Parse Start Time"] - span["conn"]["Read Ready Start Time"]
+        wait_time += span["conn"]["Parse End Time"] - span["req"]["Stream End Time"]
+        wait_time += span["resp"]["Header Parse Start Time"] - span["upstream_conn"]["Read Ready Start Time"]
+        wait_time += span["upstream_conn"]["Parse End Time"] - span["resp"]["Stream End Time"]
+
+        parse_time += span["req"]["Header Parse End Time"] - span["req"]["Header Parse Start Time"]
+        parse_time += span["req"]["Data Parse End Time"] - span["req"]["Data Parse Start Time"]
+        parse_time += span["resp"]["Header Parse End Time"] - span["resp"]["Header Parse Start Time"]
+        parse_time += span["resp"]["Data Parse End Time"] - span["resp"]["Data Parse Start Time"]
+        parse_time += span["resp"]["Trailer Parse End Time"] - span["resp"]["Trailer Parse Start Time"]
+
+        filter_time += span["req"]["Data Parse Start Time"] - span["req"]["Header Parse End Time"]
+        filter_time += span["req"]["Stream End Time"] - span["req"]["Data Parse End Time"]
+        filter_time += span["resp"]["Data Parse Start Time"] - span["resp"]["Header Parse End Time"]
+        filter_time += span["resp"]["Trailer Parse Start Time"] - span["resp"]["Data Parse End Time"]
+        filter_time += span["resp"]["Stream End Time"] - span["resp"]["Trailer Parse End Time"]
+
+        # TODO: deal with double counting in process_time
+        process_time = span["upstream_conn"]["Read Ready Start Time"] - span["conn"]["Parse End Time"]
+
+        return wait_time/1e6, parse_time/1e6, filter_time/1e6, process_time/1e6
+    
+    def _calculate_request_time(self, request_traces):
         # 计算request_time, 最大的"Stream End Time"减去最小的"Header Parse Start Time"
         min_start_time = float('inf')
         max_end_time = 0.0
@@ -41,8 +58,39 @@ class SpanFormatter:
             if resp.get("Stream End Time") is not None:
                 max_end_time = max(max_end_time, resp["Stream End Time"])
 
-        # 转换成ms
-        metadata["request_time"] = (max_end_time - min_start_time)/1e6
+        request_time = (max_end_time - min_start_time)/1e6
+        return request_time
+
+    def _process_full_request(self, request_traces):
+        """
+        metadata = {
+            "total_sub_requests": int,
+            "request_time": float
+        }
+        """
+        metadata = {
+            "total_sub_requests": len(request_traces),
+            "wait": 0.0,
+            "parse": 0.0,
+            "filter": 0.0,
+            "overhead": 0.0,
+            "request_time": 0.0,
+        }
+
+        wait_sum = parse_sum = filter_sum = 0.0
+        request_time = self._calculate_request_time(request_traces)
+        for span in request_traces:
+            w, p, f, _ = self._cal_times(span)
+            wait_sum += w
+            parse_sum += p
+            filter_sum += f
+
+        metadata["wait"] = wait_sum
+        metadata["parse"] = parse_sum
+        metadata["filter"] = filter_sum
+        metadata["overhead"] = wait_sum + parse_sum + filter_sum
+        metadata["request_time"] = request_time
+
         return metadata
 
     def _extract_stream(self, sub_request):
@@ -200,10 +248,10 @@ class SpanFormatter:
                 self.spans_meta[request_id] = metadata
                 
                 self.processed += 1
-                if self.processed % 50 == 0:
+                if self.processed % 500 == 0:
                     print(f"[*] Processed {self.processed} requests.")
-                    self._write_results_to_file()
-        self._write_results_to_file()
+                    self._write_results_to_file(self.processed)
+        self._write_results_to_file(self.processed)
         print(f"[*] Finished processing all requests, results written to file in {self.output_dir}.")
 
     def __init__(self, dir, entry_file):

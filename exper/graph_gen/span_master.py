@@ -10,6 +10,8 @@
 
 import argparse
 import span_formatter
+import span_plotter
+import json
 
 def _build_parser():
 	parser = argparse.ArgumentParser(
@@ -66,6 +68,17 @@ def _build_parser():
 
 	return parser
 
+def read_span_meta_from_file(file):
+	with open(file, 'r') as f:
+		data = json.load(f)
+	return data.get("metadata", {})
+
+def get_top_k(file, k):
+	span_meta = read_span_meta_from_file(file)
+	# sorted by overhead time
+	sorted_requests = sorted(span_meta.items(), key=lambda item: item[1].get("overhead", 0), reverse=True)
+	top_k_requests = sorted_requests[:k]
+	return top_k_requests
 
 def main(argv=None):
 	parser = _build_parser()
@@ -79,8 +92,13 @@ def main(argv=None):
 		return 0
 	if args.op == "gen":
 		# gen(file=args.file, request_id=args.request_id)
-		print(f"[gen] file={args.file} request_id={args.request_id}")
+		plotter = span_plotter.SpanPlotter()
+		spans = plotter.read_data(file_path=args.file, request_id=args.request_id)
+		plotter.plot_span(spans)
 		return 0
+	if args.op == "topk":
+		# topk(file=args.file, k=args.k)
+		print(f"[topk] file={args.file} k={args.k}")
 
 	# Should be unreachable due to argparse choices
 	parser.error(f"Unknown op: {args.op}")

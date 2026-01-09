@@ -95,6 +95,34 @@ def _build_parser():
 		help="Length of the request"
 	)
 
+	p_dist = subparsers.add_parser(
+		"dist",
+		help="Plot distribution of request overheads",
+	)
+	p_dist.add_argument(
+		"-f",
+		"--file",
+		dest="file",
+		required=True,
+		help="Input file path",
+	)
+	p_dist.add_argument(
+		"-l",
+		"--len",
+		dest="length",
+		type=int,
+		required=True,
+		help="Length of the request"
+	)
+	p_dist.add_argument(
+		"-t",
+		"--type",
+		dest="dist_type",
+		choices=["filter", "wait", "parse", "overhead"],
+		required=True,
+		help="Type of distribution to plot",
+	)
+
 	return parser
 
 def read_span_meta_from_file(file):
@@ -141,10 +169,12 @@ def main(argv=None):
 			print(f"Request ID: {request_id}, Overhead: {meta.get('overhead', 0)}, Request Time: {meta.get('request_time', 0)}")
 		return 0
 	if args.op == "dist":
-		# dist(file=args.file)
+		# dist(file=args.file, type=args.dist_type, length=args.length)
 		print(f"[dist] file={args.file}")
 		span_meta = read_span_meta_from_file(args.file)
-		
+		plotter = span_plotter.SpanPlotter()
+		plotter.plot_dist_graph(span_meta=span_meta, dist_type=args.dist_type, length=args.length)
+		return 0
 
 	# Should be unreachable due to argparse choices
 	parser.error(f"Unknown op: {args.op}")

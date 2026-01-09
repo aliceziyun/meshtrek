@@ -113,3 +113,34 @@ class SpanPlotter:
         plt.grid(axis='x', linestyle='--', alpha=0.7)
         plt.tight_layout()
         plt.show()
+
+    def plot_dist_graph(self, span_meta, dist_type, length):
+        # filter by request length
+        span_meta = [(request_id, meta) for request_id, meta in span_meta.items() if meta.get("total_sub_requests", 0) == length]
+        
+        ratios = []
+        color = ""
+        for _, meta in span_meta:
+            # calculate the ratio of the dist_type time to the total request time
+            if dist_type == "filter":
+                color = "#FF5722"
+                ratios.append(meta.get("filter", 0) / meta.get("request_time", 1))
+            elif dist_type == "wait":
+                color = "#2196F3"
+                ratios.append(meta.get("wait", 0) / meta.get("request_time", 1))
+            elif dist_type == "parse":
+                color = "#4CAF50"
+                ratios.append(meta.get("parse", 0) / meta.get("request_time", 1))
+            elif dist_type == "overhead":
+                color = "#9C27B0"
+                ratios.append(meta.get("overhead", 0) / meta.get("request_time", 1))
+        
+        plt.figure(figsize=(10, 6))
+        plt.hist(ratios, bins=30, color=color, alpha=0.7)
+        plt.xlabel(f"{dist_type.capitalize()} Ratio in Request Time")
+        plt.ylabel("Frequency")
+        plt.title(f"Distribution of {dist_type.capitalize()} Time Ratio in Request Time for Requests of Length {length}")
+        plt.grid()
+        plt.tight_layout()
+        plt.savefig(f"{dist_type}_dist_len_{length}.png")
+        plt.show()

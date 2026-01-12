@@ -40,25 +40,6 @@ spec:
           volumeMounts:
             - mountPath: /data/db
               name: reservation
-        - name: istio-proxy
-          image: docker.io/alicesong2002/modified_istio_proxy:v17.8
-          securityContext:
-            allowPrivilegeEscalation: true
-            privileged: true
-            capabilities:
-              add: ["SYS_ADMIN"]
-          volumeMounts:
-          - mountPath: /lib/modules
-            name: lib-modules
-          - mountPath: /usr/src
-            name: linux-headers
-          - name: tmp
-            mountPath: /tmp
-          resources:
-            limits:
-              memory: "3000Mi"
-            requests:
-              memory: "3000Mi"
       hostname: reservation-db
       restartPolicy: Always
       volumes:
@@ -67,14 +48,6 @@ spec:
             claimName: reservation-pvc
         - name: tmp
           emptyDir: {}
-        - name: lib-modules
-          hostPath:
-            path: /lib/modules
-            type: Directory
-        - name: linux-headers
-          hostPath:
-            path: /usr/src
-            type: Directory
       affinity:
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

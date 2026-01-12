@@ -41,7 +41,7 @@ spec:
             - mountPath: /data/db
               name: reservation
         - name: istio-proxy
-          image: docker.io/alicesong2002/modified_istio_proxy:v15.0
+          image: docker.io/alicesong2002/modified_istio_proxy:v17.8
           securityContext:
             allowPrivilegeEscalation: true
             privileged: true

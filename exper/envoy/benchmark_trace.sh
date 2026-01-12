@@ -23,18 +23,9 @@ trace_bookinfo() {
 
     wait
 
-    if [ "$MESH_TYPE" == "cilium" ]; then
-        PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')
-        for pod in $PODS; do
-            kubectl cp "kube-system/$pod:/tmp/trace_output.log" ~/trace_res/trace_output_"$pod".log
-        done
-    else if [ "$MESH_TYPE" == "istio" ]; then
-        PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
-        for pod in $PODS; do
-            kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
-        done
-    fi
-    fi
+    copy_file_to_local
+
+    wait
 
     echo "Experiment completed."
 }
@@ -52,18 +43,7 @@ trace_hotel() {
 
     wait
 
-    if [ "$MESH_TYPE" == "cilium" ]; then
-        PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')
-        for pod in $PODS; do
-            kubectl cp "kube-system/$pod:/tmp/trace_output.log" ~/trace_res/trace_output_"$pod".log
-        done
-    else if [ "$MESH_TYPE" == "istio" ]; then
-        PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
-        for pod in $PODS; do
-            kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
-        done
-    fi
-    fi
+    copy_file_to_local
 
     wait
 
@@ -83,6 +63,14 @@ trace_social() {
 
     wait
 
+    copy_file_to_local
+
+    wait
+
+    echo "Experiment completed."
+}
+
+copy_file_to_local() {
     if [ "$MESH_TYPE" == "cilium" ]; then
         PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')
         for pod in $PODS; do
@@ -95,10 +83,6 @@ trace_social() {
         done
     fi
     fi
-
-    wait
-
-    echo "Experiment completed."
 }
 
 if [ "$MICRO_SERVICE" == "hotel" ]; then

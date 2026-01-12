@@ -15,7 +15,7 @@ base_dir="$HOME/meshtrek/resources/benchmark/HotelReserve/kubernetes"
 group_one=("search" "consul")
 group_two=("rate" "profile" "user")
 group_three=("reservation" "geo" "jaeger")
-group_four=("frontend" "recommendation")
+group_four=("frontend" "recommendation" "frontend2")
 
 patch_group() {
   local group_name="$1"

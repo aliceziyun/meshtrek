@@ -5,7 +5,7 @@ chmod 700 get_helm.sh
 git clone https://github.com/delimitrou/DeathStarBench.git ~/DeathStarBench
 
 # fix scheduling
-~/meshtrek/exper/metric/script/fix_schedule_social.sh
+~/meshtrek/exper/cluster/script/fix_schedule_hotel.sh
 
 kubectl create ns social
 helm install socialnetwork ~/meshtrek/resources/benchmark/SocialNetwork/helm-chart/socialnetwork/ --namespace social

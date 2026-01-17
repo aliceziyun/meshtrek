@@ -9,7 +9,8 @@ NAMESPACE=$2
 RUNNING_TIME=$3
 
 TRACE_MAIN_PATH="./uprobe_script/envoy_trace.py"
-UPROBE_PATH="./uprobe_script/http_uprobe.py"
+CONN_UPROBE_PATH="./uprobe_script/conn_uprobe.py"
+STREAM_UPROBE_PATH="./uprobe_script/stream_uprobe.py"
 
 if [ "$MESH_TYPE" == "cilium" ]; then
   NAMESPACE="kube-system"
@@ -25,10 +26,12 @@ fi
 for pod in $PODS; do
   if [ "$MESH_TYPE" == "cilium" ]; then
       kubectl cp "$TRACE_MAIN_PATH" "$NAMESPACE/$pod:/tmp/envoy_trace.py"
-      kubectl cp "$UPROBE_PATH" "$NAMESPACE/$pod:/tmp/http_uprobe.py"
+      kubectl cp "$CONN_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/conn_uprobe.py"
+      kubectl cp "$STREAM_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/stream_uprobe.py"
   else
       kubectl cp "$TRACE_MAIN_PATH" "$NAMESPACE/$pod:/tmp/envoy_trace.py" -c istio-proxy
-      kubectl cp "$UPROBE_PATH" "$NAMESPACE/$pod:/tmp/http_uprobe.py" -c istio-proxy
+      kubectl cp "$CONN_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/conn_uprobe.py" -c istio-proxy
+      kubectl cp "$STREAM_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/stream_uprobe.py" -c istio-proxy
   fi
 done
 

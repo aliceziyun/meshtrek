@@ -23,7 +23,6 @@ class StreamUprobe:
     int parse_start(struct pt_regs *ctx) {
         u32 connection_id = PT_REGS_PARM2(ctx);
         u32 plain_stream_id = PT_REGS_PARM3(ctx);
-        bpf_trace_printk("parse_start: connection_id=%d, plain_stream_id=%d\n", connection_id, plain_stream_id);
         u32 type = PT_REGS_PARM4(ctx);  // 0: header or trailer, 1: data
         u64 key = ((u64)connection_id << 32) | (u64)plain_stream_id;
         u64 *stream_id = stream_key_map.lookup(&key);
@@ -53,7 +52,6 @@ class StreamUprobe:
         u32 connection_id = PT_REGS_PARM4(ctx);
         u32 plain_stream_id = (u32) ctx->r8;
         u64 stream_id = (u64) ctx->r9;
-        bpf_trace_printk("header_parse_end_req: connection_id=%d, plain_stream_id=%d, stream_id=%llu\n", connection_id, plain_stream_id, stream_id);
         u64 key = ((u64)connection_id << 32) | (u64)plain_stream_id;
         struct stream_info_t *stream_info = stream_info_map.lookup(&key);
         if(stream_info) {
@@ -97,7 +95,6 @@ class StreamUprobe:
     // ConnectionManagerImpl::ActiveStream::decodeData <stream_id>
     int data_parse_end_req(struct pt_regs *ctx) {
         u64 stream_id = PT_REGS_PARM2(ctx);
-        bpf_trace_printk("data_parse_end_req: stream_id=%llu\n", stream_id);
         struct stream_info_t *stream_info = stream_info_map.lookup(&stream_id);
         if(stream_info) {
             stream_info->data_parse_end_time = bpf_ktime_get_tai_ns();
@@ -108,7 +105,6 @@ class StreamUprobe:
     // ConnectionManagerImpl::ActiveStream::decodeData <stream_id>
     int stream_end_req(struct pt_regs *ctx) {
         u64 stream_id = PT_REGS_PARM2(ctx);
-        bpf_trace_printk("stream_end_req: stream_id=%llu\n", stream_id);
         struct stream_info_t *stream_info = stream_info_map.lookup(&stream_id);
         if(stream_info) {
             stream_info->stream_end_time = bpf_ktime_get_tai_ns();
@@ -125,7 +121,6 @@ class StreamUprobe:
     // FilterManager::encodeData <stream_id, type>
     int data_trailer_parse_end_resp(struct pt_regs *ctx) {
         u64 stream_id = PT_REGS_PARM2(ctx);
-        bpf_trace_printk("data_trailer_parse_end_resp: stream_id=%llu\n", stream_id);
         u32 type = PT_REGS_PARM3(ctx);  // 1: data, 2: trailer
         struct stream_info_t *stream_info = stream_info_map.lookup(&stream_id);
         if(stream_info) {
@@ -145,7 +140,6 @@ class StreamUprobe:
     // ConnectionManagerImpl::ActiveStream::onCodecEncodeComplete <stream_id>
     int stream_end_resp(struct pt_regs *ctx) {
         u64 stream_id = PT_REGS_PARM2(ctx);
-        bpf_trace_printk("stream_end_resp: stream_id=%llu\n", stream_id);
         struct stream_info_t *stream_info = stream_info_map.lookup(&stream_id);
         if(stream_info) {
             stream_info->stream_end_time = bpf_ktime_get_tai_ns();

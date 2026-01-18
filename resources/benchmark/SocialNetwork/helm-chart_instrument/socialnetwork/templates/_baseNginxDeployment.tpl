@@ -62,7 +62,7 @@ spec:
         {{- end }}
         {{- end }}
       - name: istio-proxy
-        image: docker.io/alicesong2002/modified_istio_proxy:v17.8
+        image: docker.io/alicesong2002/modified_istio_proxy:v19.0
         imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: true

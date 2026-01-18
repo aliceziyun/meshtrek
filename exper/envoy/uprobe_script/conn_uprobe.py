@@ -88,9 +88,9 @@ class ConnUprobe:
 
     hook_symbol_list = [
         "_ZN5Envoy7Network14ConnectionImpl16hookpointIOReadyEij",
-        "_ZN5Envoy4Http5Http214ConnectionImpl22hookpointDispatchStartEj",
-        "_ZN5Envoy4Http5Http214ConnectionImpl20hookpointDispatchEndEj",
-        "_ZN5Envoy4Http5Http214ConnectionImpl21hookpointRecordStreamEjj"
+        "_ZN5Envoy4Http5Http214ConnectionImpl28http2_hookpointDispatchStartEj",
+        "_ZN5Envoy4Http5Http214ConnectionImpl26http2_hookpointDispatchEndEj",
+        "_ZN5Envoy4Http5Http214ConnectionImpl27http2_hookpointRecordStreamEjj"
     ]
 
     hook_function_list = [

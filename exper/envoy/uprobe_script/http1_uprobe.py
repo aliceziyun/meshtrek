@@ -240,17 +240,17 @@ class Http1Uprobe:
 
     hook_symbol_list = [
         "_ZN5Envoy7Network14ConnectionImpl16hookpointIOReadyEij",
-        "_ZN5Envoy4Http5Http114ConnectionImpl17hookpointDispatchEi",
-        "_ZN5Envoy4Http5Http114ConnectionImpl20hookpointDispatchEndEi",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30hookpointHeaderFiltersStartReqENSt3__117basic_string_viewIcNS3_11char_traitsIcEEEEjjm",
-        "_ZN5Envoy6Router19UpstreamCodecFilter11CodecBridge31hookpointHeaderFiltersStartRespEmjjj",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream28hookpointHeaderFiltersEndReqEjm",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream29hookpointHeaderFiltersEndRespEjm",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream28hookpointDataFiltersStartReqEjm",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream29hookpointRequestFiltersEndReqEjm",
-        "_ZN5Envoy4Http13FilterManager27hookpointXXFiltersStartRespEjmh",
-        "_ZN5Envoy4Http13FilterManager25hookpointXXFiltersEndRespEjmh",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30hookpointOnCodecEncodeCompleteEjm",
+        "_ZN5Envoy4Http5Http114ConnectionImpl23http1_hookpointDispatchEi",
+        "_ZN5Envoy4Http5Http114ConnectionImpl26http1_hookpointDispatchEndEi",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream36http1_hookpointHeaderFiltersStartReqENSt3__117basic_string_viewIcNS3_11char_traitsIcEEEEjm",
+        "_ZN5Envoy6Router19UpstreamCodecFilter11CodecBridge37http1_hookpointHeaderFiltersStartRespEmjj",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream34http1_hookpointHeaderFiltersEndReqEjm",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream35http1_hookpointHeaderFiltersEndRespEjm",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream34http1_hookpointDataFiltersStartReqEjm",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream32http1_hookpointDataFiltersEndReqEjm",
+        "_ZN5Envoy4Http13FilterManager33http1_hookpointXXFiltersStartRespEjmh",
+        "_ZN5Envoy4Http13FilterManager33http1_hookpointXXFiltersEndRespEjmh",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30http1_hookpointOnCodecEncodeCompleteEjm",
     ]
 
     hook_function_list = [

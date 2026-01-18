@@ -75,7 +75,6 @@ class StreamUprobe:
         u32 upstream_conn_id = PT_REGS_PARM3(ctx);
         u32 downstream_conn_id = PT_REGS_PARM4(ctx);
         u32 plain_stream_id = (u32) ctx->r8;
-        bpf_trace_printk("header_parse_end_resp: downstream_conn_id=%d, plain_stream_id=%d, upstream_conn_id=%d\n", downstream_conn_id, plain_stream_id, upstream_conn_id);
         u64 key = ((u64)upstream_conn_id << 32) | (u64)plain_stream_id;
         struct stream_info_t *stream_info = stream_info_map.lookup(&key);
         if(stream_info) {
@@ -92,9 +91,10 @@ class StreamUprobe:
         return 0;
     }
 
-    // ConnectionManagerImpl::ActiveStream::decodeData <stream_id>
+    // ConnectionManagerImpl::ActiveStream::decodeData <connection id, stream_id>
     int data_parse_end_req(struct pt_regs *ctx) {
-        u64 stream_id = PT_REGS_PARM2(ctx);
+        u32 connection_id = PT_REGS_PARM2(ctx);
+        u64 stream_id = PT_REGS_PARM3(ctx);
         struct stream_info_t *stream_info = stream_info_map.lookup(&stream_id);
         if(stream_info) {
             stream_info->data_parse_end_time = bpf_ktime_get_tai_ns();
@@ -102,9 +102,10 @@ class StreamUprobe:
         return 0;
     }
 
-    // ConnectionManagerImpl::ActiveStream::decodeData <stream_id>
+    // ConnectionManagerImpl::ActiveStream::decodeData <connection id, stream_id>
     int stream_end_req(struct pt_regs *ctx) {
-        u64 stream_id = PT_REGS_PARM2(ctx);
+        u32 connection_id = PT_REGS_PARM2(ctx);
+        u64 stream_id = PT_REGS_PARM3(ctx);
         struct stream_info_t *stream_info = stream_info_map.lookup(&stream_id);
         if(stream_info) {
             stream_info->stream_end_time = bpf_ktime_get_tai_ns();
@@ -118,10 +119,11 @@ class StreamUprobe:
         return 0;
     }
 
-    // FilterManager::encodeData <stream_id, type>
+    // FilterManager::encodeData <connection id, stream_id, type>
     int data_trailer_parse_end_resp(struct pt_regs *ctx) {
-        u64 stream_id = PT_REGS_PARM2(ctx);
-        u32 type = PT_REGS_PARM3(ctx);  // 1: data, 2: trailer
+        u32 connection_id = PT_REGS_PARM2(ctx);
+        u64 stream_id = PT_REGS_PARM3(ctx);
+        u32 type = PT_REGS_PARM4(ctx);  // 1: data, 2: trailer
         struct stream_info_t *stream_info = stream_info_map.lookup(&stream_id);
         if(stream_info) {
             if(type == 1) {
@@ -137,9 +139,10 @@ class StreamUprobe:
         return 0;
     }
 
-    // ConnectionManagerImpl::ActiveStream::onCodecEncodeComplete <stream_id>
+    // ConnectionManagerImpl::ActiveStream::onCodecEncodeComplete <connection id, stream_id>
     int stream_end_resp(struct pt_regs *ctx) {
-        u64 stream_id = PT_REGS_PARM2(ctx);
+        u32 connection_id = PT_REGS_PARM2(ctx);
+        u64 stream_id = PT_REGS_PARM3(ctx);
         struct stream_info_t *stream_info = stream_info_map.lookup(&stream_id);
         if(stream_info) {
             stream_info->stream_end_time = bpf_ktime_get_tai_ns();
@@ -158,10 +161,10 @@ class StreamUprobe:
         "_ZN5Envoy4Http5Http214ConnectionImpl12Http2Visitor22hookpointOnXXForStreamEjjh",
         "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30hookpointHeaderFiltersStartReqENSt3__117basic_string_viewIcNS3_11char_traitsIcEEEEjjm",
         "_ZN5Envoy6Router19UpstreamCodecFilter11CodecBridge31hookpointHeaderFiltersStartRespEmjjj",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream28hookpointDataFiltersStartReqEm",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream29hookpointRequestFiltersEndReqEm",
-        "_ZN5Envoy4Http13FilterManager27hookpointXXFiltersStartRespEmh",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30hookpointOnCodecEncodeCompleteEm"
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream28hookpointDataFiltersStartReqEjm",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream29hookpointRequestFiltersEndReqEjm",
+        "_ZN5Envoy4Http13FilterManager27hookpointXXFiltersStartRespEjmh",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30hookpointOnCodecEncodeCompleteEjm"
     ]
 
     hook_function_list = [

@@ -32,15 +32,15 @@ fi
 
 for pod in $PODS; do
   if [ "$MESH_TYPE" == "cilium" ]; then
-      kubectl cp "$TRACE_MAIN_PATH" "$NAMESPACE/$pod:/tmp/envoy_trace.py"
-      kubectl cp "$CONN_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/conn_uprobe.py"
-      kubectl cp "$STREAM_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/stream_uprobe.py"
-      kubectl cp "$HTTP1_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/http1_uprobe.py"
+      kubectl cp "$TRACE_MAIN_PATH" "$NAMESPACE/$pod:/tmp/envoy_trace.py" >/dev/null 2>&1
+      kubectl cp "$CONN_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/conn_uprobe.py" >/dev/null 2>&1
+      kubectl cp "$STREAM_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/stream_uprobe.py" >/dev/null 2>&1
+      kubectl cp "$HTTP1_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/http1_uprobe.py" >/dev/null 2>&1
   else
-      kubectl cp "$TRACE_MAIN_PATH" "$NAMESPACE/$pod:/tmp/envoy_trace.py" -c istio-proxy
-      kubectl cp "$CONN_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/conn_uprobe.py" -c istio-proxy
-      kubectl cp "$STREAM_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/stream_uprobe.py" -c istio-proxy
-      kubectl cp "$HTTP1_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/http1_uprobe.py" -c istio-proxy
+      kubectl cp "$TRACE_MAIN_PATH" "$NAMESPACE/$pod:/tmp/envoy_trace.py" -c istio-proxy >/dev/null 2>&1
+      kubectl cp "$CONN_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/conn_uprobe.py" -c istio-proxy >/dev/null 2>&1
+      kubectl cp "$STREAM_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/stream_uprobe.py" -c istio-proxy >/dev/null 2>&1
+      kubectl cp "$HTTP1_UPROBE_PATH" "$NAMESPACE/$pod:/tmp/http1_uprobe.py" -c istio-proxy >/dev/null 2>&1
   fi
 done
 

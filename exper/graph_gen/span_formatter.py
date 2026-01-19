@@ -92,15 +92,47 @@ class SpanFormatter:
         metadata["request_time"] = request_time
 
         return metadata
+    
+    def _which_protocol(self, sub_request):
+        if sub_request.get("Key") is not None:
+            return span_constant.PROTOCOL_HTTP2
+        else:
+            return span_constant.PROTOCOL_HTTP1
 
-    def _extract_stream(self, sub_request):
-        key = sub_request.get("Key")
-        connection_id = (key >> 32) & 0xffffffff
-        plain_stream_id = key & 0xffffffff
-        sub_request.pop("Key", None)
-        sub_request["Connection ID"] = connection_id
-        sub_request["Plain Stream ID"] = plain_stream_id
-        return sub_request
+    def _extract_stream(self, sub_request, protocol):
+        # 假设是parse完立刻进入filter，中间的处理时间可以忽略
+        if protocol == span_constant.PROTOCOL_HTTP2:
+            key = sub_request.get("Key")
+            connection_id = (key >> 32) & 0xffffffff
+            plain_stream_id = key & 0xffffffff
+            sub_request.pop("Key", None)
+            sub_request["Connection ID"] = connection_id
+            sub_request["Plain Stream ID"] = plain_stream_id
+
+            # 进行一些特殊处理，确保http2和http1的字段一致
+            sub_request["Header Filter Start Time"] = sub_request["Header Parse End Time"]
+            sub_request.pop("Header Parse End Time", None)
+            sub_request["Header Process End Time"] = sub_request["Data Parse Start Time"]
+            sub_request["Data Filter Start Time"] = sub_request["Data Parse End Time"]
+            sub_request.pop("Data Parse End Time", None)
+            sub_request["Trailer Filter Start Time"] = sub_request["Trailer Parse End Time"]
+            sub_request.pop("Trailer Parse End Time", None)
+            return sub_request
+        elif protocol == span_constant.PROTOCOL_HTTP1:
+            sub_request["Plain Stream ID"] = 0
+            sub_request["Trailer Parse Start Time"] = 0
+            sub_request["Trailer Filter Start Time"] = 0
+
+            #这两个字段之后用connection的数据来填
+            sub_request["Header Parse Start Time"] = 0
+            sub_request["Data Filter Start Time"] = 0
+
+            sub_request["Header Process End Time"] = sub_request["Header Filter End Time"]
+            sub_request.pop("Header Filter End Time", None)
+            sub_request["Data Process End Time"] = sub_request["Data Filter End Time"]
+            sub_request.pop("Data Filter End Time", None)
+            return sub_request
+
 
     def _search_subrequests(self, file_lines, request_id):
         """
@@ -121,7 +153,7 @@ class SpanFormatter:
             if trace_data.get("Stream ID") == stream_id and trace_data.get("Upstream Connection ID") != 0:
                 return self._extract_stream(trace_data)
             
-    def _search_connection(self, file_lines, connection_id, plain_stream_id):
+    def _search_connection(self, file_lines, connection_id, plain_stream_id, protocol, stream_id):
 
         def u64_to_u16_list(x):
             # tool function
@@ -133,18 +165,39 @@ class SpanFormatter:
             ]
             return [p for p in parts if p != 0]
         
+        def is_in_stream_id_list(trace_data, target_plain_stream_id):
+            stream_ids = trace_data.get("Stream IDs")
+            if stream_ids is None:
+                return False
+            stream_id_list = u64_to_u16_list(stream_ids)
+            if target_plain_stream_id in stream_id_list:
+                return True
+            
+            # 再找extra stream id
+            extra_stream_ids = trace_data.get("Stream IDs Extra")
+            if extra_stream_ids is None:
+                return False
+            extra_stream_id_list = u64_to_u16_list(extra_stream_ids)
+            if target_plain_stream_id in extra_stream_id_list:
+                return True
+            return False
+        
+        connections = []
         for line in file_lines:
             trace_data = json.loads(line)
             if trace_data.get("Connection ID") == connection_id:
-                stream_ids = trace_data.get("Stream IDs")
-                if stream_ids == None:
-                    continue
+                if protocol == span_constant.PROTOCOL_HTTP2:
+                    if is_in_stream_id_list(trace_data, plain_stream_id):
+                        return [trace_data] # http2只可能有一个connection entry（不完备，但目前实现如此）
+                    
+                elif protocol == span_constant.PROTOCOL_HTTP1:
+                    # http1直接match stream id，但可能存在多个connection entry
+                    if trace_data.get("Stream ID") == stream_id:
+                        connections.append(trace_data)
+                        continue
+        return connections
 
-                stream_id_list = u64_to_u16_list(stream_ids)
-                if plain_stream_id in stream_id_list:
-                    return trace_data
-
-    def _search_other_entries(self, sub_request, file_lines):
+    def _search_other_entries(self, sub_request, file_lines, protocol):
         """
         返回：
             item{
@@ -167,15 +220,34 @@ class SpanFormatter:
             print(f"[!] Incomplete span for stream id {request_id}")
             return None
 
-        # search connection
+        # search downstream connection
         connection_id = item["req"]["Connection ID"]
-        downstream_plain_stream_id = item["req"]["Plain Stream ID"]
-        item["conn"] = self._search_connection(file_lines, connection_id, downstream_plain_stream_id)
+        downstream_plain_stream_id = item["req"]["Plain Stream ID"] # http1，此项为0
+        stream_id = item["req"]["Stream ID"]
+        connections = self._search_connection(file_lines, connection_id, downstream_plain_stream_id, protocol, stream_id)
+        if len(connections) == 0:
+            print(f"[!] Incomplete span for stream id {request_id}")
+            return None
+        if len(connections) == 1:
+            item["conn"] = connections[0]
+        else:
+            # TODO:需要把connection进行合并，还需要把一些字段写入stream中
+            self._combine_connections(item, connections)
+            exit(1)
 
         # search upstream connection
         upstream_conn_id = item["resp"]["Upstream Connection ID"]
         upstream_plain_stream_id = item["resp"]["Plain Stream ID"]
-        item["upstream_conn"] = self._search_connection(file_lines, upstream_conn_id, upstream_plain_stream_id)
+        upstream_conns = self._search_connection(file_lines, upstream_conn_id, upstream_plain_stream_id)
+        if len(upstream_conns) == 0:
+            print(f"[!] Incomplete span for stream id {request_id}")
+            return None
+        if len(upstream_conns) == 1:
+            item["upstream_conn"] = upstream_conns[0]
+        else:
+            # TODO:需要把connection进行合并，还需要把一些字段写入stream中
+            self._combine_connections(item, connections)
+            exit(1)
 
         # 验证完整性
         if item["req"] is None or item["resp"] is None or item["conn"] is None or item["upstream_conn"] is None:
@@ -212,12 +284,16 @@ class SpanFormatter:
                 # 开始搜索和该request id有关的所有记录
                 self.spans[request_id] = []
 
-                # 在当前file中搜索相关记录，每个记录对应4条信息
+                # 在当前file中搜索和request id的相关记录
                 current_file = entry_lines
                 skip = False
                 sub_requests = self._search_subrequests(current_file, request_id)
                 for sub_request in sub_requests:
-                    item = self._search_other_entries(sub_request, current_file)
+                    # 对于每一个sub_request，找寻其对应的其他entry
+
+                    # 判断其是http1还是http2请求
+                    protocol = self._which_protocol(sub_request)
+                    item = self._search_other_entries(sub_request, current_file, protocol)
                     if item is None:    # 跳过该request id
                         skip = True
                         self.spans.pop(request_id, None)    # 删去entry

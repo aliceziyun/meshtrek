@@ -15,3 +15,6 @@ TIME_FIELDS = [
 ]
 
 COMPONENTS = ["req", "resp", "conn", "upstream_conn"]
+
+PROTOCOL_HTTP2 = "http2"
+PROTOCOL_HTTP1 = "http1"

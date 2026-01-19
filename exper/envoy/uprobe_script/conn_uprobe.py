@@ -5,11 +5,12 @@ class ConnUprobe:
         u32 connection_id;
         u32 position;       // current position in the stream id list
         u64 stream_id;      // a list, max 4 stream ids
+        u64 stream_id_extra; // the number of stream ids might exceed 4
         u64 write_ready_start_time;
         u64 read_ready_start_time;
         u64 parse_start_time;
         u64 parse_end_time;
-    };  // struct conn_info_t, size: 48 bytes
+    };  // struct conn_info_t, size: 56 bytes
 
     BPF_HASH(conn_info_map, u32, struct conn_info_t);
     BPF_PERF_OUTPUT(conn_events);
@@ -79,6 +80,12 @@ class ConnUprobe:
                 u64 stream_id = conn_info->stream_id;
                 stream_id |= ((u64)plain_stream_id) << (pos * 16);
                 conn_info->stream_id = stream_id;
+                conn_info->position = pos + 1;
+            }else{
+                // the list is full, save the stream id in stream id extra list
+                u64 stream_id_extra = conn_info->stream_id_extra;
+                stream_id_extra |= ((u64)plain_stream_id) << ((pos - 4) * 16);
+                conn_info->stream_id_extra = stream_id_extra;
                 conn_info->position = pos + 1;
             }
         }

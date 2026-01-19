@@ -38,6 +38,7 @@ def http2_conn_callback(cpu, data, size):
             ("connection_id", ctypes.c_uint),
             ("position", ctypes.c_uint),
             ("stream_id", ctypes.c_ulonglong),
+            ("stream_id_extra", ctypes.c_ulonglong),
             ("write_ready_start_time", ctypes.c_ulonglong),
             ("read_ready_start_time", ctypes.c_ulonglong),
             ("parse_start_time", ctypes.c_ulonglong),
@@ -47,6 +48,7 @@ def http2_conn_callback(cpu, data, size):
     log_data = {
         "Connection ID": conn_info.connection_id,
         "Stream IDs": conn_info.stream_id,
+        "Stream IDs Extra": conn_info.stream_id_extra,
         "Write Ready Start Time": conn_info.write_ready_start_time,
         "Read Ready Start Time": conn_info.read_ready_start_time,
         "Parse Start Time": conn_info.parse_start_time,
@@ -80,8 +82,6 @@ def http2_stream_callback(cpu, data, size):
         "Header Parse End Time": stream_info.header_parse_end_time,
         "Data Parse Start Time": stream_info.data_parse_start_time,
         "Data Parse End Time": stream_info.data_parse_end_time,
-        "Trailer Parse Start Time": stream_info.trailer_parse_start_time,
-        "Trailer Parse End Time": stream_info.trailer_parse_end_time,
         "Stream End Time": stream_info.stream_end_time,
     }
     log_queue.put(json.dumps(log_data))
@@ -99,7 +99,7 @@ def http1_conn_callback(cpu, data, size):
     conn_info = ctypes.cast(data, ctypes.POINTER(ConnInfo)).contents
     log_data = {
         "Connection ID": conn_info.connection_id,
-        "Stream IDs": conn_info.stream_id,
+        "Stream ID": conn_info.stream_id,
         "Write Ready Start Time": conn_info.write_ready_start_time,
         "Read Ready Start Time": conn_info.read_ready_start_time,
         "Parse Start Time": conn_info.parse_start_time,
@@ -201,9 +201,36 @@ def start_trace(type, protocol):
         except KeyboardInterrupt:
             pass
 
+    if protocol == "all":
+        # HTTP1
+        trace_uprobe = Http1Uprobe()
+        b_http1 = BPF(text=trace_uprobe.program)
+        register_uprobe(b_http1, trace_uprobe)
+        b_http1["conn_events"].open_perf_buffer(http1_conn_callback, page_cnt=256)
+        b_http1["stream_events"].open_perf_buffer(http1_stream_callback, page_cnt=256)
+
+        # HTTP2
+        stream_uprobe = StreamUprobe()
+        conn_uprobe = ConnUprobe()
+        b_http2_stream = BPF(text=stream_uprobe.program)
+        b_http2_conn = BPF(text=conn_uprobe.program)
+        register_uprobe(b_http2_stream, stream_uprobe)
+        register_uprobe(b_http2_conn, conn_uprobe)
+        b_http2_stream["stream_events"].open_perf_buffer(http2_stream_callback, page_cnt=256)
+        b_http2_conn["conn_events"].open_perf_buffer(http2_conn_callback, page_cnt=256)
+
+        print("Tracing HTTP1 and HTTP2... Ctrl+C to stop.")
+        try:
+            while True:
+                b_http1.perf_buffer_poll(timeout=2)
+                b_http2_stream.perf_buffer_poll(timeout=2)
+                b_http2_conn.perf_buffer_poll(timeout=2)
+        except KeyboardInterrupt:
+            pass
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Envoy HTTP/2 Tracing")
     parser.add_argument("-t", "--type", type=str, choices=["cilium", "istio"], required=True)
-    parser.add_argument("-p", "--protocol", type=str, choices=["http1", "http2"], required=True)
+    parser.add_argument("-p", "--protocol", type=str, choices=["http1", "http2", "all"], required=True)
     args = parser.parse_args()
     start_trace(args.type, args.protocol)

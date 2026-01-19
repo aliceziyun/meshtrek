@@ -161,10 +161,10 @@ class StreamUprobe:
         "_ZN5Envoy4Http5Http214ConnectionImpl12Http2Visitor28http2_hookpointOnXXForStreamEjjh",
         "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream36http2_hookpointHeaderFiltersStartReqENSt3__117basic_string_viewIcNS3_11char_traitsIcEEEEjjm",
         "_ZN5Envoy6Router19UpstreamCodecFilter11CodecBridge37http2_hookpointHeaderFiltersStartRespEmjjj",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream28http2_hookpointDataFiltersStartReqEjm",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream29http2_hookpointDataFiltersEndReqEjm",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream34http2_hookpointDataFiltersStartReqEjm",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream32http2_hookpointDataFiltersEndReqEjm",
         "_ZN5Envoy4Http13FilterManager33http2_hookpointXXFiltersStartRespEjmh",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30http2_hookpointOnCodecEncodeCompleteEjm"
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream36http2_hookpointOnCodecEncodeCompleteEjm"
     ]
 
     hook_function_list = [

@@ -80,9 +80,11 @@ class Http1Uprobe:
                 conn_info->stream_id = stream_info->stream_id;
                 // submit conn info
                 conn_events.perf_submit(ctx, conn_info, sizeof(*conn_info));
-                if(stream_info->stream_end_time != 0) {
-                    stream_info_map.delete(&connection_id);     // the stream is ended
-                }
+                // submit stream info
+                stream_info->stream_end_time = bpf_ktime_get_tai_ns();
+                stream_events.perf_submit(ctx, stream_info, sizeof(*stream_info));
+                // delete stream info
+                stream_info_map.delete(&connection_id);
             } else{
                 // the stream info maybe in the downstream connection map
                 u32 *downstream_conn_id = up_down_stream_map.lookup(&connection_id);
@@ -92,10 +94,12 @@ class Http1Uprobe:
                         conn_info->stream_id = downstream_stream_info->stream_id;
                         // submit conn info
                         conn_events.perf_submit(ctx, conn_info, sizeof(*conn_info));
-                        if(downstream_stream_info->stream_end_time != 0) {
-                            stream_info_map.delete(downstream_conn_id);
-                            down_up_stream_map.delete(&connection_id);
-                        }
+                        // submit stream info
+                        stream_events.perf_submit(ctx, downstream_stream_info, sizeof(*downstream_stream_info));
+                        // delete stream info
+                        stream_info_map.delete(downstream_conn_id);
+                        // delete up_down_stream_map
+                        up_down_stream_map.delete(&connection_id);
                     }
                 }
             }
@@ -106,18 +110,18 @@ class Http1Uprobe:
         return 0;
     }
 
-    // ConnectionManagerImpl::ActiveStream::decodeHeaders <request_id, connection_id, plain_stream_id, stream_id>
+    // ConnectionManagerImpl::ActiveStream::decodeHeaders <request_id, connection_id, stream_id>
     int header_filter_start_req(struct pt_regs *ctx) {
         const char *request_id_ptr = (const char *)PT_REGS_PARM2(ctx);
         u32 connection_id = PT_REGS_PARM4(ctx);
-        u64 stream_id = (u64) ctx->r9;
+        u64 stream_id = (u64) ctx->r8;
         struct stream_info_t stream_info = {};
 
         // fill info with request id, stream id, and parse end time
         u32 size = 32;
         bpf_probe_read_str(&stream_info.request_id, size, request_id_ptr);
         stream_info.stream_id = stream_id;
-        stream_info.header_filter_end_time = bpf_ktime_get_tai_ns();
+        stream_info.header_filter_start_time = bpf_ktime_get_tai_ns();
 
         // update stream info map with stream id as key
         stream_info_map.update(&connection_id, &stream_info);
@@ -125,18 +129,18 @@ class Http1Uprobe:
         return 0;
     }
 
-    // UpstreamRequest::decodeHeaders <stream_id, upstream_conn_id, downstream_conn_id, plain_stream_id>
+    // UpstreamRequest::decodeHeaders <stream_id, upstream_conn_id, downstream_conn_id>
     int header_filter_start_resp(struct pt_regs *ctx) {
         u64 stream_id = PT_REGS_PARM2(ctx);
         u32 upstream_conn_id = PT_REGS_PARM3(ctx);
         u32 downstream_conn_id = PT_REGS_PARM4(ctx);
 
-        stream_info_t stream_info = {};
+        struct stream_info_t stream_info = {};
 
         // fill info with upstream connection id, stream id, and parse end time
         stream_info.upstream_conn_id = upstream_conn_id;
         stream_info.stream_id = stream_id;
-        stream_info.header_filter_end_time = bpf_ktime_get_tai_ns();
+        stream_info.header_filter_start_time = bpf_ktime_get_tai_ns();
         // update stream info map with stream id as key
         stream_info_map.update(&downstream_conn_id, &stream_info);
         // update up_down_stream_map
@@ -173,7 +177,13 @@ class Http1Uprobe:
         u64 stream_id = PT_REGS_PARM3(ctx);
         struct stream_info_t *stream_info = stream_info_map.lookup(&connection_id);
         if(stream_info) {
-            stream_info->data_parse_end_time = bpf_ktime_get_tai_ns();
+            stream_info->data_filter_start_time = bpf_ktime_get_tai_ns();
+        }else{
+            // create new one
+            struct stream_info_t new_stream_info = {};
+            new_stream_info.stream_id = stream_id;
+            new_stream_info.data_filter_start_time = bpf_ktime_get_tai_ns();
+            stream_info_map.update(&connection_id, &new_stream_info);
         }
         return 0;
     }
@@ -184,10 +194,7 @@ class Http1Uprobe:
         u64 stream_id = PT_REGS_PARM3(ctx);
         struct stream_info_t *stream_info = stream_info_map.lookup(&connection_id);
         if(stream_info) {
-            stream_info->data_parse_end_time = bpf_ktime_get_tai_ns();
-            stream_info->stream_end_time = bpf_ktime_get_tai_ns();
-            // submit to user
-            stream_events.perf_submit(ctx, stream_info, sizeof(*stream_info));
+            stream_info->data_filter_end_time = bpf_ktime_get_tai_ns();
         }
         return 0;
     }
@@ -201,9 +208,15 @@ class Http1Uprobe:
         if(stream_info) {
             if(type == 1) {
                 stream_info->data_filter_start_time = bpf_ktime_get_tai_ns();
-            }else if(type == 2){
-                stream_info->trailers_filter_start_time = bpf_ktime_get_tai_ns();
             }
+        }else{
+            // create new one
+            struct stream_info_t new_stream_info = {};
+            new_stream_info.stream_id = stream_id;
+            if(type == 1) {
+                new_stream_info.data_filter_start_time = bpf_ktime_get_tai_ns();
+            }
+            stream_info_map.update(&connection_id, &new_stream_info);
         }
         return 0;
     }
@@ -217,8 +230,6 @@ class Http1Uprobe:
         if(stream_info) {
             if(type == 1) {
                 stream_info->data_filter_end_time = bpf_ktime_get_tai_ns();
-            }else if(type == 2){
-                stream_info->trailers_filter_end_time = bpf_ktime_get_tai_ns();
             }
         }
         return 0;
@@ -231,8 +242,6 @@ class Http1Uprobe:
         struct stream_info_t *stream_info = stream_info_map.lookup(&connection_id);
         if(stream_info) {
             stream_info->stream_end_time = bpf_ktime_get_tai_ns();
-            // submit to user
-            stream_events.perf_submit(ctx, stream_info, sizeof(*stream_info));
         }
         return 0;
     }
@@ -243,14 +252,14 @@ class Http1Uprobe:
         "_ZN5Envoy4Http5Http114ConnectionImpl23http1_hookpointDispatchEi",
         "_ZN5Envoy4Http5Http114ConnectionImpl26http1_hookpointDispatchEndEi",
         "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream36http1_hookpointHeaderFiltersStartReqENSt3__117basic_string_viewIcNS3_11char_traitsIcEEEEjm",
-        "_ZN5Envoy6Router19UpstreamCodecFilter11CodecBridge37http1_hookpointHeaderFiltersStartRespEmjj",
+        "_ZN5Envoy6Router15UpstreamRequest37http1_hookpointHeaderFiltersStartRespEmjj",
         "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream34http1_hookpointHeaderFiltersEndReqEjm",
         "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream35http1_hookpointHeaderFiltersEndRespEjm",
         "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream34http1_hookpointDataFiltersStartReqEjm",
         "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream32http1_hookpointDataFiltersEndReqEjm",
         "_ZN5Envoy4Http13FilterManager33http1_hookpointXXFiltersStartRespEjmh",
-        "_ZN5Envoy4Http13FilterManager33http1_hookpointXXFiltersEndRespEjmh",
-        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream30http1_hookpointOnCodecEncodeCompleteEjm",
+        "_ZN5Envoy4Http13FilterManager31http1_hookpointXXFiltersEndRespEjmh",
+        "_ZN5Envoy4Http21ConnectionManagerImpl12ActiveStream36http1_hookpointOnCodecEncodeCompleteEjm",
     ]
 
     hook_function_list = [

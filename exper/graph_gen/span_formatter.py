@@ -122,6 +122,10 @@ class SpanFormatter:
             sub_request["Header Process End Time"] = sub_request["Data Parse Start Time"]
             sub_request["Data Filter Start Time"] = sub_request["Data Parse End Time"]
             sub_request.pop("Data Parse End Time", None)
+            if sub_request["Trailer Parse Start Time"] != 0:
+                sub_request["Data Process End Time"] = sub_request["Trailer Parse Start Time"]
+            else:
+                sub_request["Data Process End Time"] = sub_request["Stream End Time"]
             sub_request["Trailer Filter Start Time"] = sub_request["Trailer Parse End Time"]
             sub_request.pop("Trailer Parse End Time", None)
             return sub_request
@@ -154,11 +158,11 @@ class SpanFormatter:
                 sub_requests.append(trace_data)
         return sub_requests
 
-    def _search_response(self, file_lines, stream_id):
+    def _search_response(self, file_lines, stream_id, protocol):
         for line in file_lines:
             trace_data = json.loads(line)
             if trace_data.get("Stream ID") == stream_id and trace_data.get("Upstream Connection ID") != 0:
-                return self._extract_stream(trace_data)
+                return self._extract_stream(trace_data, protocol)
             
     def _search_connection(self, file_lines, connection_id, plain_stream_id, protocol, stream_id):
 
@@ -221,7 +225,7 @@ class SpanFormatter:
 
         # search包含相同stream id的行，该行为resp
         stream_id = item["req"]["Stream ID"]
-        item["resp"] = self._search_response(file_lines, stream_id)
+        item["resp"] = self._search_response(file_lines, stream_id, protocol)
 
         if item["resp"] is None:
             print(f"[!] Incomplete span for stream id {request_id}")
@@ -245,7 +249,7 @@ class SpanFormatter:
         # search upstream connection
         upstream_conn_id = item["resp"]["Upstream Connection ID"]
         upstream_plain_stream_id = item["resp"]["Plain Stream ID"]
-        upstream_conns = self._search_connection(file_lines, upstream_conn_id, upstream_plain_stream_id)
+        upstream_conns = self._search_connection(file_lines, upstream_conn_id, upstream_plain_stream_id, protocol, stream_id)
         if len(upstream_conns) == 0:
             print(f"[!] Incomplete span for stream id {request_id}")
             return None
@@ -325,7 +329,8 @@ class SpanFormatter:
                         current_file = file_lines
                         sub_requests = self._search_subrequests(current_file, request_id)
                         for sub_request in sub_requests:
-                            item = self._search_other_entries(sub_request, current_file)
+                            protocol = self._which_protocol(sub_request)
+                            item = self._search_other_entries(sub_request, current_file, protocol)
                             if item is None:
                                 continue
                             self.spans[request_id].append(item)

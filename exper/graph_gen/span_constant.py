@@ -2,11 +2,21 @@
 
 TIME_FIELDS = [
     "Header Parse Start Time",
-    "Header Parse End Time",
+    ## header parse time
+    "Header Filter Start Time",
+    ## header filter time
+    "Header Process End Time",
+    ## wait time
     "Data Parse Start Time",
-    "Data Parse End Time",
+    ## data parse time
+    "Data Filter Start Time",
+    ## data filter time
+    "Data Process End Time",
+    ## wait time
     "Trailer Parse Start Time",
-    "Trailer Parse End Time",
+    ## trailer parse time
+    "Trailer Filter Start Time",
+    ## trailer filter time
     "Stream End Time",
     "Read Ready Start Time",
     "Write Ready Start Time",

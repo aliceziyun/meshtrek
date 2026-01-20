@@ -20,6 +20,9 @@ class SpanFormatter:
             out_f.write('\n')
         self.spans = {}
         self.spans_meta = {}
+    
+    def _combine_connections(item, connections):
+        pass
 
     def _cal_times(self, span):
         wait_time, parse_time, filter_time, process_time = 0, 0, 0, 0
@@ -28,18 +31,28 @@ class SpanFormatter:
         wait_time += span["conn"]["Parse End Time"] - span["req"]["Stream End Time"]
         wait_time += span["resp"]["Header Parse Start Time"] - span["upstream_conn"]["Read Ready Start Time"]
         wait_time += span["upstream_conn"]["Parse End Time"] - span["resp"]["Stream End Time"]
+        if span["req"]["Data Parse Start Time"] != 0:
+            wait_time += span["req"]["Data Parse Start Time"] - span["req"]["Header Process End Time"]
+        if span["req"]["Trailer Parse Start Time"] != 0:
+            wait_time += span["req"]["Trailer Parse Start Time"] - span["req"]["Data Process End Time"]
 
-        parse_time += span["req"]["Header Parse End Time"] - span["req"]["Header Parse Start Time"]
-        parse_time += span["req"]["Data Parse End Time"] - span["req"]["Data Parse Start Time"]
-        parse_time += span["resp"]["Header Parse End Time"] - span["resp"]["Header Parse Start Time"]
-        parse_time += span["resp"]["Data Parse End Time"] - span["resp"]["Data Parse Start Time"]
-        parse_time += span["resp"]["Trailer Parse End Time"] - span["resp"]["Trailer Parse Start Time"]
+        parse_time += span["req"]["Header Filter Start Time"] - span["req"]["Header Parse Start Time"]
+        if span["req"]["Data Parse Start Time"] != 0:
+            parse_time += span["req"]["Data Filter Start Time"] - span["req"]["Data Parse Start Time"]
+        parse_time += span["resp"]["Header Filter Start Time"] - span["resp"]["Header Parse Start Time"]
+        if span["resp"]["Data Parse Start Time"] != 0:
+            parse_time += span["resp"]["Data Filter Start Time"] - span["resp"]["Data Parse Start Time"]
+        if span["resp"]["Trailer Parse Start Time"] != 0:
+            parse_time += span["resp"]["Trailer Filter Start Time"] - span["resp"]["Trailer Parse Start Time"]
 
-        filter_time += span["req"]["Data Parse Start Time"] - span["req"]["Header Parse End Time"]
-        filter_time += span["req"]["Stream End Time"] - span["req"]["Data Parse End Time"]
-        filter_time += span["resp"]["Data Parse Start Time"] - span["resp"]["Header Parse End Time"]
-        filter_time += span["resp"]["Trailer Parse Start Time"] - span["resp"]["Data Parse End Time"]
-        filter_time += span["resp"]["Stream End Time"] - span["resp"]["Trailer Parse End Time"]
+        filter_time += span["req"]["Header Process End Time"] - span["req"]["Header Filter Start Time"]
+        if span["req"]["Data Parse Start Time"] != 0:
+            filter_time += span["req"]["Stream End Time"] - span["req"]["Data Filter Start Time"]
+        filter_time += span["resp"]["Header Process End Time"] - span["resp"]["Header Filter Start Time"]
+        if span["resp"]["Data Parse Start Time"] != 0:
+            filter_time += span["resp"]["Data Process End Time"] - span["resp"]["Data Filter Start Time"]
+        if span["resp"]["Trailer Parse Start Time"] != 0:
+            filter_time += span["resp"]["Stream End Time"] - span["resp"]["Trailer Filter Start Time"]
 
         # TODO: deal with double counting in process_time
         process_time = span["upstream_conn"]["Read Ready Start Time"] - span["conn"]["Parse End Time"]
@@ -62,12 +75,6 @@ class SpanFormatter:
         return request_time
 
     def _process_full_request(self, request_traces):
-        """
-        metadata = {
-            "total_sub_requests": int,
-            "request_time": float
-        }
-        """
         metadata = {
             "total_sub_requests": len(request_traces),
             "wait": 0.0,
@@ -125,7 +132,7 @@ class SpanFormatter:
 
             #这两个字段之后用connection的数据来填
             sub_request["Header Parse Start Time"] = 0
-            sub_request["Data Filter Start Time"] = 0
+            sub_request["Data Parse Start Time"] = 0
 
             sub_request["Header Process End Time"] = sub_request["Header Filter End Time"]
             sub_request.pop("Header Filter End Time", None)
@@ -209,7 +216,7 @@ class SpanFormatter:
         """
         item = {}
         # 在sub_request中提取req
-        item["req"] = self._extract_stream(sub_request)
+        item["req"] = self._extract_stream(sub_request, protocol)
         request_id = item["req"]["Request ID"][:16]
 
         # search包含相同stream id的行，该行为resp
@@ -308,6 +315,10 @@ class SpanFormatter:
                     fpath = os.path.join(self.data_dir, fname)
                     if fpath == self.entry_file:
                         continue    # 跳过entry file本身
+
+                    # 选择.log结尾的文件
+                    if not fname.endswith('.log'):
+                        continue
 
                     with open(fpath, 'r') as f:
                         file_lines = f.readlines()

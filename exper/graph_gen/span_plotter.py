@@ -73,6 +73,7 @@ class SpanPlotter:
         for i, span in enumerate(norm_spans):
             index = len(norm_spans) - i - 1
             norm_span = span
+            # 处理conn time, 绘制成灰色
             self.draw_interval(y=index, start=norm_span["conn"]["Read Ready Start Time"], end=norm_span["conn"]["Parse End Time"],
                     color=CONN_COLOR, height=0.8, alpha=CONN_ALPHA, zorder=0)
 

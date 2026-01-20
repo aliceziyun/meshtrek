@@ -21,8 +21,32 @@ class SpanFormatter:
         self.spans = {}
         self.spans_meta = {}
     
-    def _combine_connections(item, connections):
-        pass
+    def _combine_connections(self, item, connections, upstream=False):
+        """
+        对于http1请求，可能存在多个connection entry，需要把connections进行合并，并把一些字段写入stream中
+        """
+        # 根据connection的Parse Start Time进行升序排序
+        connections.sort(key=lambda c: c.get("Parse Start Time", float("inf")))
+        # 将connection中的一些字段写入stream中
+        for i, conn in enumerate(connections):
+            if i == 0: # 这个connection是header connection
+                if upstream == False:
+                    item["req"]["Header Parse Start Time"] = conn["Parse Start Time"]
+                else:
+                    item["resp"]["Header Parse Start Time"] = conn["Parse Start Time"]
+            if i == 1:
+                if upstream == False:
+                    item["req"]["Data Parse Start Time"] = conn["Parse Start Time"]
+                else:
+                    item["resp"]["Data Parse Start Time"] = conn["Parse Start Time"]
+        # 合并connection，取最早的Parse Start Time和最晚的Parse End Time
+        combined_conn = connections[0]
+        combined_conn["Read Ready Start Time"] = min(conn["Read Ready Start Time"] for conn in connections)
+        combined_conn["Parse End Time"] = max(conn["Parse End Time"] for conn in connections)
+        if upstream:
+            item["upstream_conn"] = combined_conn
+        else:
+            item["conn"] = combined_conn
 
     def _cal_times(self, span):
         wait_time, parse_time, filter_time, process_time = 0, 0, 0, 0
@@ -144,7 +168,6 @@ class SpanFormatter:
             sub_request.pop("Data Filter End Time", None)
             return sub_request
 
-
     def _search_subrequests(self, file_lines, request_id):
         """
         在给定的文件内容中，搜索所有包含指定request id的记录
@@ -161,7 +184,7 @@ class SpanFormatter:
     def _search_response(self, file_lines, stream_id, protocol):
         for line in file_lines:
             trace_data = json.loads(line)
-            if trace_data.get("Stream ID") == stream_id and trace_data.get("Upstream Connection ID") != 0:
+            if trace_data.get("Stream ID") == stream_id and trace_data.get("Upstream Connection ID") != 0 and trace_data.get("Upstream Connection ID") is not None:
                 return self._extract_stream(trace_data, protocol)
             
     def _search_connection(self, file_lines, connection_id, plain_stream_id, protocol, stream_id):
@@ -202,10 +225,12 @@ class SpanFormatter:
                         return [trace_data] # http2只可能有一个connection entry（不完备，但目前实现如此）
                     
                 elif protocol == span_constant.PROTOCOL_HTTP1:
-                    # http1直接match stream id，但可能存在多个connection entry
-                    if trace_data.get("Stream ID") == stream_id:
-                        connections.append(trace_data)
-                        continue
+                    # http1直接match stream id和connection id，但可能存在多个connection entry
+                    # 选择connection，而不是stream
+                    if trace_data.get("Stream ID") == stream_id and trace_data.get("Connection ID") == connection_id:
+                        if trace_data.get("Parse Start Time") is not None:
+                            connections.append(trace_data)
+                            continue
         return connections
 
     def _search_other_entries(self, sub_request, file_lines, protocol):
@@ -228,7 +253,7 @@ class SpanFormatter:
         item["resp"] = self._search_response(file_lines, stream_id, protocol)
 
         if item["resp"] is None:
-            print(f"[!] Incomplete span for stream id {request_id}")
+            print(f"[!] Incomplete span (No Response) for stream id {request_id}")
             return None
 
         # search downstream connection
@@ -237,32 +262,26 @@ class SpanFormatter:
         stream_id = item["req"]["Stream ID"]
         connections = self._search_connection(file_lines, connection_id, downstream_plain_stream_id, protocol, stream_id)
         if len(connections) == 0:
-            print(f"[!] Incomplete span for stream id {request_id}")
+            print(f"[!] Incomplete span (No Connection) for stream id {request_id}")
             return None
-        if len(connections) == 1:
-            item["conn"] = connections[0]
         else:
             # TODO:需要把connection进行合并，还需要把一些字段写入stream中
-            self._combine_connections(item, connections)
-            exit(1)
+            self._combine_connections(item, connections, upstream=False)
 
         # search upstream connection
         upstream_conn_id = item["resp"]["Upstream Connection ID"]
         upstream_plain_stream_id = item["resp"]["Plain Stream ID"]
         upstream_conns = self._search_connection(file_lines, upstream_conn_id, upstream_plain_stream_id, protocol, stream_id)
         if len(upstream_conns) == 0:
-            print(f"[!] Incomplete span for stream id {request_id}")
+            print(f"[!] Incomplete span (No Upstream Connection) for stream id {request_id}")
             return None
-        if len(upstream_conns) == 1:
-            item["upstream_conn"] = upstream_conns[0]
         else:
             # TODO:需要把connection进行合并，还需要把一些字段写入stream中
-            self._combine_connections(item, connections)
-            exit(1)
+            self._combine_connections(item, upstream_conns, upstream=True)
 
         # 验证完整性
         if item["req"] is None or item["resp"] is None or item["conn"] is None or item["upstream_conn"] is None:
-            print(f"[!] Incomplete span for stream id {request_id}")
+            print(f"[!] Incomplete span (Missing Entry) for stream id {request_id}")
             return None
 
         # print(f"[*] Found complete span for stream id {request_id}")

@@ -265,8 +265,10 @@ class SpanFormatter:
             print(f"[!] Incomplete span (No Connection) for stream id {request_id}")
             return None
         else:
-            # TODO:需要把connection进行合并，还需要把一些字段写入stream中
-            self._combine_connections(item, connections, upstream=False)
+            if protocol == span_constant.PROTOCOL_HTTP2:
+                item["conn"] = connections[0]
+            else:
+                self._combine_connections(item, connections, upstream=False)
 
         # search upstream connection
         upstream_conn_id = item["resp"]["Upstream Connection ID"]
@@ -276,8 +278,10 @@ class SpanFormatter:
             print(f"[!] Incomplete span (No Upstream Connection) for stream id {request_id}")
             return None
         else:
-            # TODO:需要把connection进行合并，还需要把一些字段写入stream中
-            self._combine_connections(item, upstream_conns, upstream=True)
+            if protocol == span_constant.PROTOCOL_HTTP2:
+                item["upstream_conn"] = upstream_conns[0]
+            else:
+                self._combine_connections(item, upstream_conns, upstream=True)
 
         # 验证完整性
         if item["req"] is None or item["resp"] is None or item["conn"] is None or item["upstream_conn"] is None:

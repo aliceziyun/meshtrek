@@ -85,28 +85,34 @@ class SpanPlotter:
                             color=GAP_COLOR, height=0.8, alpha=GAP_ALPHA, zorder=0)
             
             # 处理parse time, 绘制成橘色
-            self.draw_interval(y=index, start=norm_span["req"]["Header Parse Start Time"], end=norm_span["req"]["Header Parse End Time"],
+            self.draw_interval(y=index, start=norm_span["req"]["Header Parse Start Time"], end=norm_span["req"]["Header Filter Start Time"],
                             color=PARSE_COLOR, height=0.8, alpha=PARSE_ALPHA, zorder=1)
-            self.draw_interval(y=index, start=norm_span["req"]["Data Parse Start Time"], end=norm_span["req"]["Data Parse End Time"],
+            if norm_span["req"]["Data Parse Start Time"] != 0:
+                self.draw_interval(y=index, start=norm_span["req"]["Data Parse Start Time"], end=norm_span["req"]["Data Filter Start Time"],
+                                color=PARSE_COLOR, height=0.8, alpha=PARSE_ALPHA, zorder=1)
+            self.draw_interval(y=index, start=norm_span["resp"]["Header Parse Start Time"], end=norm_span["resp"]["Header Filter Start Time"],
                             color=PARSE_COLOR, height=0.8, alpha=PARSE_ALPHA, zorder=1)
-            self.draw_interval(y=index, start=norm_span["resp"]["Header Parse Start Time"], end=norm_span["resp"]["Header Parse End Time"],
-                            color=PARSE_COLOR, height=0.8, alpha=PARSE_ALPHA, zorder=1)
-            self.draw_interval(y=index, start=norm_span["resp"]["Data Parse Start Time"], end=norm_span["resp"]["Data Parse End Time"],
-                            color=PARSE_COLOR, height=0.8, alpha=PARSE_ALPHA, zorder=1)
-            self.draw_interval(y=index, start=norm_span["resp"]["Trailer Parse Start Time"], end=norm_span["resp"]["Trailer Parse End Time"],
-                            color=PARSE_COLOR, height=0.8, alpha=PARSE_ALPHA, zorder=1)
+            if norm_span["resp"]["Data Parse Start Time"] != 0:
+                self.draw_interval(y=index, start=norm_span["resp"]["Data Parse Start Time"], end=norm_span["resp"]["Data Filter Start Time"],
+                                color=PARSE_COLOR, height=0.8, alpha=PARSE_ALPHA, zorder=1)
+            if norm_span["resp"]["Trailer Parse Start Time"] != 0:
+                self.draw_interval(y=index, start=norm_span["resp"]["Trailer Parse Start Time"], end=norm_span["resp"]["Trailer Filter Start Time"],
+                                color=PARSE_COLOR, height=0.8, alpha=PARSE_ALPHA, zorder=1)
             
             # 处理filter time，绘制成蓝色
-            self.draw_interval(y=index, start=norm_span["req"]["Header Parse End Time"], end=norm_span["req"]["Data Parse Start Time"],
+            self.draw_interval(y=index, start=norm_span["req"]["Header Filter Start Time"], end=norm_span["req"]["Header Process End Time"],
                             color=FILTER_COLOR, height=0.8, alpha=FILTER_ALPHA, zorder=1)
-            self.draw_interval(y=index, start=norm_span["req"]["Data Parse End Time"], end=norm_span["req"]["Stream End Time"],
+            if norm_span["req"]["Data Parse Start Time"] != 0:
+                self.draw_interval(y=index, start=norm_span["req"]["Data Filter Start Time"], end=norm_span["req"]["Data Process End Time"],
+                                color=FILTER_COLOR, height=0.8, alpha=FILTER_ALPHA, zorder=1)
+            self.draw_interval(y=index, start=norm_span["resp"]["Header Filter Start Time"], end=norm_span["resp"]["Header Process End Time"],
                             color=FILTER_COLOR, height=0.8, alpha=FILTER_ALPHA, zorder=1)
-            self.draw_interval(y=index, start=norm_span["resp"]["Header Parse End Time"], end=norm_span["resp"]["Data Parse Start Time"],
-                            color=FILTER_COLOR, height=0.8, alpha=FILTER_ALPHA, zorder=1)
-            self.draw_interval(y=index, start=norm_span["resp"]["Data Parse End Time"], end=norm_span["resp"]["Trailer Parse Start Time"],
-                            color=FILTER_COLOR, height=0.8, alpha=FILTER_ALPHA, zorder=1)
-            self.draw_interval(y=index, start=norm_span["resp"]["Trailer Parse End Time"], end=norm_span["resp"]["Stream End Time"],
-                            color=FILTER_COLOR, height=0.8, alpha=FILTER_ALPHA, zorder=1)
+            if norm_span["resp"]["Data Parse Start Time"] != 0:
+                self.draw_interval(y=index, start=norm_span["resp"]["Data Filter Start Time"], end=norm_span["resp"]["Data Process End Time"],
+                                color=FILTER_COLOR, height=0.8, alpha=FILTER_ALPHA, zorder=1)
+            if norm_span["resp"]["Trailer Parse Start Time"] != 0:
+                self.draw_interval(y=index, start=norm_span["resp"]["Trailer Filter Start Time"], end=norm_span["resp"]["Stream End Time"],
+                                color=FILTER_COLOR, height=0.8, alpha=FILTER_ALPHA, zorder=1)
             
         plt.xlabel("Time (ms)")
         plt.ylabel("Spans (ordered by start time)")

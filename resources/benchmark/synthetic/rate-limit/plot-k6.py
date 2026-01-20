@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
 
+NAMES=["istio", "istio+limit", "noistio"]
+
 def parse_time(ts: str) -> float:
     """
     Parse RFC3339 timestamp with timezone offset; trim to microseconds for datetime.fromisoformat.
@@ -165,13 +167,13 @@ def main():
     args = ap.parse_args()
 
     paths = {
-        "default": f"{args.dir}/default.json",
-        "limit":   f"{args.dir}/limit.json",
+        "istio": f"{args.dir}/default.json",
+        "istio+limit":   f"{args.dir}/limit.json",
         "noistio": f"{args.dir}/noistio.json",
     }
     colors = {
-        "default": "tab:blue",
-        "limit": "tab:orange",
+        "istio": "tab:blue",
+        "istio+limit": "tab:orange",
         "noistio": "tab:green",
     }
 
@@ -191,7 +193,7 @@ def main():
         ax_gp.axvspan(args.burst_start, args.burst_end, alpha=0.15)
 
     # Top: latency p50/p99 (success-only)
-    for name in ["default", "limit", "noistio"]:
+    for name in NAMES:
         ts, p50, p99, gp, fr = series[name]
         c = colors[name]
         ax_lat.plot(ts, p50, color=c, linestyle="--", label=f"{name} p50")
@@ -205,7 +207,7 @@ def main():
     ax_lat.legend(loc="upper left", fontsize=8, ncol=2)
 
     # Bottom: goodput
-    for name in ["default", "limit", "noistio"]:
+    for name in NAMES:
         ts, p50, p99, gp, fr = series[name]
         c = colors[name]
         # ax_gp.fill_between(ts, gp, step="pre", alpha=0.18, color=c)
@@ -230,7 +232,7 @@ def main():
 
     # Determine y-range from all configs within stable window
     ys = []
-    for name in ["default", "limit", "noistio"]:
+    for name in NAMES:
         ts, p50, p99, gp, fr = series[name]
         y = p50 if use_p50 else p99
         mask = (ts >= stable_start) & (ts <= stable_end)
@@ -266,7 +268,7 @@ def main():
             borderpad=0.6,
         )
 
-        for name in ["default", "limit", "noistio"]:
+        for name in NAMES:
             ts, p50, p99, gp, fr = series[name]
             c = colors[name]
             y = p50 if use_p50 else p99

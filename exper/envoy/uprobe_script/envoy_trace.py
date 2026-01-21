@@ -82,6 +82,8 @@ def http2_stream_callback(cpu, data, size):
         "Header Parse End Time": stream_info.header_parse_end_time,
         "Data Parse Start Time": stream_info.data_parse_start_time,
         "Data Parse End Time": stream_info.data_parse_end_time,
+        "Trailer Parse Start Time": stream_info.trailer_parse_start_time,
+        "Trailer Parse End Time": stream_info.trailer_parse_end_time,
         "Stream End Time": stream_info.stream_end_time,
     }
     log_queue.put(json.dumps(log_data))
@@ -110,6 +112,7 @@ def http1_conn_callback(cpu, data, size):
 def http1_stream_callback(cpu, data, size):
     class StreamInfo(ctypes.Structure):
         _fields_ = [
+            ("connection_id", ctypes.c_uint),
             ("request_id", ctypes.c_char * 32),
             ("upstream_conn_id", ctypes.c_uint),
             ("stream_id", ctypes.c_ulonglong),
@@ -117,13 +120,12 @@ def http1_stream_callback(cpu, data, size):
             ("header_filter_end_time", ctypes.c_ulonglong),
             ("data_filter_start_time", ctypes.c_ulonglong),
             ("data_filter_end_time", ctypes.c_ulonglong),
-            ("trailer_filter_start_time", ctypes.c_ulonglong),
-            ("trailer_filter_end_time", ctypes.c_ulonglong),
             ("stream_end_time", ctypes.c_ulonglong),
         ]
     stream_info = ctypes.cast(data, ctypes.POINTER(StreamInfo)).contents
     request_id_str = stream_info.request_id.split(b'\x00', 1)[0].decode(errors="replace")
     log_data = {
+        "Connection ID": stream_info.connection_id,
         "Request ID": request_id_str,
         "Upstream Connection ID": stream_info.upstream_conn_id,
         "Stream ID": stream_info.stream_id,
@@ -131,8 +133,6 @@ def http1_stream_callback(cpu, data, size):
         "Header Filter End Time": stream_info.header_filter_end_time,
         "Data Filter Start Time": stream_info.data_filter_start_time,
         "Data Filter End Time": stream_info.data_filter_end_time,
-        "Trailer Filter Start Time": stream_info.trailer_filter_start_time,
-        "Trailer Filter End Time": stream_info.trailer_filter_end_time,
         "Stream End Time": stream_info.stream_end_time,
     }
     log_queue.put(json.dumps(log_data))

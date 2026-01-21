@@ -14,6 +14,7 @@ class Http1Uprobe:
     BPF_PERF_OUTPUT(conn_events);
 
     struct stream_info_t {
+        u32 connection_id;
         char request_id[32];
         u32 upstream_conn_id;
         u64 stream_id;
@@ -21,10 +22,8 @@ class Http1Uprobe:
         u64 header_filter_end_time;
         u64 data_filter_start_time;
         u64 data_filter_end_time;
-        u64 trailers_filter_start_time;
-        u64 trailers_filter_end_time;
         u64 stream_end_time;
-    };  // struct stream_info_t, size: 72 bytes
+    };  // struct stream_info_t, size: 64 bytes
 
     BPF_HASH(stream_info_map, u32, struct stream_info_t);   // key: <connection_id> -> stream_info_t
     BPF_HASH(up_down_stream_map, u32, u32);    // key: <upstream connection id> -> <downstream connection id>
@@ -120,6 +119,7 @@ class Http1Uprobe:
         // fill info with request id, stream id, and parse end time
         u32 size = 32;
         bpf_probe_read_str(&stream_info.request_id, size, request_id_ptr);
+        stream_info.connection_id = connection_id;
         stream_info.stream_id = stream_id;
         stream_info.header_filter_start_time = bpf_ktime_get_tai_ns();
 

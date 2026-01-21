@@ -35,6 +35,24 @@ class ShellHelper:
         ]
         subprocess.run(command, check=True)
 
+    def scp_from_remote(self, remote_path, local_path, node_ip, node_user, node_home):
+        """
+        Generate the scp command to copy a directory from a remote node.
+        """
+        subprocess.run(
+            ['ssh-keyscan', '-H', node_ip],
+            stdout=open(os.path.expanduser('~/.ssh/known_hosts'), 'a'),
+            check=True
+        )
+
+        remote_path = os.path.join(node_home, remote_path)
+
+        command = [
+            'scp', '-r', f'{node_user}@{node_ip}:{remote_path}',
+            local_path
+        ]
+        subprocess.run(command, check=True)
+
     def copy_files_to_nodes(self, file, mode=0):
         """
         Copy files to remote nodes.

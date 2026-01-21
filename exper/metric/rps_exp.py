@@ -95,13 +95,18 @@ class MeshConfigFinder:
                 os.path.join(self.basepath, "./rps_inc/rps_inc.sh"),
                 [str(self.rps)]
         )
-        print("[*]", output)
+        
+        with open("rps_exp_log.txt", "a") as f:
+            f.write(f"RPS={self.rps} Experiment Output:\n")
+            f.write(output + "\n\n")
+
+        print(f"[*] RPS experiment with RPS={self.rps} completed.")
 
         # scp拷贝结果到本地
         target_dir = f"../../{self.rps}_trace_results"
         local_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), target_dir)
         self.shell_helper.scp_from_remote(
-            "testdir",
+            "trace_res",
             local_path,
             self.shell_helper.config["nodes"][0],
             self.shell_helper.config["nodes_user"],

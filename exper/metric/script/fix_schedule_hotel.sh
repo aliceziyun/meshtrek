@@ -8,9 +8,6 @@ if [ ${#nodes[@]} -eq 0 ]; then
 fi
 
 base_dir="$HOME/meshtrek/resources/benchmark/HotelReserve/kubernetes"
-# group_one=("frontend" "search" "recommendation" "consul")
-# group_two=("rate" "profile" "user")
-# group_three=("reservation" "geo" "jaeger")
 
 group_one=("search" "consul")
 group_two=("rate" "profile" "user")

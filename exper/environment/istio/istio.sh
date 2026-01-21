@@ -8,7 +8,7 @@ curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION sh -
 cd istio-1.26.0
 export PATH=$PWD/bin:$PATH
 # install service mesh for bookinfo application
-istioctl install -f samples/bookinfo/demo-profile-no-gateways.yaml -y
+istioctl install -f ~/meshtrek/resources/istio_config/no_resource_limit.yaml -y
 kubectl create namespace $NAMESPACE
 kubectl label namespace $NAMESPACE istio-injection=enabled
 

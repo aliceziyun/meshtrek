@@ -9,14 +9,6 @@ fi
 
 base_dir="$HOME/meshtrek/resources/benchmark/SocialNetwork/helm-chart/socialnetwork/charts"
 
-# group_one=("compose-post-service" "home-timeline-service" "home-timeline-redis" "media-frontend" \
-#            "media-memcached" "media-mongodb" "media-service" "jaeger")
-# group_two=("nginx-thrift" "post-storage-memcached" "post-storage-mongodb" "post-storage-service" \
-#            "social-graph-mongodb" "social-graph-redis" "social-graph-service")
-# group_three=("text-service" "unique-id-service" "url-shorten-memcached" "url-shorten-mongodb" \
-#              "url-shorten-service" "user-memcached" "user-mongodb" "user-mention-service" "user-service" \
-#              "user-timeline-mongodb" "user-timeline-redis" "user-timeline-service")
-
 group_one=("home-timeline-service" "home-timeline-redis" "media-frontend" \
            "media-memcached" "media-mongodb" "media-service" "jaeger")
 group_two=("post-storage-memcached" "post-storage-mongodb" "post-storage-service" \

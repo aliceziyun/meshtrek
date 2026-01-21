@@ -84,7 +84,7 @@ class MeshConfigFinder:
         print("[*] Cleaning up environment...")
 
         # 重启集群
-        # self.reset_cluster()
+        self.reset_cluster()
 
         print(f"[*] Starting RPS experiment with RPS={self.rps}...")
 
@@ -100,11 +100,9 @@ class MeshConfigFinder:
         # scp拷贝结果到本地
         target_dir = f"../../{self.rps}_trace_results"
         local_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), target_dir)
-        if not os.path.exists(local_path):
-            os.makedirs(local_path)
         self.shell_helper.scp_from_remote(
-            "trace_res",
-            target_dir,
+            "testdir",
+            local_path,
             self.shell_helper.config["nodes"][0],
             self.shell_helper.config["nodes_user"],
             self.shell_helper.config["nodes_home"]

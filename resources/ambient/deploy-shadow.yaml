@@ -131,7 +131,7 @@ spec:
           value: cluster.local
         - name: TRUST_DOMAIN
           value: cluster.local
-        image: docker.io/alicesong2002/modified_istio_proxy:v19.0
+        image: docker.io/alicesong2002/modified_istio_proxy:v19.3
         imagePullPolicy: IfNotPresent
         name: istio-proxy
         ports:

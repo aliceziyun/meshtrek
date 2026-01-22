@@ -30,7 +30,7 @@ spec:
             nodeName: "${WORKER_NODE_SERVICE15}"
             containers:
                 - name: istio-proxy
-                  image: docker.io/alicesong2002/modified_istio_proxy:v16.12
+                  image: docker.io/alicesong2002/modified_istio_proxy:v19.3
                   securityContext:
                     allowPrivilegeEscalation: true
                     privileged: true

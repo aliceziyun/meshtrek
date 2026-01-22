@@ -50,16 +50,19 @@ trace_hotel() {
   for pod in $PODS; do
     echo "Running trace on pod: $pod"
     if [[ "$pod" =~ ^frontend ]]; then
-        PROTOCOL="http1"
+        PROTOCOL="all"
+        CURRENT_RUNNING_TIME=$((RUNNING_TIME + 10))
     else
         PROTOCOL="http2"
+        CURRENT_RUNNING_TIME=$RUNNING_TIME
     fi
     if [ "$MESH_TYPE" == "cilium" ]; then
         kubectl exec -i -n "$NAMESPACE" "$pod" -- \ 
-        timeout "$RUNNING_TIME"s python3 /tmp/envoy_trace.py -t cilium -p "$PROTOCOL" &
+        timeout "$CURRENT_RUNNING_TIME"s python3 /tmp/envoy_trace.py -t cilium -p "$PROTOCOL" &
     else
+        echo "Tracing pod $pod with protocol $PROTOCOL for $CURRENT_RUNNING_TIME seconds"
         kubectl exec -i -n "$NAMESPACE" "$pod" -c istio-proxy -- \
-        sudo timeout "$RUNNING_TIME"s python3 /tmp/envoy_trace.py -t istio -p "$PROTOCOL" &
+        sudo timeout "$CURRENT_RUNNING_TIME"s python3 /tmp/envoy_trace.py -t istio -p "$PROTOCOL" &
     fi
   done
 }

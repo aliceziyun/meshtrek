@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-forwarder
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels: { app: node-forwarder }
+  template:
+    metadata:
+      labels: { app: node-forwarder }
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: forwarder
+        image: yizhengx/node-forwarder:0.2
+        securityContext:
+          privileged: true
+        ports:
+        - name: intercept
+          containerPort: 15001
+          hostPort: 15001
+

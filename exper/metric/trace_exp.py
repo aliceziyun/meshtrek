@@ -80,7 +80,7 @@ class MeshConfigFinder:
 
         time.sleep(10)
 
-    def do_rps_exp(self):
+    def do_synthetic_exp(self):
         print("[*] Cleaning up environment...")
 
         # 重启集群
@@ -123,11 +123,11 @@ class MeshConfigFinder:
         )
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Find the best Mesh configuration")
-    parser.add_argument("--rps", type=int, required=True, help="Type of service mesh")
+    parser = argparse.ArgumentParser(description="Do trace of experiment")
+    parser.add_argument("--rps", type=int, required=True, help="RPS value for the synthetic experiment")
     parser.add_argument("--namespace", type=str, required=True, help="Mesh namespace to use")
     args = parser.parse_args()
 
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../config.json")
     config_finder = MeshConfigFinder(args.rps, args.namespace, config_path)
-    config_finder.do_rps_exp()
+    config_finder.do_synthetic_exp()

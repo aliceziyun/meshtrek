@@ -47,3 +47,5 @@ EOF
 sudo systemctl daemon-reload && sudo systemctl restart docker
 
 git clone https://github.com/aliceziyun/meshtrek.git ~/meshtrek
+cd ~/meshtrek
+git checkout -b arch origin/arch

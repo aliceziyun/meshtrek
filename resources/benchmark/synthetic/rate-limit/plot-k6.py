@@ -146,7 +146,7 @@ def finite_slice(arr):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dir", default="k6-results-automate", help="directory containing json files")
+    ap.add_argument("--dir", default="k6-results", help="directory containing json files")
     ap.add_argument("--bucket", type=float, default=1.0, help="time bucket size in seconds (default 1)")
     ap.add_argument("--success", choices=["2xx", "expected", "all"], default="2xx",
                     help="success definition for goodput & latency (default 2xx)")
@@ -162,7 +162,7 @@ def main():
     ap.add_argument("--zoom-metric", choices=["p50", "p99"], default="p50",
                     help="which latency metric to show in the inset (default p50)")
 
-    ap.add_argument("--out", default="k6_compare_success_only_zoom.pdf", help="output PDF")
+    ap.add_argument("--out", default="rate-limit.pdf", help="output PDF")
     ap.add_argument("--title", default=None, help="optional figure title")
     args = ap.parse_args()
 

@@ -88,12 +88,12 @@ class SpanFormatter:
         min_start_time = float('inf')
         max_end_time = 0.0
         for trace in request_traces:
-            req = trace["req"]
-            resp = trace["resp"]
-            if req.get("Header Parse Start Time") is not None:
-                min_start_time = min(min_start_time, req["Header Parse Start Time"])
-            if resp.get("Stream End Time") is not None:
-                max_end_time = max(max_end_time, resp["Stream End Time"])
+            conn = trace["conn"]
+            upconn = trace["upstream_conn"]
+            if conn.get("Parse Start Time") is not None:
+                min_start_time = min(min_start_time, conn["Parse Start Time"])
+            if upconn.get("Parse End Time") is not None:
+                max_end_time = max(max_end_time, upconn["Parse End Time"])
 
         request_time = (max_end_time - min_start_time)/1e6
         return request_time
@@ -366,10 +366,10 @@ class SpanFormatter:
                 self.span_processed.add(request_id)
 
                 # 筛选长度符合的请求
-                if metadata["total_sub_requests"] not in span_constant.TARGET_SPAN_LEN:
-                    self.spans.pop(request_id, None)
-                    self.spans_meta.pop(request_id, None)
-                    continue
+                # if metadata["total_sub_requests"] not in span_constant.TARGET_SPAN_LEN:
+                #     self.spans.pop(request_id, None)
+                #     self.spans_meta.pop(request_id, None)
+                #     continue
                 
                 self.processed += 1
                 if self.processed % 500 == 0:

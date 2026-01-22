@@ -6,7 +6,7 @@ metadata:
         name: config-service14
     namespace: default
 data:
-    conf.json: '{"processes":10,"logging":false,"protocol":"http","endpoints":[{"name":"endpoint1","execution_mode":"sequential","cpu_complexity":{"execution_time":${PROCESSING_TIME_SERVICE14},"threads":1}}]}'
+    conf.json: '{"processes":10,"logging":false,"protocol":"grpc","endpoints":[{"name":"endpoint1","execution_mode":"sequential","cpu_complexity":{"execution_time":${PROCESSING_TIME_SERVICE14},"threads":1}}]}'
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -63,12 +63,6 @@ spec:
                   volumeMounts:
                     - mountPath: /usr/src/emulator/config
                       name: config-data-volume
-                  readinessProbe:
-                    httpGet:
-                        path: /
-                        port: 5000
-                    initialDelaySeconds: 5
-                    periodSeconds: 1
             volumes:
                 - name: tmp
                   emptyDir: {}
@@ -91,11 +85,11 @@ metadata:
     namespace: default
     labels: {}
     annotations:
-        http: /
+        grpc: /
 spec:
     selector:
         app: service14
     ports:
-        - name: http
+        - name: grpc
           port: 80
           targetPort: 5000

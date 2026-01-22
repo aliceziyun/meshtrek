@@ -6,7 +6,7 @@ metadata:
         name: config-service5
     namespace: default
 data:
-    conf.json: '{"processes":10,"logging":false,"protocol":"http","endpoints":[{"name":"endpoint1","execution_mode":"sequential","cpu_complexity":{"execution_time":${PROCESSING_TIME_SERVICE5},"threads":1},"network_complexity":{"forward_requests":"synchronous","response_payload_size":256,"called_services":[{"service":"service6","port":80,"endpoint":"endpoint1","protocol":"http","traffic_forward_ratio":1,"request_payload_size":512,"probability":0}]}}]}'
+    conf.json: '{"processes":10,"logging":false,"protocol":"grpc","endpoints":[{"name":"endpoint1","execution_mode":"sequential","cpu_complexity":{"execution_time":${PROCESSING_TIME_SERVICE5},"threads":1},"network_complexity":{"forward_requests":"synchronous","response_payload_size":256,"called_services":[{"service":"service6","port":80,"endpoint":"endpoint1","protocol":"grpc","traffic_forward_ratio":1,"request_payload_size":512,"probability":0}]}}]}'
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -63,12 +63,6 @@ spec:
                   volumeMounts:
                     - mountPath: /usr/src/emulator/config
                       name: config-data-volume
-                  readinessProbe:
-                    httpGet:
-                        path: /
-                        port: 5000
-                    initialDelaySeconds: 5
-                    periodSeconds: 1
             volumes:
                 - name: tmp
                   emptyDir: {}
@@ -91,11 +85,11 @@ metadata:
     namespace: default
     labels: {}
     annotations:
-        http: /
+        grpc: /
 spec:
     selector:
         app: service5
     ports:
-        - name: http
+        - name: grpc
           port: 80
           targetPort: 5000

@@ -9,6 +9,7 @@ spec:
   capacity:
     storage: 1Gi
   storageClassName: rate-storage
+  
   hostPath:
     path: /data/volumes/rate-pv   # Where all the hard drives are mounted
     type: DirectoryOrCreate

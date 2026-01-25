@@ -36,15 +36,6 @@ spec:
           name: hotel-reserv-reservation-mmc
           ports:
             - containerPort: 11211
-          # resources:
-          #   requests:
-          #     cpu: 100m
-          #   limits:
-          #     cpu: 1000m
-      volumes:
-      - name: tmp
-        emptyDir: {}
-      restartPolicy: Always
       affinity:
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -52,4 +43,5 @@ spec:
               matchLabels:
                 io.kompose.service: reservation
             topologyKey: "kubernetes.io/hostname"
+      restartPolicy: Always
 status: {}

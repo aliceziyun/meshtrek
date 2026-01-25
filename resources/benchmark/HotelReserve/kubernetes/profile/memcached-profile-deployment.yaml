@@ -36,14 +36,6 @@ spec:
           name: hotel-reserv-profile-mmc
           ports:
             - containerPort: 11211
-          # resources:
-          #   requests:
-          #     cpu: 100m
-          #   limits:
-          #     cpu: 1000m
-      volumes:
-      - name: tmp
-        emptyDir: {}
       restartPolicy: Always
       affinity:
         podAffinity:

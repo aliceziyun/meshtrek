@@ -41,21 +41,5 @@ spec:
               protocol: UDP
             - containerPort: 6832
               protocol: UDP
-          # resources:
-          #   requests:
-          #     cpu: 100m
-          #   limits:
-          #     cpu: 1000m
-      volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: lib-modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: linux-headers
-        hostPath:
-          path: /usr/src
-          type: Directory
       restartPolicy: Always
 status: {}

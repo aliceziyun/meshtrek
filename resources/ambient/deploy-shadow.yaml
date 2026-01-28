@@ -1,29 +1,10 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "7"
-  creationTimestamp: "2025-11-20T05:39:20Z"
-  generation: 7
-  labels:
-    gateway.istio.io/managed: istio.io-mesh-controller
-    gateway.networking.k8s.io/gateway-name: waypoint
-  name: test
-  namespace: hotel
-  ownerReferences:
-  - apiVersion: gateway.networking.k8s.io/v1beta1
-    kind: Gateway
-    name: waypoint
-    uid: e9f1a555-45f9-4f53-9054-39064c7210a9
-  resourceVersion: "2764954"
-  uid: 013de8f6-c2b2-42f5-9369-ab8737e6a54e
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      gateway.networking.k8s.io/gateway-name: waypoint
+      gateway.networking.k8s.io/gateway-name: gnosia
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -39,9 +20,9 @@ spec:
       creationTimestamp: null
       labels:
         gateway.istio.io/managed: istio.io-mesh-controller
-        gateway.networking.k8s.io/gateway-name: waypoint
+        gateway.networking.k8s.io/gateway-name: gnosia
         istio.io/dataplane-mode: none
-        service.istio.io/canonical-name: test
+        service.istio.io/canonical-name: gnosia
         service.istio.io/canonical-revision: latest
         sidecar.istio.io/inject: "false"
     spec:
@@ -52,7 +33,7 @@ spec:
         - --domain
         - $(POD_NAMESPACE).svc.cluster.local
         - --serviceCluster
-        - test.$(POD_NAMESPACE)
+        - gnosia.$(POD_NAMESPACE)
         - --proxyLogLevel
         - warning
         - --proxyComponentLogLevel
@@ -124,14 +105,14 @@ spec:
         - name: ISTIO_META_INTERCEPTION_MODE
           value: REDIRECT
         - name: ISTIO_META_WORKLOAD_NAME
-          value: waypoint
+          value: gnosia
         - name: ISTIO_META_OWNER
-          value: kubernetes://apis/apps/v1/namespaces/hotel/deployments/waypoint
+          value: kubernetes://apis/apps/v1/namespaces/hotel/deployments/gnosia
         - name: ISTIO_META_MESH_ID
           value: cluster.local
         - name: TRUST_DOMAIN
           value: cluster.local
-        image: docker.io/alicesong2002/modified_istio_proxy:v15.0
+        image: docker.io/alicesong2002/modified_istio_proxy:v19.3
         imagePullPolicy: IfNotPresent
         name: istio-proxy
         ports:
@@ -200,8 +181,8 @@ spec:
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
-      serviceAccount: waypoint
-      serviceAccountName: waypoint
+      serviceAccount: gnosia
+      serviceAccountName: gnosia
       terminationGracePeriodSeconds: 2
       volumes:
       - emptyDir: {}
@@ -261,7 +242,7 @@ status:
     type: Available
   - lastTransitionTime: "2025-11-20T05:39:20Z"
     lastUpdateTime: "2025-11-20T05:47:19Z"
-    message: ReplicaSet "test-858b76f6b6" has successfully progressed.
+    message: ReplicaSet "gnosia-858b76f6b6" has successfully progressed.
     reason: NewReplicaSetAvailable
     status: "True"
     type: Progressing

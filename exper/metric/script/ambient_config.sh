@@ -6,7 +6,49 @@ export PATH=$PWD/bin:$PATH
 
 delete() {
   istioctl waypoint delete --all -n hotel
+  waypoints_deploy=$(kubectl get deploy -n hotel | grep waypoint | awk '{print $1}')
+  for deploy in $waypoints_deploy; do
+    kubectl delete deploy "$deploy" -n hotel
+  done
+
   sleep 10
+}
+
+apply_frontend() {
+  local num="$1"
+
+  istioctl waypoint apply -n hotel --name waypoint-frontend
+
+  sleep 2
+
+  # bind this waypoint to node frontend is on (4th node)
+  nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
+  local node
+  if [[ "$num" -eq 3 ]]; then
+    node="${nodes[0]}"
+  else
+    node="${nodes[3]}"
+  fi
+  kubectl patch deploy waypoint-frontend -n hotel --type=json \
+  -p='[
+    {
+      "op": "add",
+      "path": "/spec/template/spec/nodeSelector",
+      "value": { "kubernetes.io/hostname": "'"$node"'" }
+    }
+  ]'
+  echo "Patched waypoint [waypoint-frontend] to node [$node]"
+}
+
+bind_frontend() {
+  kubectl label service frontend -n hotel istio.io/use-waypoint=waypoint-frontend --overwrite
+}
+
+apply_single() {
+  # Apply a single waypoint for the entire namespace
+  istioctl waypoint apply -n hotel --name waypoint
+
+  apply_frontend 1
 }
 
 apply_three_node() {
@@ -35,6 +77,8 @@ apply_three_node() {
     ]'
     echo "Patched waypoint [$waypoint] to node [$node]"
   done
+
+  apply_frontend 3
 }
 
 apply_each_node() {
@@ -58,13 +102,15 @@ apply_each_node() {
     ]'
     echo "Patched waypoint [$waypoint] to node [$node]"
   done
+
+  apply_frontend 4
 }
 
 apply_each_service() {
   node1_services=("search")
-  node2_services=("profile" "rate" "memcached-profile" "memcached-rate" "mongodb-profile" "mongodb-rate" "user" "mongodb-user")
-  node3_services=("geo" "mongodb-geo" "reservation" "memcached-reserve" "mongodb-reservation")
-  node4_services=("frontend" "recommendation" "mongodb-recommendation")
+  node2_services=("profile" "rate" "user")
+  node3_services=("geo" "reservation")
+  node4_services=("frontend" "recommendation")
 
   nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
 
@@ -97,23 +143,45 @@ apply_each_service() {
   sleep 5
 }
 
+bind_single() {
+  node1_services=("search")
+  node2_services=("profile" "rate" "memcached-profile" "memcached-rate" "mongodb-profile" "mongodb-rate" "user" "mongodb-user")
+  node3_services=("geo" "mongodb-geo" "reservation" "memcached-reserve" "mongodb-reservation")
+  node4_services=("recommendation" "mongodb-recommendation")
+
+  for i in {1..4}; do
+    services_arr="node${i}_services[@]"
+
+    for svc in "${!services_arr}"; do
+      kubectl label service "$svc" -n hotel istio.io/use-waypoint=waypoint --overwrite
+      echo "Labeled service [$svc] to use waypoint [waypoint]"
+    done
+  done
+
+  bind_frontend
+
+  sleep 5
+}
+
 bind_each_node() {
   nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
   waypoints=("waypoint1" "waypoint2" "waypoint3" "waypoint4")
 
   node1_services=("search")
-  node2_services=("profile" "rate" "memcached-profile" "memcached-rate" "mongodb-profile" "mongodb-rate" "user" "mongodb-user")
-  node3_services=("geo" "mongodb-geo" "reservation" "memcached-reserve" "mongodb-reservation")
-  node4_services=("frontend" "recommendation" "mongodb-recommendation")
+  node2_services=("profile" "rate" "user")
+  node3_services=("geo" "reservation")
+  node4_services=("recommendation")
 
   for i in "${!nodes[@]}"; do
       waypoint="${waypoints[$i]}"
       services_var="node$((i+1))_services[@]"
       for svc in "${!services_var}"; do
-          kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint"
+          kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint" --overwrite
           echo "Labeled service [$svc] to use waypoint [$waypoint]"
       done
   done
+
+  bind_frontend
 
   sleep 5
 }
@@ -122,7 +190,7 @@ bind_three_node() {
   nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
   waypoints=("waypoint1" "waypoint2" "waypoint3")
 
-  node1_services=("search" "frontend" "recommendation" "mongodb-recommendation")
+  node1_services=("search" "recommendation" "mongodb-recommendation")
   node2_services=("profile" "rate" "memcached-profile" "memcached-rate" "mongodb-profile" "mongodb-rate" "user" "mongodb-user")
   node3_services=("geo" "mongodb-geo" "reservation" "memcached-reserve" "mongodb-reservation")
 
@@ -130,29 +198,33 @@ bind_three_node() {
       waypoint="${waypoints[$((i-1))]}"
       services_var="node${i}_services[@]"
       for svc in "${!services_var}"; do
-          kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint"
+          kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint" --overwrite
           echo "Labeled service [$svc] to use waypoint [$waypoint]"
       done
   done
+
+  bind_frontend
 
   sleep 5
 }
 
 bind_each_service() {
   node1_services=("search")
-  node2_services=("profile" "rate" "memcached-profile" "memcached-rate" "mongodb-profile" "mongodb-rate" "user" "mongodb-user")
-  node3_services=("geo" "mongodb-geo" "reservation" "memcached-reserve" "mongodb-reservation")
-  node4_services=("frontend" "recommendation" "mongodb-recommendation")
+  node2_services=("profile" "rate" "user")
+  node3_services=("geo" "reservation")
+  node4_services=("frontend" "recommendation")
 
   for i in {1..4}; do
     services_arr="node${i}_services[@]"
 
     for svc in "${!services_arr}"; do
       waypoint="waypoint-${svc}"
-      kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint"
+      kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint" --overwrite
       echo "Labeled service [$svc] to use waypoint [$waypoint]"
     done
   done
+
+  bind_frontend
 
   sleep 5
 }
@@ -171,6 +243,10 @@ elif [ "$1" == "apply_each_service" ]; then
   apply_each_service
 elif [ "$1" == "bind_each_service" ]; then
   bind_each_service
+elif [ "$1" == "apply_single" ]; then
+  apply_single
+elif [ "$1" == "bind_single" ]; then
+  bind_single
 else
   echo "Usage"
   exit 1

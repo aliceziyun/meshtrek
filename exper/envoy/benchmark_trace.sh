@@ -81,6 +81,11 @@ copy_file_to_local() {
         for pod in $PODS; do
             kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
         done
+    else
+        WAYPOINTS=$(kubectl get pods -n $NAMESPACE | grep waypoint | awk '{print $1}')
+        for waypoint in $WAYPOINTS; do
+            kubectl cp "$NAMESPACE/$waypoint:/tmp/trace_output.log" ~/trace_res/trace_output_"$waypoint".log
+        done
     fi
     fi
 }

@@ -1,34 +1,34 @@
 #!/bin/bash
 
-# don't use this script, just a hint for how the shadow injection works
+NAMESPACE="hotel"
+DEPLOYMENT_DIR="$HOME/meshtrek/exper/metric/script/ambient_inject/deployments"
+SHADOW_DEPLOY_TEMPLATE_FILE="$HOME/meshtrek/resources/ambient/deploy-shadow.yaml"
 
-NAMESPACE=$1
+# 删除并创建deployment dir
+rm -rf "$DEPLOYMENT_DIR"
+mkdir -p "$DEPLOYMENT_DIR"
 
-# clean the environment before this file
+# 获取现有所有的waypoint
+waypoints=($(kubectl get deploy -n $NAMESPACE | grep waypoint | awk '{print $1}'))
+for waypoint in "${waypoints[@]}"; do
+    对每个waypoint执行patch，移除owner reference
+    kubectl patch deploy "$waypoint" -n $NAMESPACE --type=json -p='[
+        {"op":"remove","path":"/metadata/ownerReferences"}
+    ]'
 
-cd istio-1.26.0
-export PATH=$PWD/bin:$PATH
-istioctl waypoint delete --all -n $NAMESPACE
-kubectl label ns $NAMESPACE istio.io/use-waypoint-
+    # dump当前waypoint的yaml前4行 (metadata 部分)到文件
+    kubectl get deploy "$waypoint" -n $NAMESPACE -o yaml | head -n 14 > "$DEPLOYMENT_DIR/${waypoint}.yaml"
 
-# apply gateway
-kubectl apply -f ~/resources/ambient/gateway.yaml -n $NAMESPACE
+    # 把shadow deployment的全部内容追加到文件
+    cat "$SHADOW_DEPLOY_TEMPLATE_FILE" >> "$DEPLOYMENT_DIR/${waypoint}.yaml"
 
-# get uid
-kubectl get deploy -n $NAMESPACE waypoint -o yaml | grep uid
+    # 替换占位符
+    sed -i -e "s/gnosia/$waypoint/g" "$DEPLOYMENT_DIR/${waypoint}.yaml"
 
-# replace uid in shadow files
-
-# apply shadow deployment
-kubectl apply -f ~/resources/ambient/deploy-shadow.yaml -n $NAMESPACE
-
-# apply shadow service
-kubectl apply -f ~/resources/ambient/service-shadow.yaml -n $NAMESPACE
-
-# apply real gateway
-kubectl apply -f ~/resources/ambient/gateway-shadow.yaml -n $NAMESPACE
+    # 应用新的shadow deployment
+    kubectl apply -f "$DEPLOYMENT_DIR/${waypoint}.yaml" -n $NAMESPACE
+    echo "Processed waypoint: $waypoint"
+done
 
 # wait for ready
 sleep 10
-
-kubectl label ns $NAMESPACE istio.io/use-waypoint=test

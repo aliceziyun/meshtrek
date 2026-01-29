@@ -1,4 +1,3 @@
-import traceback
 import matplotlib.pyplot as plt
 import json
 import copy
@@ -57,8 +56,6 @@ class SpanPlotter:
     
     def draw_interval(self, y, start, end, *, color, height, alpha, zorder, label=None):
         if end <= start:
-            # add stack trace to debug
-            traceback.print_stack()
             print("[!] End time is less than the start time")
             exit(1)
         plt.barh(y=y, width=end - start, left=start, height=height, color=color, alpha=alpha, zorder=zorder, label=label)
@@ -77,14 +74,14 @@ class SpanPlotter:
             index = len(norm_spans) - i - 1
             norm_span = span
             # 处理conn time, 绘制成灰色
-            self.draw_interval(y=index, start=norm_span["conn"]["Parse Start Time"], end=norm_span["conn"]["Parse End Time"],
+            self.draw_interval(y=index, start=norm_span["conn"]["Read Ready Start Time"], end=norm_span["conn"]["Parse End Time"],
                     color=CONN_COLOR, height=0.8, alpha=CONN_ALPHA, zorder=0)
 
-            self.draw_interval(y=index, start=norm_span["upstream_conn"]["Parse Start Time"], end=norm_span["upstream_conn"]["Parse End Time"],
+            self.draw_interval(y=index, start=norm_span["upstream_conn"]["Read Ready Start Time"], end=norm_span["upstream_conn"]["Parse End Time"],
                             color=CONN_COLOR, height=0.8, alpha=CONN_ALPHA, zorder=0)
             
             # 两个conn之间的时间绘制成？色，为虚拟的处理时间
-            self.draw_interval(y=index, start=norm_span["conn"]["Parse End Time"], end=norm_span["upstream_conn"]["Parse Start Time"],
+            self.draw_interval(y=index, start=norm_span["conn"]["Parse End Time"], end=norm_span["upstream_conn"]["Read Ready Start Time"],
                             color=GAP_COLOR, height=0.8, alpha=GAP_ALPHA, zorder=0)
             
             # 处理parse time, 绘制成橘色

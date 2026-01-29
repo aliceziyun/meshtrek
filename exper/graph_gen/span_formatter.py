@@ -51,9 +51,9 @@ class SpanFormatter:
     def _cal_times(self, span):
         wait_time, parse_time, filter_time, process_time = 0, 0, 0, 0
         # 计算span的各个时间
-        wait_time += span["req"]["Header Parse Start Time"] - span["conn"]["Read Ready Start Time"]
+        wait_time += span["req"]["Header Parse Start Time"] - span["conn"]["Parse Start Time"]
         wait_time += span["conn"]["Parse End Time"] - span["req"]["Stream End Time"]
-        wait_time += span["resp"]["Header Parse Start Time"] - span["upstream_conn"]["Read Ready Start Time"]
+        wait_time += span["resp"]["Header Parse Start Time"] - span["upstream_conn"]["Parse Start Time"]
         wait_time += span["upstream_conn"]["Parse End Time"] - span["resp"]["Stream End Time"]
         if span["req"]["Data Parse Start Time"] != 0:
             wait_time += span["req"]["Data Parse Start Time"] - span["req"]["Header Process End Time"]
@@ -366,10 +366,10 @@ class SpanFormatter:
                 self.span_processed.add(request_id)
 
                 # 筛选长度符合的请求
-                # if metadata["total_sub_requests"] not in span_constant.TARGET_SPAN_LEN:
-                #     self.spans.pop(request_id, None)
-                #     self.spans_meta.pop(request_id, None)
-                #     continue
+                if metadata["total_sub_requests"] < span_constant.TARGET_SPAN_LEN:
+                    self.spans.pop(request_id, None)
+                    self.spans_meta.pop(request_id, None)
+                    continue
                 
                 self.processed += 1
                 if self.processed % 500 == 0:

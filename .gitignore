@@ -28,3 +28,4 @@ exper/environment/kube/join_kube.sh
 /before_tg
 /_data
 /_archive
+/trace_res_synthetic_branch1_http1

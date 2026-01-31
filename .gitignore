@@ -26,3 +26,5 @@ exper/config.json
 exper/environment/kube/join_kube.sh
 *.zip
 /before_tg
+/_archive
+/trace_res_synthetic_branch1_http1

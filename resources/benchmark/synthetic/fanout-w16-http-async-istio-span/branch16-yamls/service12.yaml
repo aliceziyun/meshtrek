@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: config-service12
+    labels:
+        name: config-service12
+    namespace: default
+data:
+    conf.json: '{"processes":10,"logging":false,"protocol":"http","endpoints":[{"name":"endpoint1","execution_mode":"sequential","cpu_complexity":{"execution_time":${PROCESSING_TIME_SERVICE12},"threads":1}}]}'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: service12
+    namespace: default
+    labels: {}
+spec:
+    selector:
+        matchLabels:
+            app: service12
+            version: ""
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: service12
+                version: ""
+            annotations: {}
+        spec:
+            nodeName: "${WORKER_NODE_SERVICE12}"
+            containers:
+                - name: istio-proxy
+                  image: docker.io/alicesong2002/modified_istio_proxy:v19.3
+                  securityContext:
+                    allowPrivilegeEscalation: true
+                    privileged: true
+                    capabilities:
+                      add: ["SYS_ADMIN"]
+                  volumeMounts:
+                  - mountPath: /lib/modules
+                    name: lib-modules
+                  - mountPath: /usr/src
+                    name: linux-headers
+                  - name: tmp
+                    mountPath: /tmp
+                  resources:
+                    limits:
+                      memory: "3000Mi"
+                    requests:
+                      memory: "3000Mi"
+                - name: app
+                  image: yizhengx/mesh:synthetic
+                  imagePullPolicy: Always
+                  env:
+                    - name: APP_NAME
+                      value: service
+                    - name: CONF
+                      value: /usr/src/emulator/config/conf.json
+                    - name: GOMEMLIMIT
+                      value: "1024000000"
+                  ports:
+                    - containerPort: 5000
+                  volumeMounts:
+                    - mountPath: /usr/src/emulator/config
+                      name: config-data-volume
+                  readinessProbe:
+                    httpGet:
+                        path: /
+                        port: 5000
+                    initialDelaySeconds: 5
+                    periodSeconds: 1
+            volumes:
+                - name: tmp
+                  emptyDir: {}
+                - name: lib-modules
+                  hostPath:
+                    path: /lib/modules
+                    type: Directory
+                - name: linux-headers
+                  hostPath:
+                    path: /usr/src
+                    type: Directory
+                - name: config-data-volume
+                  configMap:
+                    name: config-service12
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: service12
+    namespace: default
+    labels: {}
+    annotations:
+        http: /
+spec:
+    selector:
+        app: service12
+    ports:
+        - name: http
+          port: 80
+          targetPort: 5000

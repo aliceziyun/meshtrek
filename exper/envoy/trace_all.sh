@@ -67,8 +67,24 @@ trace_hotel() {
   done
 }
 
+trace_other_http2() {
+  PROTOCOL="http2"
+  for pod in $PODS; do
+    echo "Running trace on pod: $pod"
+    if [ "$MESH_TYPE" == "cilium" ]; then
+        kubectl exec -i -n "$NAMESPACE" "$pod" -- \ 
+        timeout "$RUNNING_TIME"s python3 /tmp/envoy_trace.py -t cilium -p "$PROTOCOL" &
+    else
+        kubectl exec -i -n "$NAMESPACE" "$pod" -c istio-proxy -- \
+        sudo timeout "$RUNNING_TIME"s python3 /tmp/envoy_trace.py -t istio -p "$PROTOCOL" &
+    fi
+  done
+}
+
 if [ "$NAMESPACE" == "hotel" ]; then
   trace_hotel
+else
+  trace_other_http2
 fi
 
 wait

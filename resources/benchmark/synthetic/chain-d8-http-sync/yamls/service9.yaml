@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: config-service9
+    labels:
+        name: config-service9
+    namespace: default
+data:
+    conf.json: '{"processes":10,"logging":false,"protocol":"http","endpoints":[{"name":"endpoint1","execution_mode":"sequential","cpu_complexity":{"execution_time":${PROCESSING_TIME_SERVICE9},"threads":1}}]}'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: service9
+    namespace: default
+    labels: {}
+spec:
+    selector:
+        matchLabels:
+            app: service9
+            version: ""
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: service9
+                version: ""
+            annotations: {}
+        spec:
+            containers:
+                - name: app
+                  image: yizhengx/mesh:synthetic
+                  imagePullPolicy: Always
+                  env:
+                    - name: APP_NAME
+                      value: service
+                    - name: CONF
+                      value: /usr/src/emulator/config/conf.json
+                    - name: GOMEMLIMIT
+                      value: "1024000000"
+                  ports:
+                    - containerPort: 5000
+                  volumeMounts:
+                    - mountPath: /usr/src/emulator/config
+                      name: config-data-volume
+                  readinessProbe:
+                    httpGet:
+                        path: /
+                        port: 5000
+                    initialDelaySeconds: 5
+                    periodSeconds: 1
+            volumes:
+                - name: config-data-volume
+                  configMap:
+                    name: config-service9
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: service9
+    namespace: default
+    labels: {}
+    annotations:
+        http: /
+spec:
+    selector:
+        app: service9
+    ports:
+        - name: http
+          port: 80
+          targetPort: 5000

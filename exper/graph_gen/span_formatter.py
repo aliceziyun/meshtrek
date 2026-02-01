@@ -313,6 +313,7 @@ class SpanFormatter:
                 # print(f"[*] Processing request id: {request_id}")
 
                 if self.span_processed.__contains__(request_id):
+                if self.span_processed.__contains__(request_id):
                     continue    # 已经处理过该request id，跳过
                 
                 # 开始搜索和该request id有关的所有记录
@@ -366,6 +367,15 @@ class SpanFormatter:
                 self.span_processed.add(request_id)
 
                 # 筛选长度符合的请求
+                if metadata["total_sub_requests"] not in span_constant.TARGET_SPAN_LEN:
+                    self.spans.pop(request_id, None)
+                    self.spans_meta.pop(request_id, None)
+                    continue
+
+                # 标记该request id为已处理
+                self.span_processed.add(request_id)
+
+                # 筛选长度符合的请求
                 # if metadata["total_sub_requests"] not in span_constant.TARGET_SPAN_LEN:
                 #     self.spans.pop(request_id, None)
                 #     self.spans_meta.pop(request_id, None)
@@ -384,6 +394,7 @@ class SpanFormatter:
 
         self.spans = {} # for output result
         self.spans_meta = {}
+        self.span_processed = set()
         self.span_processed = set()
         self.processed = 0
 

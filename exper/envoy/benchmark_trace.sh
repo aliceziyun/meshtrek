@@ -70,6 +70,21 @@ trace_social() {
     echo "Experiment completed."
 }
 
+trace_synthetic() {
+    echo "Running RPS=$RPS..."
+
+    service0_ip=$(kubectl get svc service0 -o jsonpath='{.spec.clusterIP}')
+    ~/istio-1.26.0/wrk2/wrk -t4 -c16 -R 50 -d 60 -L http://$service0_ip/endpoint1
+
+    wait
+
+    copy_file_to_local
+
+    wait
+    
+    echo "Experiment completed."
+}
+
 copy_file_to_local() {
     if [ "$MESH_TYPE" == "cilium" ]; then
         PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')
@@ -91,6 +106,6 @@ elif [ "$MICRO_SERVICE" == "bookinfo" ]; then
     trace_bookinfo
 elif [ "$MICRO_SERVICE" == "social" ]; then
     trace_social
-else
-    echo "Unknown micro-service: $MICRO_SERVICE"
+else  # 摆烂了
+    trace_synthetic
 fi

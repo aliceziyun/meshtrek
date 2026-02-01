@@ -1,0 +1,130 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mesh-proxy
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-envoy-config
+  namespace: mesh-proxy
+data:
+  envoy.yaml: |
+    static_resources:
+      listeners:
+      - name: shared_l7_listener
+        address:
+          socket_address: { address: 0.0.0.0, port_value: 18080 }
+        filter_chains:
+        - filters:
+          - name: envoy.filters.network.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              stat_prefix: shared_l7_hcm
+              use_remote_address: true
+              normalize_path: true
+              access_log:
+              - name: envoy.access_loggers.stdout
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+
+              route_config:
+                name: shared_routes
+                virtual_hosts:
+                # Route service1 by Host / :authority
+                - name: service1_vhost
+                  domains:
+                  - "service1"
+                  - "service1:80"
+                  - "service1.default"
+                  - "service1.default.svc"
+                  - "service1.default.svc.cluster.local"
+                  - "service1.default.svc.cluster.local:80"
+                  routes:
+                  - match: { prefix: "/" }
+                    route:
+                      cluster: service1_cluster
+
+                # Fallback: make misroutes obvious
+                - name: fallback
+                  domains: ["*"]
+                  routes:
+                  - match: { prefix: "/" }
+                    direct_response:
+                      status: 421
+                      body:
+                        inline_string: "Shared Envoy: no route for this Host\n"
+
+              http_filters:
+              - name: envoy.filters.http.router
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+      clusters:
+      - name: service1_cluster
+        type: STRICT_DNS
+        connect_timeout: 2s
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: service1_cluster
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: service1.default.svc.cluster.local
+                    port_value: 80
+
+    admin:
+      address:
+        socket_address: { address: 0.0.0.0, port_value: 19001 }
+      access_log_path: /tmp/admin_access.log
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shared-envoy
+  namespace: mesh-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: shared-envoy }
+  template:
+    metadata:
+      labels: { app: shared-envoy }
+    spec:
+      containers:
+      - name: envoy
+        image: envoyproxy/envoy:v1.34.0
+        args: ["-c", "/etc/envoy/envoy.yaml", "--log-level", "info"]
+        ports:
+        - name: http
+          containerPort: 18080
+        - name: admin
+          containerPort: 19001
+        volumeMounts:
+        - name: cfg
+          mountPath: /etc/envoy
+      volumes:
+      - name: cfg
+        configMap:
+          name: shared-envoy-config
+          items:
+          - key: envoy.yaml
+            path: envoy.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shared-envoy
+  namespace: mesh-proxy
+spec:
+  selector: { app: shared-envoy }
+  ports:
+  - name: http
+    port: 18080
+    targetPort: 18080
+  - name: admin
+    port: 19001
+    targetPort: 19001
+

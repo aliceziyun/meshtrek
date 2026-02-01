@@ -313,7 +313,6 @@ class SpanFormatter:
                 # print(f"[*] Processing request id: {request_id}")
 
                 if self.span_processed.__contains__(request_id):
-                if self.span_processed.__contains__(request_id):
                     continue    # 已经处理过该request id，跳过
                 
                 # 开始搜索和该request id有关的所有记录
@@ -394,7 +393,6 @@ class SpanFormatter:
 
         self.spans = {} # for output result
         self.spans_meta = {}
-        self.span_processed = set()
         self.span_processed = set()
         self.processed = 0
 

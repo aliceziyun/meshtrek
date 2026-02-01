@@ -97,6 +97,47 @@ class SpanFormatter:
 
         request_time = (max_end_time - min_start_time)/1e6
         return request_time
+    
+    def _fill_topology(self, request_traces):
+        '''
+        使用request_traces中的service字段，从上到下填充拓扑结构
+        拓扑文件的格式为：
+        {
+            "layer_number": ["service_1", "service_2", ...],
+            ...
+        }
+        '''
+        # read topology file
+        topology_path = "/Users/alicesong/Desktop/research/meshtrek/exper/graph_gen/topology.json"      # TODO: 之后改为参数传入或相对路径
+        service_topology = []   # 存储服务的拓扑顺序，二级列表
+        request_traces_copied = request_traces.copy()
+
+        with open(topology_path, 'r') as topo_f:
+            topology = json.load(topo_f)
+            # 遍历每一层
+            for layer, services in topology.items():
+                # 遍历request_traces，找到该层的service，对于同层的同名service，不需要注意顺序
+                layer_services = []
+                for service in services:
+                    services_match = []
+                    # 找到所有符合service name的trace，根据起始时间的顺序排序，选择最小的那个加入layer_services
+                    for trace in request_traces_copied:
+                        if trace["service"] == service:
+                            services_match.append(trace)
+                    # 找到起始时间最小的trace, 起始时间使用Parse Start Time
+                    min_start_time = float('inf')
+                    selected_trace = None
+                    for svc in services_match:
+                        conn = svc["conn"]
+                        if conn.get("Parse Start Time") is not None and conn["Parse Start Time"] < min_start_time:
+                            min_start_time = conn["Parse Start Time"]
+                            selected_trace = svc
+                    if selected_trace is not None:
+                        layer_services.append(selected_trace)
+                        request_traces_copied.remove(selected_trace)
+                service_topology.append(layer_services)
+
+        return service_topology
 
     def _process_full_request(self, request_traces):
         metadata = {
@@ -108,7 +149,8 @@ class SpanFormatter:
             "request_time": 0.0,
         }
 
-        # 从上到下填充拓扑结构
+        # 填充拓扑结构
+        self._fill_topology(request_traces)
 
 
         wait_sum = parse_sum = filter_sum = 0.0

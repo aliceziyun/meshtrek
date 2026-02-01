@@ -11,7 +11,9 @@ if [ "$MESH_TYPE" == "cilium" ]; then
   PODS=$(kubectl get pods -n "$NAMESPACE" -o jsonpath='{.items[*].metadata.name}' \
   | tr ' ' '\n' | grep '^cilium-envoy')
 elif [ "$MESH_TYPE" == "istio" ]; then
-  PODS=$(kubectl get pods -n "$NAMESPACE" -o jsonpath='{.items[*].metadata.name}')
+  PODS=$(kubectl get pods -n "$NAMESPACE" \
+  -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{range .spec.containers[*]}{.name}{" "}{end}{"\n"}{end}' \
+  | awk '$0 ~ /istio-proxy/ {print $1}')
 else
   echo "Unsupported mesh type. Please specify 'cilium' or 'istio'."
   exit 1

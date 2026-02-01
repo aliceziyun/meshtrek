@@ -58,7 +58,9 @@ trace_hotel() {
             kubectl cp "kube-system/$pod:/tmp/trace_output.log" ~/trace_res/trace_output_"$pod".log
         done
     else if [ "$MESH_TYPE" == "istio" ]; then
-        PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
+        PODS=$(kubectl get pods -n "$NAMESPACE" \
+        -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{range .spec.containers[*]}{.name}{" "}{end}{"\n"}{end}' \
+        | awk '$0 ~ /istio-proxy/ {print $1}')
         for pod in $PODS; do
             kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
         done

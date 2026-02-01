@@ -9,7 +9,7 @@ from exper.shell_helper import ShellHelper
 class MeshConfigFinder:
     def __init__(self, rps, namespace, config_file):
         self.rps = rps
-        self.mesh_type = "istio"
+        self.mesh_type = "ambient"
         self.namespace = namespace
 
         if namespace == "hotel":
@@ -22,6 +22,7 @@ class MeshConfigFinder:
     def reset_cluster(self):
         print("[*] Resetting the cluster...")
 
+        print("[*] Deleting ambient waypoints if any...")
         if self.mesh_type == "ambient":
             # Reconfigure ambient waypoints
             self.shell_helper.execute_script(
@@ -31,6 +32,8 @@ class MeshConfigFinder:
                 ["delete"]
             )
 
+        print("[*] Deleting and restarting the cluster...")
+
         # Delete the cluster
         self.shell_helper.execute_script(
             self.shell_helper.config["nodes"][0],
@@ -38,6 +41,8 @@ class MeshConfigFinder:
             os.path.join(self.basepath, "./metric/script/cluster_operation.sh"),
             [self.namespace, "delete"]
         )
+
+        print("[*] Resetting databases if any...")
 
         # Reset the database for hotel
         if self.namespace == "hotel":
@@ -55,6 +60,8 @@ class MeshConfigFinder:
             [self.namespace, "launch"]
         )
 
+        print("[*] Reconfiguring the mesh...")
+
         if self.mesh_type == "ambient":
             # Reconfigure ambient waypoints
             output = self.shell_helper.execute_script(
@@ -64,12 +71,23 @@ class MeshConfigFinder:
                 ["apply_each_service"]
             )
 
+            time.sleep(5)
+
+            output = self.shell_helper.execute_script(
+                self.shell_helper.config["nodes"][0],
+                self.shell_helper.config["nodes_user"],
+                os.path.join(self.basepath, "./metric/script/inject_shadow_ambient.sh"),
+            )
+
+            time.sleep(5)
+
             output = self.shell_helper.execute_script(
                 self.shell_helper.config["nodes"][0],
                 self.shell_helper.config["nodes_user"],
                 os.path.join(self.basepath, "./metric/script/ambient_config.sh"),
                 ["bind_each_service"]
             )
+
         # elif self.mesh_type == "istio":
         #     # L4 only policy
         #     output = self.shell_helper.execute_script(
@@ -93,10 +111,10 @@ class MeshConfigFinder:
                 self.shell_helper.config["nodes"][0],
                 self.shell_helper.config["nodes_user"],
                 os.path.join(self.basepath, "./rps_inc/rps_inc.sh"),
-                [str(self.rps)]
+                [str(self.rps), self.mesh_type]
         )
         
-        with open("rps_exp_log.txt", "a") as f:
+        with open("rps_exp_log_ambient_np.txt", "a") as f:
             f.write(f"RPS={self.rps} Experiment Output:\n")
             f.write(output + "\n\n")
 

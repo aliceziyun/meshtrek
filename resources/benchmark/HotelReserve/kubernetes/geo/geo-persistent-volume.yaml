@@ -9,6 +9,7 @@ spec:
   capacity:
     storage: 1Gi
   storageClassName: geo-storage
+  
   hostPath:
     path: /data/volumes/geo-pv   # Where all the hard drives are mounted
     type: DirectoryOrCreate

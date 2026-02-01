@@ -108,13 +108,17 @@ class SpanFormatter:
             "request_time": 0.0,
         }
 
+        # 从上到下填充拓扑结构
+
+
         wait_sum = parse_sum = filter_sum = 0.0
         request_time = self._calculate_request_time(request_traces)
-        for span in request_traces:
-            w, p, f, _ = self._cal_times(span)
-            wait_sum += w
-            parse_sum += p
-            filter_sum += f
+
+        # for span in request_traces:
+        #     w, p, f, _ = self._cal_times(span)
+        #     wait_sum += w
+        #     parse_sum += p
+        #     filter_sum += f
 
         metadata["wait"] = wait_sum
         metadata["parse"] = parse_sum
@@ -320,6 +324,7 @@ class SpanFormatter:
 
                 # 在当前file中搜索和request id的相关记录
                 current_file = entry_lines
+                current_service = os.path.basename(self.entry_file).split('_')[1].split('-')[0]     # TODO: 使用正则表达式匹配，这里提取的name不完整
                 skip = False
                 sub_requests = self._search_subrequests(current_file, request_id)
                 for sub_request in sub_requests:
@@ -332,6 +337,7 @@ class SpanFormatter:
                         skip = True
                         self.spans.pop(request_id, None)    # 删去entry
                         break
+                    item["service"] = current_service
                     self.spans[request_id].append(item)
 
                 if skip:
@@ -350,12 +356,14 @@ class SpanFormatter:
                     with open(fpath, 'r') as f:
                         file_lines = f.readlines()
                         current_file = file_lines
+                        current_service = os.path.basename(fpath).split('_')[1].split('-')[0]     # TODO: 使用正则表达式匹配，这里提取的name不完整
                         sub_requests = self._search_subrequests(current_file, request_id)
                         for sub_request in sub_requests:
                             protocol = self._which_protocol(sub_request)
                             item = self._search_other_entries(sub_request, current_file, protocol)
                             if item is None:
                                 continue
+                            item["service"] = current_service
                             self.spans[request_id].append(item)
 
                 # 处理该request id的记录，获取一些关于请求的元数据

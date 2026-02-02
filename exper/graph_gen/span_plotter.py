@@ -70,18 +70,25 @@ class SpanPlotter:
     def plot_span(self, spans):
         norm_spans = self._normalize_spans(spans)
 
+        y_positions = []
+        y_labels = []
+
         for i, span in enumerate(norm_spans):
             index = len(norm_spans) - i - 1
             norm_span = span
+
+            y_positions.append(index)
+            y_labels.append(norm_span.get("service", f"span-{i}"))
+
             # 处理conn time, 绘制成灰色
-            self.draw_interval(y=index, start=norm_span["conn"]["Read Ready Start Time"], end=norm_span["conn"]["Parse End Time"],
+            self.draw_interval(y=index, start=norm_span["conn"]["Parse Start Time"], end=norm_span["conn"]["Parse End Time"],
                     color=CONN_COLOR, height=0.8, alpha=CONN_ALPHA, zorder=0)
 
-            self.draw_interval(y=index, start=norm_span["upstream_conn"]["Read Ready Start Time"], end=norm_span["upstream_conn"]["Parse End Time"],
+            self.draw_interval(y=index, start=norm_span["upstream_conn"]["Parse Start Time"], end=norm_span["upstream_conn"]["Parse End Time"],
                             color=CONN_COLOR, height=0.8, alpha=CONN_ALPHA, zorder=0)
             
             # 两个conn之间的时间绘制成？色，为虚拟的处理时间
-            self.draw_interval(y=index, start=norm_span["conn"]["Parse End Time"], end=norm_span["upstream_conn"]["Read Ready Start Time"],
+            self.draw_interval(y=index, start=norm_span["conn"]["Parse End Time"], end=norm_span["upstream_conn"]["Parse Start Time"],
                             color=GAP_COLOR, height=0.8, alpha=GAP_ALPHA, zorder=0)
             
             # 处理parse time, 绘制成橘色
@@ -114,6 +121,7 @@ class SpanPlotter:
                 self.draw_interval(y=index, start=norm_span["resp"]["Trailer Filter Start Time"], end=norm_span["resp"]["Stream End Time"],
                                 color=FILTER_COLOR, height=0.8, alpha=FILTER_ALPHA, zorder=1)
             
+        plt.yticks(y_positions, y_labels)
         plt.xlabel("Time (ms)")
         plt.ylabel("Spans (ordered by start time)")
         plt.title("Span Time Breakdown")

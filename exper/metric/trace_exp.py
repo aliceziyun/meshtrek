@@ -18,6 +18,7 @@ class MeshConfigFinder:
 
         self.shell_helper = ShellHelper(config_file)
         self.basepath = "~/meshtrek/exper/"
+        self.running_time = None
     
     def reset_cluster(self):
         print("[*] Resetting the cluster...")
@@ -98,7 +99,7 @@ class MeshConfigFinder:
 
         time.sleep(10)
 
-    def do_synthetic_exp(self):
+    def do_trace_exp(self):
         print("[*] Cleaning up environment...")
 
         # 重启集群
@@ -106,15 +107,15 @@ class MeshConfigFinder:
 
         print(f"[*] Starting RPS experiment with RPS={self.rps}...")
 
-        # 在远端运行rps_inc脚本
+        # 在远端运行trace脚本
         output = self.shell_helper.execute_script(
                 self.shell_helper.config["nodes"][0],
                 self.shell_helper.config["nodes_user"],
-                os.path.join(self.basepath, "./rps_inc/rps_inc.sh"),
-                [str(self.rps), self.mesh_type]
+                os.path.join(self.basepath, "./envoy/do_trace.sh"),
+                [str(self.rps), self.mesh_type, str(self.running_time)]
         )
         
-        with open("rps_exp_log_ambient_np.txt", "a") as f:
+        with open("trace.txt", "a") as f:
             f.write(f"RPS={self.rps} Experiment Output:\n")
             f.write(output + "\n\n")
 
@@ -137,15 +138,17 @@ class MeshConfigFinder:
         self.shell_helper.execute_script(
                 self.shell_helper.config["nodes"][0],
                 self.shell_helper.config["nodes_user"],
-                os.path.join(self.basepath, "./rps_inc/rps_delete_res.sh"),
+                os.path.join(self.basepath, "./envoy/delete_res.sh"),
         )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Do trace of experiment")
     parser.add_argument("--rps", type=int, required=True, help="RPS value for the synthetic experiment")
     parser.add_argument("--namespace", type=str, required=True, help="Mesh namespace to use")
+    parser.add_argument("--running_time", type=int, required=True, help="Running time for the trace experiment")
     args = parser.parse_args()
 
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../config.json")
     config_finder = MeshConfigFinder(args.rps, args.namespace, config_path)
+    config_finder.running_time = args.running_time
     config_finder.do_synthetic_exp()

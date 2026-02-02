@@ -47,10 +47,9 @@ class SpanFormatter:
             item["upstream_conn"] = combined_conn
         else:
             item["conn"] = combined_conn
-
-    def _cal_times(self, span):
-        wait_time, parse_time, filter_time, process_time = 0, 0, 0, 0
-        # 计算span的各个时间
+    
+    def _cal_wait_time(self, span):
+        wait_time = 0.0
         wait_time += span["req"]["Header Parse Start Time"] - span["conn"]["Parse Start Time"]
         wait_time += span["conn"]["Parse End Time"] - span["req"]["Stream End Time"]
         wait_time += span["resp"]["Header Parse Start Time"] - span["upstream_conn"]["Parse Start Time"]
@@ -59,7 +58,10 @@ class SpanFormatter:
             wait_time += span["req"]["Data Parse Start Time"] - span["req"]["Header Process End Time"]
         if span["req"]["Trailer Parse Start Time"] != 0:
             wait_time += span["req"]["Trailer Parse Start Time"] - span["req"]["Data Process End Time"]
-
+        return wait_time
+    
+    def _cal_parse_time(self, span):
+        parse_time = 0.0
         parse_time += span["req"]["Header Filter Start Time"] - span["req"]["Header Parse Start Time"]
         if span["req"]["Data Parse Start Time"] != 0:
             parse_time += span["req"]["Data Filter Start Time"] - span["req"]["Data Parse Start Time"]
@@ -68,7 +70,10 @@ class SpanFormatter:
             parse_time += span["resp"]["Data Filter Start Time"] - span["resp"]["Data Parse Start Time"]
         if span["resp"]["Trailer Parse Start Time"] != 0:
             parse_time += span["resp"]["Trailer Filter Start Time"] - span["resp"]["Trailer Parse Start Time"]
+        return parse_time
 
+    def _cal_filter_time(self, span):
+        filter_time = 0.0
         filter_time += span["req"]["Header Process End Time"] - span["req"]["Header Filter Start Time"]
         if span["req"]["Data Parse Start Time"] != 0:
             filter_time += span["req"]["Stream End Time"] - span["req"]["Data Filter Start Time"]
@@ -77,14 +82,95 @@ class SpanFormatter:
             filter_time += span["resp"]["Data Process End Time"] - span["resp"]["Data Filter Start Time"]
         if span["resp"]["Trailer Parse Start Time"] != 0:
             filter_time += span["resp"]["Stream End Time"] - span["resp"]["Trailer Filter Start Time"]
+        return filter_time
+
+    def _cal_times(self, span):
+        wait_time = self._cal_wait_time(span)
+        parse_time = self._cal_parse_time(span)
+        filter_time = self._cal_filter_time(span)
 
         # TODO: deal with double counting in process_time
         process_time = span["upstream_conn"]["Read Ready Start Time"] - span["conn"]["Parse End Time"]
 
         return wait_time/1e6, parse_time/1e6, filter_time/1e6, process_time/1e6
     
+    def _cal_times_layer(self, layer_services, type):
+        '''
+        计算当一层存在并行请求时的请求时延
+        type: overhead / wait / parse / filter
+        '''
+        max_request_time = self._find_max_request_end_time(layer_services, type)
+        min_request_start_time = self._find_min_request_start_time(layer_services)
+        type_time = (max_request_time - min_request_start_time)/1e6
+        return type_time
+
+    def _find_min_request_start_time(self, layer_services):
+        # 去除上半区overhead后的minimal request start time
+        # 公式：conn_Parse Start Time(开始时间) + upstream_Parse Start Time - conn_Parse End Time
+        min_start_time = float('inf')
+        for service in layer_services:
+            for trace in service:
+                conn = trace["conn"]
+                upconn = trace["upstream_conn"]
+                if upconn.get("Parse Start Time") is not None and conn.get("Parse End Time") is not None and conn.get("Parse Start Time") is not None:
+                    min_start_time = min(min_start_time, conn["Parse Start Time"] + (upconn["Parse Start Time"] - conn["Parse End Time"]))
+        return min_start_time
+
+    def _find_max_request_end_time(self, layer_services, type):
+        # 寻找最大的Parse End Time
+        if type == "overhead":
+            # 直接寻找最大的request end time即可
+            max_end_time = 0.0
+            for service in layer_services:
+                for trace in service:
+                    upconn = trace["upstream_conn"]
+                    if upconn.get("Parse End Time") is not None:
+                        max_end_time = max(max_end_time, upconn["Parse End Time"])
+            return max_end_time
+        elif type == "wait":
+            # 只保留wait time的情况下，寻找最大的request end time
+            # 对于每个span，需要从connection end的时间中减去两部分
+            # downstream的filter和parse time，以及upstream的filter和parse time
+            max_end_time = 0.0
+            for service in layer_services:
+                for trace in service:
+                    upconn = trace["upstream_conn"]
+                    if upconn.get("Parse End Time") is not None:
+                        end_time = upconn.get("Parse End Time")
+                        filter_time = self._cal_filter_time(trace)
+                        parse_time = self._cal_parse_time(trace)
+                        max_end_time = max(max_end_time, end_time - filter_time - parse_time)
+            return max_end_time
+        elif type == "parse":
+            # 同理，需要减去wait和filter time
+            max_end_time = 0.0
+            for service in layer_services:
+                for trace in service:
+                    upconn = trace["upstream_conn"]
+                    if upconn.get("Parse End Time") is not None:
+                        end_time = upconn.get("Parse End Time")
+                        filter_time = self._cal_filter_time(trace)
+                        wait_time = self._cal_wait_time(trace)
+                        max_end_time = max(max_end_time, end_time - filter_time - wait_time)
+            return max_end_time
+        elif type == "filter":
+            # 同理，需要减去parse和wait time
+            max_end_time = 0.0
+            for service in layer_services:
+                for trace in service:
+                    upconn = trace["upstream_conn"]
+                    if upconn.get("Parse End Time") is not None:
+                        end_time = upconn.get("Parse End Time")
+                        parse_time = self._cal_parse_time(trace)
+                        wait_time = self._cal_wait_time(trace)
+                        max_end_time = max(max_end_time, end_time - parse_time - wait_time)
+            return max_end_time
+        else:
+            print("[!] Unsupported type")
+            exit(1)
+    
     def _calculate_request_time(self, request_traces):
-        # 计算request_time, 最大的"Stream End Time"减去最小的"Header Parse Start Time"
+        # 计算request_time, 最大的"Parse End Time"减去最小的"Header Parse Start Time"
         min_start_time = float('inf')
         max_end_time = 0.0
         for trace in request_traces:
@@ -138,6 +224,38 @@ class SpanFormatter:
                 service_topology.append(layer_services)
 
         return service_topology
+    
+    def _merge_service_times(self, topologied_service):
+        overhead = 0.0
+        filter_time, parse_time, wait_time = 0.0, 0.0, 0.0
+
+        # 合并每一层
+        for layer_services in topologied_service:
+            f, p, w, o = self._merge_layer(layer_services)
+            filter_time += f
+            parse_time += p
+            wait_time += w
+            overhead += o
+
+        return filter_time, parse_time, wait_time, overhead
+
+    def _merge_layer(self, layer_services):
+        '''
+        # TODO: 验证overhead是否等于f + p + w
+        return f, p, w, overhead
+        '''
+        if len(layer_services) == 0:
+            return 0.0, 0.0, 0.0, 0.0
+        elif len(layer_services) == 1:
+            f, p, w, _ = self._cal_times(layer_services[0])
+            return f, p, w, f + p + w
+        else:
+            overhead = self._cal_times_layer(layer_services, type="overhead")
+            f = self._cal_times_layer(layer_services, type="filter")
+            p = self._cal_times_layer(layer_services, type="parse")
+            w = self._cal_times_layer(layer_services, type="wait")
+            print("f: {}, p: {}, w: {}, sum: {}, real_overhead: {}", f, p, w, f+p+w, overhead)
+            return f, p, w, overhead
 
     def _process_full_request(self, request_traces):
         metadata = {
@@ -149,12 +267,19 @@ class SpanFormatter:
             "request_time": 0.0,
         }
 
-        # 填充拓扑结构
-        self._fill_topology(request_traces)
-
-
-        wait_sum = parse_sum = filter_sum = 0.0
+        # 计算request_time
         request_time = self._calculate_request_time(request_traces)
+
+        # 填充拓扑结构
+        topologied_service = self._fill_topology(request_traces)
+
+        # 从下到上merge时间
+        w, p, f, o = self._merge_service_times(topologied_service)
+        metadata["wait"] = w
+        metadata["parse"] = p
+        metadata["filter"] = f
+        metadata["overhead"] = o
+        metadata["request_time"] = request_time
 
         # for span in request_traces:
         #     w, p, f, _ = self._cal_times(span)
@@ -162,11 +287,11 @@ class SpanFormatter:
         #     parse_sum += p
         #     filter_sum += f
 
-        metadata["wait"] = wait_sum
-        metadata["parse"] = parse_sum
-        metadata["filter"] = filter_sum
-        metadata["overhead"] = wait_sum + parse_sum + filter_sum
-        metadata["request_time"] = request_time
+        # metadata["wait"] = wait_sum
+        # metadata["parse"] = parse_sum
+        # metadata["filter"] = filter_sum
+        # metadata["overhead"] = wait_sum + parse_sum + filter_sum
+        # metadata["request_time"] = request_time
 
         return metadata
     

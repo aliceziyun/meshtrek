@@ -194,7 +194,6 @@ class SpanFormatter:
         }
         '''
         # read topology file
-        topology_path = "/Users/alicesong/Desktop/research/meshtrek/exper/graph_gen/topology.json"      # TODO: 之后改为参数传入或相对路径
         service_topology = []   # 存储服务的拓扑顺序，二级列表
         request_traces_copied = request_traces.copy()
 
@@ -270,28 +269,31 @@ class SpanFormatter:
         # 计算request_time
         request_time = self._calculate_request_time(request_traces)
 
-        # 填充拓扑结构
-        topologied_service = self._fill_topology(request_traces)
+        wait_sum, parse_sum, filter_sum = 0.0, 0.0, 0.0
 
-        # 从下到上merge时间
-        w, p, f, o = self._merge_service_times(topologied_service)
-        metadata["wait"] = w
-        metadata["parse"] = p
-        metadata["filter"] = f
-        metadata["overhead"] = o
-        metadata["request_time"] = request_time
+        if self.topology_path == "":
+            for span in request_traces:
+                w, p, f, _ = self._cal_times(span)
+                wait_sum += w
+                parse_sum += p
+                filter_sum += f
 
-        # for span in request_traces:
-        #     w, p, f, _ = self._cal_times(span)
-        #     wait_sum += w
-        #     parse_sum += p
-        #     filter_sum += f
+            metadata["wait"] = wait_sum
+            metadata["parse"] = parse_sum
+            metadata["filter"] = filter_sum
+            metadata["overhead"] = wait_sum + parse_sum + filter_sum
+            metadata["request_time"] = request_time
+        elif self.topology_path != "":
+            # 填充拓扑结构
+            topologied_service = self._fill_topology(request_traces)
 
-        # metadata["wait"] = wait_sum
-        # metadata["parse"] = parse_sum
-        # metadata["filter"] = filter_sum
-        # metadata["overhead"] = wait_sum + parse_sum + filter_sum
-        # metadata["request_time"] = request_time
+            # 从下到上merge时间
+            w, p, f, o = self._merge_service_times(topologied_service)
+            metadata["wait"] = w
+            metadata["parse"] = p
+            metadata["filter"] = f
+            metadata["overhead"] = o
+            metadata["request_time"] = request_time
 
         return metadata
     
@@ -570,5 +572,7 @@ class SpanFormatter:
         self.spans_meta = {}
         self.span_processed = set()
         self.processed = 0
+
+        self.topology_path = "/Users/alicesong/Desktop/research/meshtrek/exper/graph_gen/topology.json"
 
         self.output_dir = os.path.dirname(os.path.abspath(__file__))

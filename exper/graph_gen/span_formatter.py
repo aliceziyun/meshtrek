@@ -361,6 +361,7 @@ class SpanFormatter:
                 return self._extract_stream(trace_data, protocol)
             
     def _search_connection(self, file_lines, connection_id, plain_stream_id, protocol, stream_id):
+        # print(f"[*] Searching connection for connection id {connection_id}, plain stream id {plain_stream_id}, protocol {protocol}, stream id {stream_id}")
 
         def u64_to_u16_list(x):
             # tool function
@@ -433,6 +434,8 @@ class SpanFormatter:
         connection_id = item["req"]["Connection ID"]
         downstream_plain_stream_id = item["req"]["Plain Stream ID"] # http1，此项为0
         stream_id = item["req"]["Stream ID"]
+        request_id = item["req"]["Request ID"][:16]
+        # print(f"[*] Searching downstream connection for request id {request_id}, connection id {connection_id}, plain stream id {downstream_plain_stream_id}, stream id {stream_id}")
         connections = self._search_connection(file_lines, connection_id, downstream_plain_stream_id, protocol, stream_id)
         if len(connections) == 0:
             print(f"[!] Incomplete span (No Connection) for stream id {request_id}")
@@ -446,6 +449,7 @@ class SpanFormatter:
         # search upstream connection
         upstream_conn_id = item["resp"]["Upstream Connection ID"]
         upstream_plain_stream_id = item["resp"]["Plain Stream ID"]
+        # print(f"[*] Searching upstream connection for request id {request_id}, upstream connection id {upstream_conn_id}, upstream plain stream id {upstream_plain_stream_id}, stream id {stream_id}")
         upstream_conns = self._search_connection(file_lines, upstream_conn_id, upstream_plain_stream_id, protocol, stream_id)
         if len(upstream_conns) == 0:
             print(f"[!] Incomplete span (No Upstream Connection) for stream id {request_id}")
@@ -504,6 +508,7 @@ class SpanFormatter:
                     item = self._search_other_entries(sub_request, current_file, protocol)
                     if item is None:    # 跳过该request id
                         skip = True
+                        self.span_processed.add(request_id)
                         self.spans.pop(request_id, None)    # 删去entry
                         break
                     item["service"] = current_service
@@ -543,22 +548,13 @@ class SpanFormatter:
                 self.span_processed.add(request_id)
 
                 # 筛选长度符合的请求
-                if metadata["total_sub_requests"] not in span_constant.TARGET_SPAN_LEN:
-                    self.spans.pop(request_id, None)
-                    self.spans_meta.pop(request_id, None)
-                    continue
-
-                # 标记该request id为已处理
-                self.span_processed.add(request_id)
-
-                # 筛选长度符合的请求
-                if metadata["total_sub_requests"] < span_constant.TARGET_SPAN_LEN:
-                    self.spans.pop(request_id, None)
-                    self.spans_meta.pop(request_id, None)
-                    continue
+                # if metadata["total_sub_requests"] < span_constant.TARGET_SPAN_LEN:
+                #     self.spans.pop(request_id, None)
+                #     self.spans_meta.pop(request_id, None)
+                #     continue
                 
                 self.processed += 1
-                if self.processed % 500 == 0:
+                if self.processed % 50 == 0:
                     print(f"[*] Processed {self.processed} requests.")
                     self._write_results_to_file(self.processed)
         self._write_results_to_file(self.processed)
@@ -573,6 +569,7 @@ class SpanFormatter:
         self.span_processed = set()
         self.processed = 0
 
-        self.topology_path = "/Users/alicesong/Desktop/research/meshtrek/exper/graph_gen/topology.json"
+        # self.topology_path = "/Users/alicesong/Desktop/research/meshtrek/exper/graph_gen/topology.json"
+        self.topology_path = ""
 
         self.output_dir = os.path.dirname(os.path.abspath(__file__))

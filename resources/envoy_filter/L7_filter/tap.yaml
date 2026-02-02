@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: tap-to-file
+  namespace: hotel
+spec:
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.tap
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.tap.v3.Tap
+          common_config:
+            static_config:
+              match:
+                any_match: true
+              output_config:
+                sinks:
+                - format: JSON_BODY_AS_STRING
+                  file_per_tap:
+                    path_prefix: /tmp/tap.log

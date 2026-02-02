@@ -197,7 +197,7 @@ class SpanFormatter:
         service_topology = []   # 存储服务的拓扑顺序，二级列表
         request_traces_copied = request_traces.copy()
 
-        with open(topology_path, 'r') as topo_f:
+        with open(self.topology_path, 'r') as topo_f:
             topology = json.load(topo_f)
             # 遍历每一层
             for layer, services in topology.items():

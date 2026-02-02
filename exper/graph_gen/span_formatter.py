@@ -100,70 +100,65 @@ class SpanFormatter:
         type: overhead / wait / parse / filter
         '''
         max_request_time = self._find_max_request_end_time(layer_services, type)
-        min_request_start_time = self._find_min_request_start_time(layer_services)
-        type_time = (max_request_time - min_request_start_time)/1e6
+        max_request_time_no_mesh = self._find_max_request_end_time_no_mesh(layer_services)
+        type_time = (max_request_time - max_request_time_no_mesh)/1e6
         return type_time
 
-    def _find_min_request_start_time(self, layer_services):
-        # 去除上半区overhead后的minimal request start time
+    def _find_max_request_end_time_no_mesh(self, layer_services):
+        # 去除上半区overhead后的max end time
         # 公式：conn_Parse Start Time(开始时间) + upstream_Parse Start Time - conn_Parse End Time
-        min_start_time = float('inf')
-        for service in layer_services:
-            for trace in service:
+        max_end_time = 0
+        for trace in layer_services:
                 conn = trace["conn"]
                 upconn = trace["upstream_conn"]
                 if upconn.get("Parse Start Time") is not None and conn.get("Parse End Time") is not None and conn.get("Parse Start Time") is not None:
-                    min_start_time = min(min_start_time, conn["Parse Start Time"] + (upconn["Parse Start Time"] - conn["Parse End Time"]))
-        return min_start_time
+                    max_end_time = max(max_end_time, conn["Parse Start Time"] + (upconn["Parse Start Time"] - conn["Parse End Time"]))
+        return max_end_time
 
     def _find_max_request_end_time(self, layer_services, type):
         # 寻找最大的Parse End Time
         if type == "overhead":
             # 直接寻找最大的request end time即可
             max_end_time = 0.0
-            for service in layer_services:
-                for trace in service:
-                    upconn = trace["upstream_conn"]
-                    if upconn.get("Parse End Time") is not None:
-                        max_end_time = max(max_end_time, upconn["Parse End Time"])
+            for trace in layer_services:
+                upconn = trace["upstream_conn"]
+                if upconn.get("Parse End Time") is not None:
+                    max_end_time = max(max_end_time, upconn["Parse End Time"])
             return max_end_time
         elif type == "wait":
             # 只保留wait time的情况下，寻找最大的request end time
             # 对于每个span，需要从connection end的时间中减去两部分
             # downstream的filter和parse time，以及upstream的filter和parse time
             max_end_time = 0.0
-            for service in layer_services:
-                for trace in service:
-                    upconn = trace["upstream_conn"]
-                    if upconn.get("Parse End Time") is not None:
-                        end_time = upconn.get("Parse End Time")
-                        filter_time = self._cal_filter_time(trace)
-                        parse_time = self._cal_parse_time(trace)
-                        max_end_time = max(max_end_time, end_time - filter_time - parse_time)
+            for trace in layer_services:
+                upconn = trace["upstream_conn"]
+                if upconn.get("Parse End Time") is not None:
+                    end_time = upconn.get("Parse End Time")
+                    filter_time = self._cal_filter_time(trace)
+                    parse_time = self._cal_parse_time(trace)
+                    max_end_time = max(max_end_time, end_time - filter_time - parse_time)
             return max_end_time
         elif type == "parse":
             # 同理，需要减去wait和filter time
             max_end_time = 0.0
-            for service in layer_services:
-                for trace in service:
-                    upconn = trace["upstream_conn"]
-                    if upconn.get("Parse End Time") is not None:
-                        end_time = upconn.get("Parse End Time")
-                        filter_time = self._cal_filter_time(trace)
-                        wait_time = self._cal_wait_time(trace)
-                        max_end_time = max(max_end_time, end_time - filter_time - wait_time)
+            for trace in layer_services:
+                upconn = trace["upstream_conn"]
+                if upconn.get("Parse End Time") is not None:
+                    end_time = upconn.get("Parse End Time")
+                    filter_time = self._cal_filter_time(trace)
+                    wait_time = self._cal_wait_time(trace)
+                    max_end_time = max(max_end_time, end_time - filter_time - wait_time)
             return max_end_time
         elif type == "filter":
             # 同理，需要减去parse和wait time
             max_end_time = 0.0
-            for service in layer_services:
-                for trace in service:
-                    upconn = trace["upstream_conn"]
-                    if upconn.get("Parse End Time") is not None:
-                        end_time = upconn.get("Parse End Time")
-                        parse_time = self._cal_parse_time(trace)
-                        wait_time = self._cal_wait_time(trace)
-                        max_end_time = max(max_end_time, end_time - parse_time - wait_time)
+            for trace in layer_services:
+                upconn = trace["upstream_conn"]
+                if upconn.get("Parse End Time") is not None:
+                    end_time = upconn.get("Parse End Time")
+                    parse_time = self._cal_parse_time(trace)
+                    wait_time = self._cal_wait_time(trace)
+                    max_end_time = max(max_end_time, end_time - parse_time - wait_time)
             return max_end_time
         else:
             print("[!] Unsupported type")
@@ -253,12 +248,15 @@ class SpanFormatter:
             f = self._cal_times_layer(layer_services, type="filter")
             p = self._cal_times_layer(layer_services, type="parse")
             w = self._cal_times_layer(layer_services, type="wait")
-            print("f: {}, p: {}, w: {}, sum: {}, real_overhead: {}", f, p, w, f+p+w, overhead)
+            # 判断f+p+w和overhead的误差是否可忽略
+            if abs((f + p + w) - overhead) / overhead > 0.1:
+                print("[!] Warning: overhead time does not equal to f + p + w")
+                print(f"Filter time: {f}, Parse time: {p}, Wait time: {w}, Overhead time: {overhead}, Sum: {f + p + w}")
             return f, p, w, overhead
 
-    def _process_full_request(self, request_traces):
+    def _process_full_request(self, request_traces, request_len):
         metadata = {
-            "total_sub_requests": len(request_traces),
+            "total_sub_requests": request_len,
             "wait": 0.0,
             "parse": 0.0,
             "filter": 0.0,
@@ -284,11 +282,12 @@ class SpanFormatter:
             metadata["overhead"] = wait_sum + parse_sum + filter_sum
             metadata["request_time"] = request_time
         elif self.topology_path != "":
+            # print("[*] In topology...")
             # 填充拓扑结构
             topologied_service = self._fill_topology(request_traces)
 
             # 从下到上merge时间
-            w, p, f, o = self._merge_service_times(topologied_service)
+            f, p, w, o = self._merge_service_times(topologied_service)
             metadata["wait"] = w
             metadata["parse"] = p
             metadata["filter"] = f
@@ -497,7 +496,7 @@ class SpanFormatter:
 
                 # 在当前file中搜索和request id的相关记录
                 current_file = entry_lines
-                current_service = os.path.basename(self.entry_file).split('_')[1].split('-')[0]     # TODO: 使用正则表达式匹配，这里提取的name不完整
+                current_service = os.path.basename(self.entry_file).split('_')[2].split('-')[0]     # TODO: 使用正则表达式匹配，这里提取的name不完整
                 skip = False
                 sub_requests = self._search_subrequests(current_file, request_id)
                 for sub_request in sub_requests:
@@ -530,7 +529,7 @@ class SpanFormatter:
                     with open(fpath, 'r') as f:
                         file_lines = f.readlines()
                         current_file = file_lines
-                        current_service = os.path.basename(fpath).split('_')[1].split('-')[0]     # TODO: 使用正则表达式匹配，这里提取的name不完整
+                        current_service = os.path.basename(fpath).split('_')[2].split('-')[0]     # TODO: 使用正则表达式匹配，这里提取的name不完整
                         sub_requests = self._search_subrequests(current_file, request_id)
                         for sub_request in sub_requests:
                             protocol = self._which_protocol(sub_request)
@@ -540,21 +539,21 @@ class SpanFormatter:
                             item["service"] = current_service
                             self.spans[request_id].append(item)
 
+                # 筛选长度符合的请求
+                if len(self.spans[request_id]) != span_constant.TARGET_SPAN_LEN:
+                    self.spans.pop(request_id, None)
+                    self.span_processed.add(request_id)
+                    continue
+
                 # 处理该request id的记录，获取一些关于请求的元数据
-                metadata = self._process_full_request(self.spans[request_id])
+                metadata = self._process_full_request(self.spans[request_id], len(self.spans[request_id]))
                 self.spans_meta[request_id] = metadata
 
                 # 标记该request id为已处理
                 self.span_processed.add(request_id)
-
-                # 筛选长度符合的请求
-                # if metadata["total_sub_requests"] < span_constant.TARGET_SPAN_LEN:
-                #     self.spans.pop(request_id, None)
-                #     self.spans_meta.pop(request_id, None)
-                #     continue
                 
                 self.processed += 1
-                if self.processed % 50 == 0:
+                if self.processed % span_constant.WRITE_BATCH_SIZE == 0:
                     print(f"[*] Processed {self.processed} requests.")
                     self._write_results_to_file(self.processed)
         self._write_results_to_file(self.processed)
@@ -569,7 +568,7 @@ class SpanFormatter:
         self.span_processed = set()
         self.processed = 0
 
-        # self.topology_path = "/Users/alicesong/Desktop/research/meshtrek/exper/graph_gen/topology.json"
-        self.topology_path = ""
+        self.topology_path = "/Users/alicesong/Desktop/research/meshtrek/test_parallel/topology.json"
+        # self.topology_path = ""
 
         self.output_dir = os.path.dirname(os.path.abspath(__file__))

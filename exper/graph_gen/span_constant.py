@@ -26,7 +26,9 @@ TIME_FIELDS = [
 
 COMPONENTS = ["req", "resp", "conn", "upstream_conn"]
 
-TARGET_SPAN_LEN = [3,6]   # hotel的请求长度 in ambient
+TARGET_SPAN_LEN = 32
 
 PROTOCOL_HTTP2 = "http2"
 PROTOCOL_HTTP1 = "http1"
+
+WRITE_BATCH_SIZE = 100

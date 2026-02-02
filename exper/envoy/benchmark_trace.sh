@@ -23,18 +23,9 @@ trace_bookinfo() {
 
     wait
 
-    if [ "$MESH_TYPE" == "cilium" ]; then
-        PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')
-        for pod in $PODS; do
-            kubectl cp "kube-system/$pod:/tmp/trace_output.log" ~/trace_res/trace_output_"$pod".log
-        done
-    else if [ "$MESH_TYPE" == "istio" ]; then
-        PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
-        for pod in $PODS; do
-            kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
-        done
-    fi
-    fi
+    copy_file_to_local
+
+    wait
 
     echo "Experiment completed."
 }
@@ -52,18 +43,7 @@ trace_hotel() {
 
     wait
 
-    if [ "$MESH_TYPE" == "cilium" ]; then
-        PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')
-        for pod in $PODS; do
-            kubectl cp "kube-system/$pod:/tmp/trace_output.log" ~/trace_res/trace_output_"$pod".log
-        done
-    else if [ "$MESH_TYPE" == "istio" ]; then
-        PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
-        for pod in $PODS; do
-            kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
-        done
-    fi
-    fi
+    copy_file_to_local
 
     wait
 
@@ -83,6 +63,29 @@ trace_social() {
 
     wait
 
+    copy_file_to_local
+
+    wait
+
+    echo "Experiment completed."
+}
+
+trace_synthetic() {
+    echo "Running RPS=$RPS..."
+
+    service0_ip=$(kubectl get svc service0 -o jsonpath='{.spec.clusterIP}')
+    ~/istio-1.26.0/wrk2/wrk -t4 -c16 -R 50 -d 60 -L http://$service0_ip/endpoint1
+
+    wait
+
+    copy_file_to_local
+
+    wait
+    
+    echo "Experiment completed."
+}
+
+copy_file_to_local() {
     if [ "$MESH_TYPE" == "cilium" ]; then
         PODS=$(kubectl get pods -n kube-system -o jsonpath='{.items[*].metadata.name}')
         for pod in $PODS; do
@@ -93,12 +96,13 @@ trace_social() {
         for pod in $PODS; do
             kubectl cp "$NAMESPACE/$pod:/tmp/trace_output.log" -c istio-proxy ~/trace_res/trace_output_"$pod".log
         done
+    else
+        WAYPOINTS=$(kubectl get pods -n $NAMESPACE | grep waypoint | awk '{print $1}')
+        for waypoint in $WAYPOINTS; do
+            kubectl cp "$NAMESPACE/$waypoint:/tmp/trace_output.log" ~/trace_res/trace_output_"$waypoint".log
+        done
     fi
     fi
-
-    wait
-
-    echo "Experiment completed."
 }
 
 if [ "$MICRO_SERVICE" == "hotel" ]; then
@@ -107,6 +111,6 @@ elif [ "$MICRO_SERVICE" == "bookinfo" ]; then
     trace_bookinfo
 elif [ "$MICRO_SERVICE" == "social" ]; then
     trace_social
-else
-    echo "Unknown micro-service: $MICRO_SERVICE"
+else  # 摆烂了
+    trace_synthetic
 fi

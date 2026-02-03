@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAMESPACE="hotel"
+NAMESPACE=$1
 DEPLOYMENT_DIR="$HOME/meshtrek/exper/metric/script/ambient_inject/deployments"
 SHADOW_DEPLOY_TEMPLATE_FILE="$HOME/meshtrek/resources/ambient/deploy-shadow.yaml"
 

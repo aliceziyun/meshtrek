@@ -26,3 +26,4 @@ exper/config.json
 exper/environment/kube/join_kube.sh
 *.zip
 /before_tg
+/_archive

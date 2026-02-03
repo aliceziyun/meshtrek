@@ -31,6 +31,27 @@ launch() {
     exit 1
 }
 
+launch_opa_cluster() {
+    kubectl apply -Rf ~/meshtrek/resources/benchmark/HotelReserve/kubernetes_opa -n hotel
+    echo "Waiting for pods to be ready..."
+    for i in {1..60}; do
+        not_ready=$(kubectl get pods -n "$NAMESPACE" --no-headers 2>/dev/null | grep -v 'Running' | wc -l)
+        if [ "$not_ready" -eq 0 ]; then
+            echo "All pods ready."
+            exit 0
+        fi
+        sleep 5
+    done
+    echo "Timeout: Some pods not ready."
+    exit 1
+}
+
+delete_opa_cluster() {
+    echo "Deleting Hotel Reservation Service OPA cluster in namespace: $NAMESPACE"
+    kubectl delete -Rf ~/meshtrek/resources/benchmark/HotelReserve/kubernetes_opa -n hotel
+    sleep 5
+}
+
 delete() {
     # get pod, if no pod, skip
     local pods=$(kubectl get pods -n "$NAMESPACE" --no-headers 2>/dev/null | awk '{print $1}')
@@ -58,6 +79,10 @@ delete() {
 
 if [ "$OPERATION" == "launch" ]; then
     launch
+elif  [ "$OPERATION" == "launch_opa" ]; then
+    launch_opa_cluster
+elif [ "$OPERATION" == "delete_opa" ]; then
+    delete_opa_cluster
 elif [ "$OPERATION" == "delete" ]; then
     delete
 else

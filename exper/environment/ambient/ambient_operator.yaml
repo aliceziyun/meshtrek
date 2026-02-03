@@ -12,3 +12,6 @@ spec:
             null
           limits:
             null
+  meshConfig:
+    defaultConfig:
+      concurrency: 4

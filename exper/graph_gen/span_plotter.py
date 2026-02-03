@@ -1,3 +1,4 @@
+import traceback
 import matplotlib.pyplot as plt
 import json
 import copy
@@ -56,6 +57,7 @@ class SpanPlotter:
     
     def draw_interval(self, y, start, end, *, color, height, alpha, zorder, label=None):
         if end <= start:
+            traceback.print_stack()
             print("[!] End time is less than the start time")
             exit(1)
         plt.barh(y=y, width=end - start, left=start, height=height, color=color, alpha=alpha, zorder=zorder, label=label)

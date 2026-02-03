@@ -19,7 +19,7 @@ launch_header() {
 
 launch_opa() {
     # create config map
-    kubectl create configmap opa-policy --from-file=~/meshtrek/resources/envoy_filters/opa-allow-all-final.rego -n hotel --dry-run=client -o yaml | kubectl apply -f -
+    kubectl create configmap opa-policy --from-file=~/meshtrek/resources/envoy_filters/opa-allow-all-find.rego -n hotel --dry-run=client -o yaml | kubectl apply -f -
 
     # apply opa filter
     kubectl apply -f ~/meshtrek/resources/envoy_filters/opa.yaml -n "$NAMESPACE"
@@ -41,6 +41,7 @@ elif [ "$OPERATION" == "rate_limit" ]; then
     launch_rate_limit
 elif [ "$OPERATION" == "all" ]; then
     launch_tap
+    launch_header
     launch_opa
     launch_rate_limit
 elif [ "$OPERATION" == "delete" ]; then

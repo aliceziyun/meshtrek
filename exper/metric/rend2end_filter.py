@@ -212,9 +212,8 @@ class MeshConfigFinder:
     def end_to_end_exp(self):
         # clean up the environment first
         print("[*] Cleaning up the environment...")
-        self.reset_cluster()
-
         self.apply_filter()
+        self.reset_cluster()
 
         # Directly do test 
         print("[*] Do end to end experiment on filter:", self.filter)

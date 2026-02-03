@@ -18,14 +18,14 @@ apply_each_node() {
   nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
   waypoints=("waypoint1" "waypoint2" "waypoint3" "waypoint4")
   for waypoint in "${waypoints[@]}"; do
-    istioctl waypoint apply -n hotel --name "$waypoint"
+    istioctl waypoint apply  --name "$waypoint"
   done
 
   for i in "${!nodes[@]}"; do
     node="${nodes[$i]}"
     waypoint="${waypoints[$i]}"
 
-    kubectl patch deploy "$waypoint" -n hotel --type=json \
+    kubectl patch deploy "$waypoint" --type=json \
     -p='[
       {
         "op": "add",
@@ -41,16 +41,16 @@ bind_each_node() {
   nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
   waypoints=("waypoint1" "waypoint2" "waypoint3" "waypoint4")
 
-  node1_services=("search")
-  node2_services=("profile" "rate" "user")
-  node3_services=("geo" "reservation")
-  node4_services=("frontend" "recommendation")
+  node1_services=("service0")
+  node2_services=("service1")
+  node3_services=("service2")
+  node4_services=("service3")
 
   for i in "${!nodes[@]}"; do
       waypoint="${waypoints[$i]}"
       services_var="node$((i+1))_services[@]"
       for svc in "${!services_var}"; do
-          kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint"
+          kubectl label service "$svc" istio.io/use-waypoint="$waypoint"
           echo "Labeled service [$svc] to use waypoint [$waypoint]"
       done
   done
@@ -62,10 +62,10 @@ bind_each_node_remote() {
   nodes=($(kubectl get nodes --no-headers | awk '!/control-plane/ {print $1}'))
   waypoints=("waypoint1" "waypoint2" "waypoint3" "waypoint4")
 
-  node1_services=("search")
-  node2_services=("profile" "rate" "user")
-  node3_services=("geo" "reservation")
-  node4_services=("frontend" "recommendation")
+  node1_services=("service0")
+  node2_services=("service1")
+  node3_services=("service2")
+  node4_services=("service3")
 
   num_nodes=${#nodes[@]}
 
@@ -75,7 +75,7 @@ bind_each_node_remote() {
 
       services_var="node$((i+1))_services[@]"
       for svc in "${!services_var}"; do
-          kubectl label service "$svc" -n hotel istio.io/use-waypoint="$waypoint" --overwrite
+          kubectl label service "$svc"  istio.io/use-waypoint="$waypoint" --overwrite
           echo "Labeled service [$svc] on node$((i+1)) to use waypoint [$waypoint]"
       done
   done
@@ -89,9 +89,9 @@ if [ "$1" == "delete" ]; then
   delete
 elif [ "$1" == "apply_each_node" ]; then
   apply_each_node
-elif [ "$1" == "bind_each_service" ]; then
+elif [ "$1" == "bind_each_node" ]; then
   bind_each_node
-elif [ "$1" == "bind_each_service_remote" ]; then
+elif [ "$1" == "bind_each_service_node" ]; then
   bind_each_node_remote
 else
   echo "Usage"

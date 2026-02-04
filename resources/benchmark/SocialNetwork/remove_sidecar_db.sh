@@ -1,5 +1,14 @@
 #!/bin/bash
 
+NAMESPACE=social
+
+for d in $(kubectl get deploy -n $NAMESPACE -o name | grep -E 'mongodb|redis|memcached'); do
+  echo "Patching $d"
+  kubectl patch $d -n $NAMESPACE \
+    -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"false"}}}}}'
+done
+
+
 NS=social
 PATTERN="mongodb|redis|memcached"
 

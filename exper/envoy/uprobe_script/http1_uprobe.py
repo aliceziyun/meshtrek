@@ -80,7 +80,7 @@ class Http1Uprobe:
                 // submit conn info
                 conn_events.perf_submit(ctx, conn_info, sizeof(*conn_info));
                 // submit stream info
-                stream_info->stream_end_time = bpf_ktime_get_tai_ns();
+                stream_info->stream_end_time = conn_info->parse_end_time;
                 stream_events.perf_submit(ctx, stream_info, sizeof(*stream_info));
                 // delete stream info
                 stream_info_map.delete(&connection_id);
@@ -93,12 +93,14 @@ class Http1Uprobe:
                         conn_info->stream_id = downstream_stream_info->stream_id;
                         // submit conn info
                         conn_events.perf_submit(ctx, conn_info, sizeof(*conn_info));
-                        // submit stream info
-                        stream_events.perf_submit(ctx, downstream_stream_info, sizeof(*downstream_stream_info));
-                        // delete stream info
-                        stream_info_map.delete(downstream_conn_id);
-                        // delete up_down_stream_map
-                        up_down_stream_map.delete(&connection_id);
+                        if(downstream_stream_info->data_filter_start_time != 0 || downstream_stream_info->stream_end_time != 0) {
+                            // submit stream info
+                            stream_events.perf_submit(ctx, downstream_stream_info, sizeof(*downstream_stream_info));
+                            // delete stream info
+                            stream_info_map.delete(downstream_conn_id);
+                            // delete up_down_stream_map
+                            up_down_stream_map.delete(&connection_id);
+                        }
                     }
                 }
             }

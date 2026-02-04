@@ -181,9 +181,9 @@ def main(argv=None):
 	return 2
 
 if __name__ == "__main__":
-	# raise SystemExit(main())
+	raise SystemExit(main())
 
-	data_dir = "/Users/alicesong/Desktop/research/meshtrek/trace_synthetic_b16_http1"
+	# data_dir = "/Users/alicesong/Desktop/research/meshtrek/trace_synthetic_b16_http1"
 	# 遍历data dir下的所有目录
 	# import os
 	# for dir_name in os.listdir(data_dir):

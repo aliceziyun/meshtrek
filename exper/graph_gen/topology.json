@@ -1,0 +1,16 @@
+{
+    "1": ["nginx"],
+    "2": ["compose"],
+    "3": ["compose", "compose", "compose", "compose"],
+    "4": ["text", "user", "media", "unique"],
+    "5": ["text", "text"],
+    "6": ["url", "user"],
+    "7": ["compose"],
+    "8": ["post"],
+    "9": ["compose"],
+    "10": ["user"],
+    "11": ["compose"],
+    "12": ["home"],
+    "13": ["home"],
+    "14": ["social"]
+}

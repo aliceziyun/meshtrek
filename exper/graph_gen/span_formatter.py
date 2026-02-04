@@ -41,7 +41,7 @@ class SpanFormatter:
                     item["resp"]["Data Parse Start Time"] = conn["Parse Start Time"]
         # 合并connection，取最早的Parse Start Time和最晚的Parse End Time
         combined_conn = connections[0]
-        combined_conn["Read Ready Start Time"] = min(conn["Read Ready Start Time"] for conn in connections)
+        combined_conn["Parse Start Time"] = min(conn["Parse Start Time"] for conn in connections)
         combined_conn["Parse End Time"] = max(conn["Parse End Time"] for conn in connections)
         if upstream:
             item["upstream_conn"] = combined_conn
@@ -51,13 +51,17 @@ class SpanFormatter:
     def _cal_wait_time(self, span):
         wait_time = 0.0
         wait_time += span["req"]["Header Parse Start Time"] - span["conn"]["Parse Start Time"]
-        wait_time += span["conn"]["Parse End Time"] - span["req"]["Stream End Time"]
+        if span["conn"]["Parse End Time"] - span["req"]["Stream End Time"] > 0:     # TODO: fix this in uprobe tracing
+            wait_time += span["conn"]["Parse End Time"] - span["req"]["Stream End Time"]
         wait_time += span["resp"]["Header Parse Start Time"] - span["upstream_conn"]["Parse Start Time"]
-        wait_time += span["upstream_conn"]["Parse End Time"] - span["resp"]["Stream End Time"]
+        if span["resp"]["Stream End Time"] > 0 and span["upstream_conn"]["Parse End Time"] - span["resp"]["Stream End Time"] > 0:   # TODO: is this a bug?
+            wait_time += span["upstream_conn"]["Parse End Time"] - span["resp"]["Stream End Time"]
         if span["req"]["Data Parse Start Time"] != 0:
             wait_time += span["req"]["Data Parse Start Time"] - span["req"]["Header Process End Time"]
         if span["req"]["Trailer Parse Start Time"] != 0:
             wait_time += span["req"]["Trailer Parse Start Time"] - span["req"]["Data Process End Time"]
+        if span["resp"]["Data Parse Start Time"] != 0:
+            wait_time += span["resp"]["Data Parse Start Time"] - span["resp"]["Header Process End Time"]
         return wait_time
     
     def _cal_parse_time(self, span):
@@ -90,7 +94,7 @@ class SpanFormatter:
         filter_time = self._cal_filter_time(span)
 
         # TODO: deal with double counting in process_time
-        process_time = span["upstream_conn"]["Read Ready Start Time"] - span["conn"]["Parse End Time"]
+        process_time = span["upstream_conn"]["Parse Start Time"] - span["conn"]["Parse End Time"]
 
         return wait_time/1e6, parse_time/1e6, filter_time/1e6, process_time/1e6
     
@@ -221,15 +225,70 @@ class SpanFormatter:
     
     def _merge_service_times(self, topologied_service):
         overhead = 0.0
-        filter_time, parse_time, wait_time = 0.0, 0.0, 0.0
+        # filter_time, parse_time, wait_time = 0.0, 0.0, 0.0
 
         # 合并每一层
-        for layer_services in topologied_service:
+        # for layer_services in topologied_service:
+        #     f, p, w, o = self._merge_layer(layer_services)
+        #     filter_time += f
+        #     parse_time += p
+        #     wait_time += w
+        #     overhead += o
+
+        # special for social
+        filter_times, parse_times, wait_times, overheads = [], [], [], []
+        for layer_services in reversed(topologied_service):
             f, p, w, o = self._merge_layer(layer_services)
-            filter_time += f
-            parse_time += p
-            wait_time += w
-            overhead += o
+            filter_times.append(f)
+            parse_times.append(p)
+            wait_times.append(w)
+            overheads.append(o)
+        
+        # （开摆）因为知道social的拓扑，所以可以进行一些操作
+        # 本来应该用树形结构的，现在弄成线性结构了
+        # [1,2] (没见过1，2有超高的wait time，如果有打印出来看看是什么情况)
+        # [3,6]
+        # [7,8]
+        # [9,10]
+        # [11,14]
+        real_wait_time = [0,0,0,0,0]
+        max_wait_time = [0,0,0,0,0]
+        for i, wait_time in enumerate(wait_times):
+            if i == 0 or i == 1:
+                real_wait_time[0] += wait_time
+            elif i >= 2 and i < 6:
+                if wait_time < 10:
+                    real_wait_time[1] += wait_time
+                else:
+                    if wait_time > max_wait_time[1]:
+                        max_wait_time[1] = wait_time
+            elif i >= 6 and i < 8:
+                if wait_time < 10:
+                    real_wait_time[2] += wait_time
+                else:
+                    if wait_time > max_wait_time[2]:
+                        max_wait_time[2] = wait_time
+            elif i >= 8 and i < 10:
+                if wait_time < 10:
+                    real_wait_time[3] += wait_time
+                else:
+                    if wait_time > max_wait_time[3]:
+                        max_wait_time[3] = wait_time
+            else:
+                if wait_time < 10:
+                    real_wait_time[4] += wait_time
+                else:
+                    if wait_time > max_wait_time[4]:
+                        max_wait_time[4] = wait_time
+        
+        for i, wait in enumerate(max_wait_time):
+            real_wait_time[i] += wait
+
+        filter_time = sum(filter_times)
+        parse_time = sum(parse_times)
+        wait_time = sum(real_wait_time)
+
+        overhead = filter_time + parse_time + wait_time
 
         return filter_time, parse_time, wait_time, overhead
 
@@ -241,7 +300,7 @@ class SpanFormatter:
         if len(layer_services) == 0:
             return 0.0, 0.0, 0.0, 0.0
         elif len(layer_services) == 1:
-            f, p, w, _ = self._cal_times(layer_services[0])
+            w,p,f,_ = self._cal_times(layer_services[0])
             return f, p, w, f + p + w
         else:
             overhead = self._cal_times_layer(layer_services, type="overhead")
@@ -293,6 +352,10 @@ class SpanFormatter:
             metadata["filter"] = f
             metadata["overhead"] = o
             metadata["request_time"] = request_time
+
+        # 任意一项为负数或0，返回None
+        if metadata["wait"] <= 0.0 or metadata["parse"] <= 0.0 or metadata["filter"] <= 0.0 or metadata["overhead"] <= 0.0:
+            return None
 
         return metadata
     
@@ -547,6 +610,10 @@ class SpanFormatter:
 
                 # 处理该request id的记录，获取一些关于请求的元数据
                 metadata = self._process_full_request(self.spans[request_id], len(self.spans[request_id]))
+                if metadata is None:
+                    self.spans.pop(request_id, None)
+                    self.span_processed.add(request_id)
+                    continue
                 self.spans_meta[request_id] = metadata
 
                 # 标记该request id为已处理
@@ -568,7 +635,7 @@ class SpanFormatter:
         self.span_processed = set()
         self.processed = 0
 
-        self.topology_path = "/Users/alicesong/Desktop/research/meshtrek/exper/graph_gen/topology/synthetic.json"       # for parallel
-        # self.topology_path = ""
+        # self.topology_path = "/Users/alicesong/Desktop/research/meshtrek/exper/graph_gen/topology/synthetic.json"       # for parallel
+        self.topology_path = "/Users/alicesong/Desktop/research/meshtrek/exper/graph_gen/topology.json"
 
         self.output_dir = os.path.dirname(os.path.abspath(__file__))

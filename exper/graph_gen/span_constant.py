@@ -26,9 +26,9 @@ TIME_FIELDS = [
 
 COMPONENTS = ["req", "resp", "conn", "upstream_conn"]
 
-TARGET_SPAN_LEN = 32
+TARGET_SPAN_LEN = 21
 
 PROTOCOL_HTTP2 = "http2"
 PROTOCOL_HTTP1 = "http1"
 
-WRITE_BATCH_SIZE = 100
+WRITE_BATCH_SIZE = 10

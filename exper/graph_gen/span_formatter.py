@@ -249,9 +249,9 @@ class SpanFormatter:
             p = self._cal_times_layer(layer_services, type="parse")
             w = self._cal_times_layer(layer_services, type="wait")
             # 判断f+p+w和overhead的误差是否可忽略
-            if abs((f + p + w) - overhead) / overhead > 0.1:
-                print("[!] Warning: overhead time does not equal to f + p + w")
-                print(f"Filter time: {f}, Parse time: {p}, Wait time: {w}, Overhead time: {overhead}, Sum: {f + p + w}")
+            # if abs((f + p + w) - overhead) / overhead > 0.1:
+            #     print("[!] Warning: overhead time does not equal to f + p + w")
+            #     print(f"Filter time: {f}, Parse time: {p}, Wait time: {w}, Overhead time: {overhead}, Sum: {f + p + w}")
             return f, p, w, overhead
 
     def _process_full_request(self, request_traces, request_len):
@@ -568,7 +568,7 @@ class SpanFormatter:
         self.span_processed = set()
         self.processed = 0
 
-        self.topology_path = "/Users/alicesong/Desktop/research/meshtrek/test_parallel/topology.json"
+        self.topology_path = "/Users/alicesong/Desktop/research/meshtrek/exper/graph_gen/topology/synthetic.json"       # for parallel
         # self.topology_path = ""
 
         self.output_dir = os.path.dirname(os.path.abspath(__file__))

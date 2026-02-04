@@ -30,3 +30,6 @@ exper/environment/kube/join_kube.sh
 /_archive
 /trace_res_synthetic_branch1_http1
 /_synthetic
+/trace_synthetic_b1
+/trace_synthetic_b16
+/trace_synthetic_b16_http1

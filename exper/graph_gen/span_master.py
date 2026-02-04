@@ -181,4 +181,30 @@ def main(argv=None):
 	return 2
 
 if __name__ == "__main__":
-	raise SystemExit(main())
+	# raise SystemExit(main())
+
+	data_dir = "/Users/alicesong/Desktop/research/meshtrek/trace_synthetic_b16_http1"
+	# 遍历data dir下的所有目录
+	# import os
+	# for dir_name in os.listdir(data_dir):
+	# 	dir_path = os.path.join(data_dir, dir_name)
+	# 	print(f"Checking dir: {dir_path}")
+	# 	if os.path.isdir(dir_path):
+	# 		# 以trace_res_branch1开头的dir，可以选择
+	# 		if dir_name.startswith("trace_res_branch16"):
+	# 			# 遍历dir下的所有文件
+	# 			for file_name in os.listdir(dir_path):
+	# 				# 以trace_output_service0开头的文件为entry file
+	# 				if file_name.startswith("trace_output_service0"):
+	# 					entry_file_path = os.path.join(dir_path, file_name)
+	# 					print(f"Processing dir: {dir_path}, entry file: {entry_file_path}")
+	# 					span_formatter.SpanFormatter(dir=dir_path, entry_file=entry_file_path).format_span_file()
+
+	# 				# 结束后，把当前脚本目录下所有json文件，移动到当前遍历的dir下
+	# 				current_dir = os.path.dirname(os.path.abspath(__file__))
+	# 				for file in os.listdir(current_dir):
+	# 					if file.endswith(".json"):
+	# 						src_path = os.path.join(current_dir, file)
+	# 						dst_path = os.path.join(dir_path, file)
+	# 						os.rename(src_path, dst_path)
+	# 						print(f"Moved {src_path} to {dst_path}")

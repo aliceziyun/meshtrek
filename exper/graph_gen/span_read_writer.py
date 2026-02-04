@@ -19,19 +19,18 @@ from typing import Dict, List, Tuple
 
 def _list_files(dir_path: str, prefix: str) -> List[str]:
     """List JSON files under dir_path that start with prefix and end with .json.
+        Also traverse subdirectories.
 
     Returns files sorted by name for deterministic processing.
     """
-    try:
-        names = os.listdir(dir_path)
-    except FileNotFoundError:
-        return []
-    files = [
-        os.path.join(dir_path, n)
-        for n in names
-        if n.startswith(prefix) and n.endswith(".json")
-    ]
-    return sorted(files)
+    matched_files: List[str] = []
+    for root, _, files in os.walk(dir_path):
+        for fname in files:
+            if fname.startswith(prefix) and fname.endswith(".json"):
+                full_path = os.path.join(root, fname)
+                matched_files.append(full_path)
+    matched_files.sort()
+    return matched_files
 
 
 def _read_all_entries(file_paths: List[str]) -> Dict[str, dict]:

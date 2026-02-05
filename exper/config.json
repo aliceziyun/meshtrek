@@ -2,11 +2,11 @@
     "nodes_user": "aliceso",
     "nodes_number": 5,
     "nodes": [
-        "ms1122.utah.cloudlab.us",
-        "ms1101.utah.cloudlab.us",
-        "ms1130.utah.cloudlab.us",
-        "ms1141.utah.cloudlab.us",
-        "ms1119.utah.cloudlab.us"
+        "ms1316.utah.cloudlab.us",
+        "ms1339.utah.cloudlab.us",
+        "ms1337.utah.cloudlab.us",
+        "ms1320.utah.cloudlab.us",
+        "ms1345.utah.cloudlab.us"
     ],
     "nodes_home": "/users/aliceso"
 }

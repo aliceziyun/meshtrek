@@ -28,3 +28,7 @@ exper/environment/kube/join_kube.sh
 /before_tg
 /_archive
 /trace_res_synthetic_branch1_http1
+/_filter_span
+/_social
+/_synthetic/synthetic_branch16_http2
+/_synthetic

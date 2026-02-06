@@ -34,3 +34,4 @@ exper/environment/kube/join_kube.sh
 /trace_synthetic_b16
 /trace_synthetic_b16_http1
 /_social
+/_filter_span

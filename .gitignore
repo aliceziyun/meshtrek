@@ -28,3 +28,6 @@ exper/environment/kube/join_kube.sh
 /before_tg
 /_data
 /_archive
+/trace_synthetic_b1
+/trace_synthetic_b16
+/trace_synthetic_b16_http1

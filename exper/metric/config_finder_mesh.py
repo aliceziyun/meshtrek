@@ -54,8 +54,8 @@ class MeshConfigFinder:
             self.cpu_limit = 100
 
         if namespace == "hotel":
-            self.thread = 25
-            self.connection = 100
+            self.thread = 20
+            self.connection = 80
             self.rps_start = 200
 
         self.duration = 30
@@ -220,15 +220,15 @@ class MeshConfigFinder:
 
         # Directly do test
         # print("[*] Finding best RPS in fine-grained...")
-        # self.batch = 3
-        # self.duration = 45
-        # self.rps_start = best_rps - 200
-        # rps_end = best_rps + 200
-        # self.rps_step = 50
+        self.batch = 3
+        self.duration = 45
+        self.rps_start = 200
+        rps_end = 800
+        self.rps_step = 100
         
-        # for current_rps in range(self.rps_start, rps_end + 1, self.rps_step):
-        #     p50, achieved_RPS = self.execute_batch(current_rps)
-        #     print(f"[*] Target RPS: {current_rps}, Achieved RPS: {achieved_RPS}, p50 latency: {p50} ms")
+        for current_rps in range(self.rps_start, rps_end + 1, self.rps_step):
+            p50, achieved_RPS = self.execute_batch(current_rps)
+            print(f"[*] Target RPS: {current_rps}, Achieved RPS: {achieved_RPS}, p50 latency: {p50} ms")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Find the best Mesh configuration")

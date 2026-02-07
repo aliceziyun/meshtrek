@@ -1,7 +1,7 @@
 #!/bin/bash
 # do experiment
 
-NAMESPACE=
+NAMESPACE="default"
 
 MESH_TYPE=$1
 MICRO_SERVICE=$2

@@ -32,3 +32,6 @@ exper/environment/kube/join_kube.sh
 /_social
 /_synthetic/synthetic_branch16_http2
 /_synthetic
+/trace_synthetic_b1
+/trace_synthetic_b16
+/trace_synthetic_b16_http1

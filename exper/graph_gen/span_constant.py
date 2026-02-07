@@ -26,7 +26,7 @@ TIME_FIELDS = [
 
 COMPONENTS = ["req", "resp", "conn", "upstream_conn"]
 
-TARGET_SPAN_LEN = [5, 11]   # hotel的请求长度
+TARGET_SPAN_LEN = [31, 32, 33]   # hotel的请求长度
 
 PROTOCOL_HTTP2 = "http2"
 PROTOCOL_HTTP1 = "http1"

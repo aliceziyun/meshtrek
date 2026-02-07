@@ -366,7 +366,7 @@ class SpanFormatter:
                 self.span_processed.add(request_id)
 
                 # 筛选长度符合的请求
-                if metadata["total_sub_requests"] not in span_constant.TARGET_SPAN_LEN:
+                if metadata["total_sub_requests"] > 30:
                     self.spans.pop(request_id, None)
                     self.spans_meta.pop(request_id, None)
                     continue

@@ -119,7 +119,8 @@ class SpanPlotter:
         plt.title("Span Time Breakdown")
         plt.grid(axis='x', linestyle='--', alpha=0.7)
         plt.tight_layout()
-        plt.show()
+        # plt.show()
+        plt.savefig("span_plot.png")
 
     def plot_dist_graph(self, span_meta, dist_type, length):
         # filter by request length

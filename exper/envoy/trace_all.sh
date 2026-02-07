@@ -64,8 +64,8 @@ trace_hotel() {
   done
 }
 
-trace_other_http2() {
-  PROTOCOL="http2"
+trace_other_http1() {
+  PROTOCOL="http1"
   for pod in $PODS; do
     echo "Running trace on pod: $pod"
     if [ "$MESH_TYPE" == "cilium" ]; then
@@ -81,7 +81,7 @@ trace_other_http2() {
 if [ "$NAMESPACE" == "hotel" ]; then
   trace_hotel
 else
-  trace_other_http2
+  trace_other_http1
 fi
 
 wait

@@ -6,8 +6,8 @@ mkdir -p results
 random_seed=123
 # for each folder of yamls
 # for folder in branch1-yamls branch2-yamls branch4-yamls branch8-yamls branch16-yamls; do
-for folder in branch16-yamls; do
-    for istio_enabled in false; do
+for folder in branch1-yamls; do
+    for istio_enabled in true; do
         echo "Running with istio_enabled=$istio_enabled in folder=$folder"
         outfile="results/$folder-istio-$istio_enabled.log"
         rm -f $outfile
@@ -38,7 +38,7 @@ for folder in branch16-yamls; do
 
         sleep 10
 
-        ~/meshtrek/exper/envoy/trace_all.sh istio default 15
+        ~/meshtrek/exper/envoy/trace_all.sh istio default 25
 
         wait
 

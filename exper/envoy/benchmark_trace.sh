@@ -1,7 +1,7 @@
 #!/bin/bash
 # do experiment
 
-NAMESPACE=
+NAMESPACE=default
 
 MESH_TYPE=$1
 MICRO_SERVICE=$2
@@ -74,7 +74,7 @@ trace_synthetic() {
     echo "Running RPS=$RPS..."
 
     service0_ip=$(kubectl get svc service0 -o jsonpath='{.spec.clusterIP}')
-    ~/istio-1.26.0/wrk2/wrk -t4 -c16 -R 50 -d 60 -L http://$service0_ip/endpoint1
+    ~/istio-1.26.0/wrk2/wrk -t4 -c16 -R 50 -d 100 -L http://$service0_ip/endpoint1
 
     wait
 

@@ -603,10 +603,10 @@ class SpanFormatter:
                             self.spans[request_id].append(item)
 
                 # 筛选长度符合的请求
-                if len(self.spans[request_id]) != span_constant.TARGET_SPAN_LEN:
-                    self.spans.pop(request_id, None)
-                    self.span_processed.add(request_id)
-                    continue
+                # if len(self.spans[request_id]) != span_constant.TARGET_SPAN_LEN:
+                #     self.spans.pop(request_id, None)
+                #     self.span_processed.add(request_id)
+                #     continue
 
                 # 处理该request id的记录，获取一些关于请求的元数据
                 metadata = self._process_full_request(self.spans[request_id], len(self.spans[request_id]))
